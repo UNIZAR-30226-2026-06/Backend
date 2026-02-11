@@ -26,6 +26,39 @@ CREATE TABLE ROL(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 CREATE TABLE Usuario (
     id_usuario VARCHAR(50) PRIMARY KEY,
     password VARCHAR(255) NOT NULL, 
@@ -69,4 +102,14 @@ CREATE TABLE Carta_especial (
     FOREIGN KEY (id_carta) REFERENCES Carta(id_carta) ON DELETE CASCADE
 );
 
+CREATE TABLE Avatar(
+    id_avatar SERIAL PRIMARY KEY,
+    image TEXT NOT NULL,
+    muestoAvatar BOOLEAN NOT NULL
+);
+
+CREATE TABLE Estilo_carta(
+    id_estilo SERIAL PRIMARY KEY,
+    muestroEstilo BOOLEAN NOT NULL
+);
 
