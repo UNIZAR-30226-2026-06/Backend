@@ -19,3 +19,31 @@ CREATE TABLE ROL(
 )
 
 
+
+
+
+
+
+
+
+CREATE TABLE Usuario (
+    username VARCHAR(50) PRIMARY KEY,
+    password VARCHAR(255) NOT NULL, 
+    monedas INTEGER DEFAULT 0, 
+
+    total_ganadas INTEGER DEFAULT 0,
+    total_partidas INTEGER DEFAULT 0,
+
+    numero_amigos INTEGER DEFAULT 0,
+    numero_solicitudes INTEGER DEFAULT 0,
+    
+    avatares_comprados INTEGER[],
+    cartas_compradas INTEGER[],
+
+    id_avatar_seleccionado INTEGER,
+    id_carta_seleccionada INTEGER,
+)
+
+
+
+
