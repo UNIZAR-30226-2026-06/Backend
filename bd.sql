@@ -8,6 +8,7 @@ CREATE TABLE PARTIDA(
     vibracion BOOLEAN NOT NULL,
     carta_actual_id INT NOT NULL,
     pausa BOOLEAN NOT NULL,
+    acabada BOOLEAN NOT NULL,
     FOREIGN KEY (carta_actual_id) REFERENCES CARTA(id_carta)
 
 );
@@ -15,50 +16,13 @@ CREATE TABLE PARTIDA(
 CREATE TABLE ROL(
     id_rol INT PRIMARY KEY,
     nombre VARCHAR(50) NOT NULL
-    num_usos_rol INT NOT NULL
+    num_usos_max INT NOT NULL
 );
-<<<<<<< Updated upstream
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-=======
->>>>>>> Stashed changes
 
 CREATE TABLE USUARIO_EN_PARTIDA(
-    id_partidaUsuario INT PRIMARY KEY,
+    id_partidaUsuario SERIAL PRIMARY KEY,
     id_usuario VARCHAR(50),
     id_partida INT,
-    id_rol INT,
     usos_rol_partida INT NOT NULL,
     total_cartas INT NOT NULL,
     FOREIGN KEY (id_usuario) REFERENCES Usuario(username),
@@ -97,10 +61,9 @@ CREATE TABLE SOLICITUD_AMISTAD (
 
 
 
-
-CREATE TABLE Usuario (
+CREATE TABLE USUARIO (
     id_usuario VARCHAR(50) PRIMARY KEY,
-    password VARCHAR(255) NOT NULL, 
+    contrasena VARCHAR(255) NOT NULL, 
     correo VARCHAR(255) NOT NULL UNIQUE,
     monedas INTEGER DEFAULT 0, 
 
@@ -111,44 +74,56 @@ CREATE TABLE Usuario (
     numero_solicitudes INTEGER DEFAULT 0,
     
     avatares_comprados INTEGER[],
-    cartas_compradas INTEGER[],
+    estilos_compradas INTEGER[],
 
     id_avatar_seleccionado INTEGER,
-    id_carta_seleccionada INTEGER,
+    id_estilo_seleccionada INTEGER,
+
+    FOREIGN KEY (avatares_comprados) REFERENCES AVATAR(id_avatar),
 );
 
 
-CREATE TABLE Carta(
+CREATE TABLE CARTA(
     id_carta SERIAL PRIMARY KEY,
 );
 
-CREATE TABLE Carta_de_numero(
+CREATE TABLE CARTA_DE_NUMERO(
     id_carta INTEGER PRIMARY KEY,
     color VARCHAR(20) NOT NULL,
     numero INTEGER NOT NULL,
     FOREIGN KEY (id_carta) REFERENCES Carta(id_carta) ON DELETE CASCADE
 );
 
-CREATE TABLE Carta_especial_color(
+CREATE TABLE CARTA_ESPECIAL_COLOR(
     id_carta INTEGER PRIMARY KEY,
     color VARCHAR(20) NOT NULL, 
     tipo VARCHAR(30) NOT NULL
     FOREIGN KEY (id_carta) REFERENCES Carta(id_carta) ON DELETE CASCADE
 );
 
-CREATE TABLE Carta_especial (
+CREATE TABLE CARTA_ESPECIAL (
     id_carta INTEGER PRIMARY KEY, 
     FOREIGN KEY (id_carta) REFERENCES Carta(id_carta) ON DELETE CASCADE
 );
 
-CREATE TABLE Avatar(
+CREATE TABLE AVATAR(
     id_avatar SERIAL PRIMARY KEY,
     image TEXT NOT NULL,
     muestoAvatar BOOLEAN NOT NULL
 );
 
-CREATE TABLE Estilo_carta(
+CREATE TABLE ESTILO_AVATAR(
     id_estilo SERIAL PRIMARY KEY,
     muestroEstilo BOOLEAN NOT NULL
 );
 
+CREATE TABLE USUARIO_PARTIDA_ROL(
+
+    pk_usuario_partida_rol SERIAL PRIMARY KEY,
+    id_usuario VARCHAR(50) NOT NULL,
+    id_partida INT NOT NULL,
+
+    FOREIGN KEY (id_usuario) REFERENCES Usuario(id_usuario),
+    FOREIGN KEY (id_partida) REFERENCES PARTIDA(id_partida)
+    CONSTRAINT pk_usuario_partida_rol PRIMARY KEY (id_usuario, id_partida)
+)
