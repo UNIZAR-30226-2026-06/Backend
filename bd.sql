@@ -10,13 +10,13 @@ CREATE TABLE PARTIDA(
     pausa BOOLEAN NOT NULL,
     FOREIGN KEY (carta_actual_id) REFERENCES CARTA(id_carta)
 
-)
+);
 
 CREATE TABLE ROL(
     id_rol INT PRIMARY KEY,
     nombre VARCHAR(50) NOT NULL
     num_usos_rol INT NOT NULL
-)
+);
 
 
 
@@ -27,8 +27,9 @@ CREATE TABLE ROL(
 
 
 CREATE TABLE Usuario (
-    username VARCHAR(50) PRIMARY KEY,
+    id_usuario VARCHAR(50) PRIMARY KEY,
     password VARCHAR(255) NOT NULL, 
+    correo VARCHAR(255) NOT NULL UNIQUE,
     monedas INTEGER DEFAULT 0, 
 
     total_ganadas INTEGER DEFAULT 0,
@@ -42,8 +43,30 @@ CREATE TABLE Usuario (
 
     id_avatar_seleccionado INTEGER,
     id_carta_seleccionada INTEGER,
-)
+);
 
 
+CREATE TABLE Carta(
+    id_carta SERIAL PRIMARY KEY,
+);
+
+CREATE TABLE Carta_de_numero(
+    id_carta INTEGER PRIMARY KEY,
+    color VARCHAR(20) NOT NULL,
+    numero INTEGER NOT NULL,
+    FOREIGN KEY (id_carta) REFERENCES Carta(id_carta) ON DELETE CASCADE
+);
+
+CREATE TABLE Carta_especial_color(
+    id_carta INTEGER PRIMARY KEY,
+    color VARCHAR(20) NOT NULL, 
+    tipo VARCHAR(30) NOT NULL
+    FOREIGN KEY (id_carta) REFERENCES Carta(id_carta) ON DELETE CASCADE
+);
+
+CREATE TABLE Carta_especial (
+    id_carta INTEGER PRIMARY KEY, 
+    FOREIGN KEY (id_carta) REFERENCES Carta(id_carta) ON DELETE CASCADE
+);
 
 
