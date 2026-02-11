@@ -17,6 +17,7 @@ CREATE TABLE ROL(
     nombre VARCHAR(50) NOT NULL
     num_usos_rol INT NOT NULL
 );
+<<<<<<< Updated upstream
 
 
 
@@ -50,7 +51,45 @@ CREATE TABLE ROL(
 
 
 
+=======
+>>>>>>> Stashed changes
 
+CREATE TABLE USUARIO_EN_PARTIDA(
+    id_partidaUsuario INT PRIMARY KEY,
+    id_usuario VARCHAR(50),
+    id_partida INT,
+    id_rol INT,
+    usos_rol_partida INT NOT NULL,
+    total_cartas INT NOT NULL,
+    FOREIGN KEY (id_usuario) REFERENCES Usuario(username),
+    FOREIGN KEY (id_partida) REFERENCES PARTIDA(id_partida),
+    FOREIGN KEY (id_rol) REFERENCES ROL(id_rol)
+);
+
+CREATE TABLE CARTA_USUARIOPARTIDA (
+    id_partidaUsuario INT,
+    id_carta INT,
+    PRIMARY KEY (id_partidaUsuario, id_carta),
+    FOREIGN KEY (id_partidaUsuario) REFERENCES USUARIO_EN_PARTIDA(id_partidaUsuario),
+    FOREIGN KEY (id_carta) REFERENCES CARTA(id_carta)
+);
+
+CREATE TABLE AMIGOS (
+    id_usuario1 VARCHAR(50),
+    id_usuario2 VARCHAR(50),
+    PRIMARY KEY (id_usuario1, id_usuario2),
+    FOREIGN KEY (id_usuario1) REFERENCES Usuario(username),
+    FOREIGN KEY (id_usuario2) REFERENCES Usuario(username)
+);
+
+CREATE TABLE SOLICITUD_AMISTAD (
+    id_solicitud INT PRIMARY KEY,
+    id_usuario_origen VARCHAR(50),
+    id_usuario_destino VARCHAR(50),
+    estado VARCHAR(100) NOT NULL CHECK (estado IN ('pendiente', 'aceptada', 'rechazada')),
+    FOREIGN KEY (id_usuario_origen) REFERENCES Usuario(username),
+    FOREIGN KEY (id_usuario_destino) REFERENCES Usuario(username)
+);
 
 
 
