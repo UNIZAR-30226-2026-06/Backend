@@ -1,4 +1,4 @@
-
+-- cartas normales del uno de un numero
 INSERT INTO CARTA_DE_NUMERO(0, amarillo, 0);
 INSERT INTO CARTA_DE_NUMERO(1, amarillo, 1);
 INSERT INTO CARTA_DE_NUMERO(2, amarillo, 2);
@@ -43,19 +43,70 @@ INSERT INTO CARTA_DE_NUMERO(37, azul, 7);
 INSERT INTO CARTA_DE_NUMERO(38, azul, 8);
 INSERT INTO CARTA_DE_NUMERO(39, azul, 9);
 
-
+-- cartas especiales por numero
+-- +2
 INSERT INTO CARTA_ESPECIAL_COLOR(40, amarillo, +2);
 INSERT INTO CARTA_ESPECIAL_COLOR(41, verde, +2);
 INSERT INTO CARTA_ESPECIAL_COLOR(42, rojo, +2);
 INSERT INTO CARTA_ESPECIAL_COLOR(43, azul, +2);
 
-INSERT INTO CARTA_ESPECIAL_COLOR(44, amarillo, 4);
-INSERT INTO CARTA_ESPECIAL_COLOR(45, verde, 5);
-INSERT INTO CARTA_ESPECIAL_COLOR(46, rojo, 6);
-INSERT INTO CARTA_ESPECIAL_COLOR(47, azul, 7);
+-- skip (saltar)
+INSERT INTO CARTA_ESPECIAL_COLOR(44, amarillo, skip);
+INSERT INTO CARTA_ESPECIAL_COLOR(45, verde, skip);
+INSERT INTO CARTA_ESPECIAL_COLOR(46, rojo, skip);
+INSERT INTO CARTA_ESPECIAL_COLOR(47, azul, skip);
 
-INSERT INTO CARTA_ESPECIAL_COLOR(48, amarillo, 8);
-INSERT INTO CARTA_ESPECIAL_COLOR(49, verde, 9);
-INSERT INTO CARTA_ESPECIAL_COLOR(50, rojo, 9);
-INSERT INTO CARTA_ESPECIAL_COLOR(51, azul, 9);
+-- extra turno
+INSERT INTO CARTA_ESPECIAL_COLOR(48, amarillo, extra_turn);
+INSERT INTO CARTA_ESPECIAL_COLOR(49, verde, extra_turn);
+INSERT INTO CARTA_ESPECIAL_COLOR(50, rojo, extra_turn);
+INSERT INTO CARTA_ESPECIAL_COLOR(51, azul, extra_turn);
 
+-- juegan impares
+INSERT INTO CARTA_ESPECIAL_COLOR(52, amarillo, play_odd);
+INSERT INTO CARTA_ESPECIAL_COLOR(53, verde, play_odd);
+INSERT INTO CARTA_ESPECIAL_COLOR(54, rojo, play_odd);
+INSERT INTO CARTA_ESPECIAL_COLOR(55, azul, play_odd);
+
+-- juegan pares
+INSERT INTO CARTA_ESPECIAL_COLOR(56, amarillo, play_even);
+INSERT INTO CARTA_ESPECIAL_COLOR(57, verde, play_even);
+INSERT INTO CARTA_ESPECIAL_COLOR(58, rojo, play_even);
+INSERT INTO CARTA_ESPECIAL_COLOR(59, azul, play_even);
+
+-- reversa
+INSERT INTO CARTA_ESPECIAL_COLOR(56, amarillo, reversa);
+INSERT INTO CARTA_ESPECIAL_COLOR(57, verde, reversa);
+INSERT INTO CARTA_ESPECIAL_COLOR(58, rojo, reversa);
+INSERT INTO CARTA_ESPECIAL_COLOR(59, azul, reversa);
+
+--reversa con castigo de robar cartas +2
+INSERT INTO CARTA_ESPECIAL_COLOR(60, amarillo, reversa_castigo);
+INSERT INTO CARTA_ESPECIAL_COLOR(61, verde, reversa_castigo);
+INSERT INTO CARTA_ESPECIAL_COLOR(62, rojo, reversa_castigo);
+INSERT INTO CARTA_ESPECIAL_COLOR(63, azul, reversa_castigo);
+
+-- cartas especiales
+-- +4
+INSERT INTO CARTA_ESPECIAL(64);
+
+-- comodin (cambia de color)
+INSERT INTO CARTA_ESPECIAL(65);
+
+-- todos roban
+INSERT INTO CARTA_ESPECIAL(66);
+
+-- cambiar mazo
+INSERT INTO CARTA_ESPECIAL(67);
+
+-- reiniciar mazo
+INSERT INTO CARTA_ESPECIAL(68);
+
+-- reiniciar partida
+INSERT INTO CARTA_ESPECIAL(69);
+
+-- solo usar cartas especiales
+INSERT INTO CARTA_ESPECIAL(70);
+
+-- prohibir color
+INSERT INTO CARTA_ESPECIAL(71);
