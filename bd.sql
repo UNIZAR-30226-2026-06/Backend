@@ -138,6 +138,17 @@ CREATE TABLE MAZO_EN_JUEGO(
 
 );
 
+
+CREATE TABLE MAZO_ROBO(
+    id_mazo INT NOT NULL,
+    id_carta INT NOT NULL,
+    orden INT NOT NULL,
+    PRIMARY KEY (id_mazo, id_carta),
+    FOREIGN KEY (id_mazo) REFERENCES MAZO(id_mazo),
+    FOREIGN KEY (id_carta) REFERENCES CARTA(id_carta) 
+
+);
+
 CREATE TABLE CARTAS_USUARIO(
     id_partidaUsuario VARCHAR(50) NOT NULL,
     id_carta INT NOT NULL,
