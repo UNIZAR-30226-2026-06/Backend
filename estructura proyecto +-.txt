@@ -1,0 +1,51 @@
+backend/
+│
+├── src/
+│   │
+│   ├── core/                      # Lógica central del juego (NO HTTP)
+│   │   ├── game-engine/
+│   │   │   ├── game.state.js
+│   │   │   ├── game.logic.js
+│   │   │   ├── turn.manager.js
+│   │   │   ├── card.rules.js
+│   │   │   └── bot.logic.js
+│   │   │
+│   │   └── validators/
+│   │
+│   ├── modules/
+│   │   ├── game/
+│   │   │   ├── game.routes.js
+│   │   │   ├── game.controller.js
+│   │   │   ├── game.service.js
+│   │   │   └── game.repository.js
+│   │   │
+│   │   ├── user/
+│   │   │   ├── user.routes.js
+│   │   │   ├── user.controller.js
+│   │   │   ├── user.service.js
+│   │   │   └── user.repository.js
+│   │   │
+│   │   ├── auth/
+│   │   ├── friends/
+│   │   ├── wallet/                # monedas
+│   │   └── chat/
+│   │
+│   ├── realtime/                  # WebSockets
+│   │   ├── socket.server.js
+│   │   ├── socket.handlers.js
+│   │   └── rooms.manager.js
+│   │
+│   ├── shared/
+│   │   ├── middleware/
+│   │   ├── errors/
+│   │   └── utils/
+│   │
+│   ├── config/
+│   │   ├── db.js
+│   │   └── env.js
+│   │
+│   ├── app.js
+│   └── server.js
+│
+├── .env
+└── package.json
