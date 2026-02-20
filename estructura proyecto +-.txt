@@ -4,11 +4,11 @@ backend/
 │   │
 │   ├── core/                      # Lógica central del juego (NO HTTP)
 │   │   ├── game-engine/
-│   │   │   ├── game.state.js
-│   │   │   ├── game.logic.js
-│   │   │   ├── turn.manager.js
-│   │   │   ├── card.rules.js
-│   │   │   └── bot.logic.js
+│   │   │   ├── game.state.js      # Medio hecho
+│   │   │   ├── game.logic.js      # 
+│   │   │   ├── turn.manager.js    #
+│   │   │   ├── card.rules.js      #
+│   │   │   └── bot.logic.js       #
 │   │   │
 │   │   └── validators/
 │   │
