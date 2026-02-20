@@ -1,52 +1,98 @@
 // src/core/game-engine/game.logic.js
-class GameLogic{
-    constructor(gameState) {
-        this.gameState = gameState;
-    }
-    // Inicializa la partida
-  startGame(deck) {
-    const state = this.gameState;
-    if (state.status !== 'waiting') {
-      throw new Error('La partida ya ha comenzado');
-    }
-    if(state.players.length < 2) {
-      throw new Error('Se necesitan al menos 2 jugadores para iniciar la partida');
-    }
-    const totalCartasNecesarias = state.players.length * state.numCartasInicio + 1; // cartas para repartir + carta inicial
-    if(deck.length < totalCartasNecesarias) {
-      throw new Error('No hay suficientes cartas en el deck para iniciar la partida');
-    }
-    state.setStatus('playing');
-    state.currentTurn = 0;
-    state.direction = 1;
-    state.drawPile = state.shuffleDeck(deck); // crea una copia del array deck
-    state.discardPile = [];
-    state.players.forEach(j => j.hand = []); // limpia las hands de los jugadores
-    state.dealCards();
-    const initialCard = state.drawCard();
-    state.setInitialCard(initialCard); // coloca la carta inicial en juego
-  }
-    // Valida jugada (simplificado, reglas reales van aparte) 
-  playCard(playerID, card) {
-    const state = this.gameState;
-    if(state.status !== 'playing') {
-      throw new Error('La partida no está en juego');
-    }
-    if(state.getCurrentPlayer().id !== playerID) {
-      throw new Error('No es el turno del jugador');
-    }
-    state.applyPlayCard('playCard', playerID, card);
-    // avanzar turno
-    state.nextTurn();
+
+class GameLogic {
+  constructor(gameState) {
+    this.state = gameState;
   }
 
-    // Pausa partida
-  pauseGame() {
-    this.gameState.setStatus('paused') ;
+  shuffle(deck) {
+    const copy = [...deck];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
   }
-  // Finaliza partida
+
+  recycleIfNeeded() {
+    if (this.state.drawPile.length > 0) return;
+
+    if (this.state.discardPile.length <= 1) {
+      throw new Error('No quedan cartas para robar');
+    }
+
+    const currentCard = this.state.removeTopDiscard();
+    const newPile = this.shuffle(this.state.discardPile);
+
+    this.state.setDrawPile(newPile);
+    this.state.setDiscardPile([currentCard]);
+  }
+
+  drawCard() {
+    this.recycleIfNeeded();
+    return this.state.drawFromPile();
+  }
+
+  startGame(deck) {
+    if (this.state.status !== 'waiting')
+      throw new Error('La partida ya ha comenzado');
+
+    if (this.state.players.length < 2)
+      throw new Error('Se necesitan al menos 2 jugadores');
+
+    const totalNeeded =
+      this.state.players.length * this.state.numCardsIni + 1;
+
+    if (deck.length < totalNeeded)
+      throw new Error('No hay suficientes cartas');
+
+    const shuffled = this.shuffle(deck);
+
+    this.state.setStatus('playing');
+    this.state.resetTurn();
+    this.state.setDirection(1);
+    this.state.setDrawPile(shuffled);
+    this.state.setDiscardPile([]);
+    this.state.clearHands();
+
+    // repartir cartas
+    for (let i = 0; i < this.state.numCardsIni; i++) {
+      for (const player of this.state.players) {
+        const card = this.drawCard();
+        this.state.addCardToPlayer(player.id, card);
+      }
+    }
+
+    // carta inicial
+    const initialCard = this.drawCard();
+    this.state.setCurrentCard(initialCard);
+    this.state.addToDiscardPile(initialCard);
+  }
+
+  playCard(playerId, card) {
+    if (this.state.status !== 'playing')
+      throw new Error('La partida no está en juego');
+
+    const currentPlayer = this.state.getCurrentPlayer();
+
+    if (currentPlayer.id !== playerId)
+      throw new Error('No es el turno del jugador');
+
+    // aquí irán validaciones de reglas: color, número, carta especial ...
+
+    this.state.removeCardFromPlayer(playerId, card);
+    this.state.setCurrentCard(card);
+    this.state.addToDiscardPile(card);
+
+    this.state.nextTurn();
+  }
+
+  pauseGame() {
+    this.state.setStatus('paused');
+  }
+
   endGame() {
-    this.gameState.setStatus('finished') ;
+    this.state.setStatus('finished');
   }
 }
 
