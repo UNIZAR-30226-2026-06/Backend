@@ -3,6 +3,7 @@
 class GameLogic {
   constructor(gameState) {
     this.state = gameState;
+    this.turnManager = new TurnManager(this.state);
   }
 
   shuffle(deck) {
@@ -84,7 +85,7 @@ class GameLogic {
     this.state.setCurrentCard(card);
     this.state.addToDiscardPile(card);
 
-    this.state.nextTurn();
+    this.turnManager.next();
   }
 
   pauseGame() {
@@ -95,5 +96,7 @@ class GameLogic {
     this.state.setStatus('finished');
   }
 }
+
+const TurnManager = require('./turn.manager');
 
 module.exports = GameLogic;

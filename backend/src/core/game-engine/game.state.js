@@ -49,10 +49,8 @@ class GameState {
     this.currentTurn = 0;
   }
 
-  nextTurn() {
-    const total = this.players.length;
-    this.currentTurn =
-      (this.currentTurn + this.direction + total) % total;
+  setCurrentTurnIndex(index) {
+    this.currentTurn = index;
   }
 
   setDrawPile(pile) {
@@ -98,6 +96,20 @@ class GameState {
   drawFromPile() {
     return this.drawPile.shift();
   }
+
+  getPlayersCount() {
+    return this.players.length; 
+  }
+
+  getCurrentTurnIndex() {
+    return this.currentTurn;
+  }
+
+  getDirection() {
+    return this.direction;
+  }
+  
 }
+
 
 module.exports = GameState;
