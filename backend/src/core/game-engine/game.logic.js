@@ -1,9 +1,11 @@
 // src/core/game-engine/game.logic.js
 
+const CardRules = require('./card.rules');
 class GameLogic {
   constructor(gameState) {
     this.state = gameState;
     this.turnManager = new TurnManager(this.state);
+    this.cardRules = new CardRules(this.state, this.turnManager, this);
   }
 
   shuffle(deck) {
@@ -38,7 +40,7 @@ class GameLogic {
     if (this.state.status !== 'waiting')
       throw new Error('La partida ya ha comenzado');
 
-    if (this.state.players.length < 2)
+    if (this.state.getPlayersCount() < 2)
       throw new Error('Se necesitan al menos 2 jugadores');
 
     const totalNeeded =
@@ -74,12 +76,13 @@ class GameLogic {
     if (this.state.status !== 'playing')
       throw new Error('La partida no está en juego');
 
-    const currentPlayer = this.state.getCurrentPlayer();
+    const currentPlayer = this.turnManager.getCurrentPlayer();
 
     if (currentPlayer.id !== playerId)
       throw new Error('No es el turno del jugador');
 
-    // aquí irán validaciones de reglas: color, número, carta especial ...
+    if(!this.cardRules.canPlay(card))
+      throw new Error('Carta no válida');
 
     this.state.removeCardFromPlayer(playerId, card);
     this.state.setCurrentCard(card);

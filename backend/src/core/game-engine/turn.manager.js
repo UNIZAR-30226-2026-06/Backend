@@ -12,6 +12,7 @@ class TurnManager {
 
     advance(steps = 1){
         const total = this.state.getPlayersCount();
+        if(total === 0) return; // evitar división por cero
         const current = this.state.getCurrentTurnIndex();
         const dir = this.state.getDirection();
         const next = (current + dir * steps + total) % total;
