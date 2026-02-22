@@ -5,7 +5,7 @@ backend/
 │   ├── core/                      # Lógica central del juego (NO HTTP)
 │   │   ├── game-engine/
 │   │   │   ├── game.state.js      # Medio hecho
-│   │   │   ├── game.logic.js      # 
+│   │   │   ├── game.logic.js      # Medio hecho
 │   │   │   ├── turn.manager.js    #
 │   │   │   ├── card.rules.js      #
 │   │   │   └── bot.logic.js       #
