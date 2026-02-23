@@ -41,13 +41,13 @@ async function obtener_count_amigos(id) {
 
 async function obtener_amigos(id) {
     const [result]=await db.query('SELECT * FROM AMIGOS WHERE (id_usuario1=? OR id_usuario2=?)', [id, id]);
-    lista =[]
+    let lista =[]
     //bucle que recorre la lista para poder devolver solo una array con los ids de los amigos de "id", asi no se devuelve tupla (id1,id2) donde uno de ellos es "id"
     for (i of result) {
         if (i.id_usuario1 != id) {
-            lista.append(id_usuario1)
+            lista.push(id_usuario1)
         } else {
-            lista.append(id_usuario2)
+            lista.push(id_usuario2)
         }
     }
 

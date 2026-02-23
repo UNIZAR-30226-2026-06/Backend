@@ -112,14 +112,16 @@ CREATE TABLE CARTA_ESPECIAL (
 CREATE TABLE AVATAR(
     id_avatar SERIAL PRIMARY KEY,
     image TEXT NOT NULL,
-    muestoAvatar BOOLEAN NOT NULL
+    muestoAvatar BOOLEAN NOT NULL,
+    precioAvatar INTEGER NOT NULL
 );
 
 CREATE TABLE ESTILO(
     id_estilo SERIAL PRIMARY KEY,
     fondo TEXT NOT NULL,
     reverso TEXT NOT NULL,
-    muestroEstilo BOOLEAN NOT NULL
+    muestroEstilo BOOLEAN NOT NULL,
+    precioEstilo INTEGER NOT NULL
 );
 
 CREATE TABLE MAZO (

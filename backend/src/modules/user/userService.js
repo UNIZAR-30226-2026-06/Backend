@@ -65,7 +65,7 @@ async function deleteUser(nombre_usuario) {
 }
 
 
-//metodos para actualizar campos específicos de un usuario por su id, se pueden usar para actualizar solo un campo sin necesidad de actualizar todo el usuario
+//metodos para obtener y actualizar campos específicos de un usuario por su id, se pueden usar para actualizar solo un campo sin necesidad de actualizar todo el usuario
 async function setnombre_usuarioById(id, nombre_usuario) {
     const [result] = await db.query('UPDATE USUARIO SET nombre_usuario = ? WHERE id = ?', [nombre_usuario, id]);
     return result;
@@ -108,6 +108,51 @@ async function setIdEstiloSeleccionadoById(id, id_estilo_seleccionado) {
     return result;
 }
 
+async function getNombre_usuarioById(id) {
+    const [rows] = await db.query('SELECT nombre_usuario FROM USUARIO WHERE id = ?', [id]);
+    return rows[0].nombre_usuario ;
+}
+
+async function getCorreoById(id) {
+    const [rows] = await db.query('SELECT correo FROM USUARIO WHERE id = ?', [id]);
+    return rows[0].correo;
+}
+
+async function getMonedasById(id) {
+    const [rows] = await db.query('SELECT monedas FROM USUARIO WHERE id = ?', [id]);
+    return rows[0].monedas ;
+}
+
+async function getTotalGanadasById(id) {
+    const [rows] = await db.query('SELECT total_ganadas FROM USUARIO WHERE id = ?', [id]);
+    return rows[0].total_ganadas ;
+}
+
+async function getTotalPartidasById(id) {
+    const [rows] = await db.query('SELECT total_partidas FROM USUARIO WHERE id = ?', [id]);
+    return rows[0].total_partidas;
+}
+
+async function getNumeroAmigosById(id) {
+    const [rows] = await db.query('SELECT numero_amigos FROM USUARIO WHERE id = ?', [id]);
+    return rows[0].numero_amigos;
+}
+
+async function getNumeroSolicitudesById(id) {
+    const [rows] = await db.query('SELECT numero_solicitudes FROM USUARIO WHERE id = ?', [id]);
+    return rows[0].numero_solicitudes;
+}
+
+async function getIdAvatarSeleccionadoById(id) {
+    const [rows] = await db.query('SELECT id_avatar_seleccionado FROM USUARIO WHERE id = ?', [id]);
+    return rows[0].id_avatar_seleccionado;
+}
+
+async function getIdEstiloSeleccionadoById(id) {
+    const [rows] = await db.query('SELECT id_estilo_seleccionado FROM USUARIO WHERE id = ?', [id]);
+    return rows[0].id_estilo_seleccionado;
+}
+
 
 async function existeUsuario(nombre_usuario) {
     const [rows] = await db.query('SELECT COUNT(*) AS count FROM USUARIO WHERE nombre_usuario = ?', [nombre_usuario]);
@@ -119,4 +164,5 @@ async function existeUsuario(nombre_usuario) {
 module.exports = { User, createUser, getUserByUsername, getUserByEmail, updateUser, updateUserPassword, deleteUser, 
                     setnombre_usuarioById, setCorreoById, setMonedasById, setTotalGanadasById, setTotalPartidasById, 
                     setNumeroAmigosById, setNumeroSolicitudesById, setIdAvatarSeleccionadoById, setIdEstiloSeleccionadoById,
-                    existeUsuario };
+                    existeUsuario, getCorreoById, getIdAvatarSeleccionadoById, getIdAvatarSeleccionadoById, getIdEstiloSeleccionadoById,
+                    getNumeroAmigosById, getNombre_usuarioById, getTotalGanadasById, getTotalPartidasById, getMonedasById};
