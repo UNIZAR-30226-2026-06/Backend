@@ -36,7 +36,7 @@ class GameLogic {
     return this.state.drawFromPile();
   }
 
-  startGame(deck) {
+  startGame() {
     if (this.state.status !== 'waiting')
       throw new Error('La partida ya ha comenzado');
 
@@ -49,13 +49,19 @@ class GameLogic {
     if (deck.length < totalNeeded)
       throw new Error('No hay suficientes cartas');
 
-    const shuffled = this.shuffle(deck);
+    const deck = this.shuffle(
+      DeckFactory.createDeck({
+        specialCardsMode: this.state.specialCardsMode,
+        rolesMode: this.state.rolesMode
+      })
+    );
+
+    this.state.setDrawPile(deck);
+    this.state.setDiscardPile([]);
 
     this.state.setStatus('playing');
     this.state.resetTurn();
     this.state.setDirection(1);
-    this.state.setDrawPile(shuffled);
-    this.state.setDiscardPile([]);
     this.state.clearHands();
 
     // repartir cartas
