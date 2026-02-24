@@ -46,15 +46,15 @@ class GameLogic {
     const totalNeeded =
       this.state.players.length * this.state.numCardsIni + 1;
 
-    if (deck.length < totalNeeded)
-      throw new Error('No hay suficientes cartas');
-
     const deck = this.shuffle(
       DeckFactory.createDeck({
         specialCardsMode: this.state.specialCardsMode,
         rolesMode: this.state.rolesMode
       })
     );
+
+    if (deck.length < totalNeeded)
+      throw new Error('No hay suficientes cartas');
 
     this.state.setDrawPile(deck);
     this.state.setDiscardPile([]);
