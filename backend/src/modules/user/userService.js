@@ -164,5 +164,5 @@ async function existeUsuario(nombre_usuario) {
 module.exports = { User, createUser, getUserByUsername, getUserByEmail, updateUser, updateUserPassword, deleteUser, 
                     setnombre_usuarioById, setCorreoById, setMonedasById, setTotalGanadasById, setTotalPartidasById, 
                     setNumeroAmigosById, setNumeroSolicitudesById, setIdAvatarSeleccionadoById, setIdEstiloSeleccionadoById,
-                    existeUsuario, getCorreoById, getIdAvatarSeleccionadoById, getIdAvatarSeleccionadoById, getIdEstiloSeleccionadoById,
+                    existeUsuario, getCorreoById, getNumeroSolicitudesById, getIdAvatarSeleccionadoById, getIdEstiloSeleccionadoById,
                     getNumeroAmigosById, getNombre_usuarioById, getTotalGanadasById, getTotalPartidasById, getMonedasById};

@@ -13,7 +13,7 @@ app.get('/api/v1/health', (req, res) => {
 });
 
 //prueba de la bd
-/*const pool = require('./db');
+/*const pool = require('./src/config/db');
 app.get('/api/v1/test-db', async (req, res) => {
   try {
     const result = await pool.query('SELECT NOW()');
