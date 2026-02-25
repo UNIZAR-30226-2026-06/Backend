@@ -44,8 +44,14 @@ backend/
 │   │   ├── db.js
 │   │   └── env.js
 │   │
+│   ├── database/
+│   │   ├── 01_schema.js # crear
+│   │   └── 02_seed.js # poblar
+│   │    
 │   ├── app.js
 │   └── server.js
+|
 │
+├── init-db.js
 ├── .env
 └── package.json
