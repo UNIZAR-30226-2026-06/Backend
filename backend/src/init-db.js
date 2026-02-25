@@ -1,15 +1,15 @@
 const fs = require('fs');
 const path = require('path');
 // Importamos la conexión a la base de datos
-const pool = require('../config/db'); 
+const pool = require('./config/db'); 
 
 async function initDB() {
   try {
     console.log('Iniciando la configuración de la base de datos...');
 
     //Leemos los archivos SQL
-    const schemaPath = path.join(__dirname, '01_schema.sql');
-    const seedPath = path.join(__dirname, '02_seed.sql');
+    const schemaPath = path.join(__dirname, 'database','01_schema.sql');
+    const seedPath = path.join(__dirname, 'database', '02_seed.sql');
 
     const schemaSql = fs.readFileSync(schemaPath, 'utf8');
     const seedSql = fs.readFileSync(seedPath, 'utf8');
