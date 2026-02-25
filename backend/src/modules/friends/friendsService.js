@@ -3,30 +3,30 @@ const db = require('../../config/db');
 async function enviar_Solicitud_Amistad(id_sender, id_receiver) {
     //funcion para enviar una solicitud de amistad de un usuario a otro
     const result = await db.query('INSERT INTO SOLICITUD_AMISTAD (id_usuario_origen, id_usuario_destino, estado) VALUES ($1,$2,$3)', [id_sender, id_receiver, "pendiente"]);
-    return result.rowCount;
+    return result.rowCount === 1;
 }
 
 async function eliminar_solicitud_amistad(id_sender, id_receiver) {
     //funcion para eliminar una solicitud de amistad de un usuario a otro
     const result = await db.query('DELETE FROM SOLICITUD_AMISTAD WHERE id_usuario_origen=$1 AND id_usuario_destino=$2 AND estado=$3', [id_sender, id_receiver, "pendiente"]);
-    return result;
+    return result.rowCount === 1;
 }
 
 async function obtener_Solicitudes_Pendientes(id) {
     const result = await db.query('SELECT * FROM SOLICITUD_AMISTAD WHERE id_usuario_destino=$1 and estado=$2', [id, "pendiente"]);
-    return result;
+    return result.rows;
 }
 
 async function aceptar_Solicitud_Amistad(id, id_nuevo_amigo) {
     const result = await db.query('UPDATE SOLICITUD_AMISTAD SET estado=$1 WHERE id_usuario_origen=$2 AND id_usuario_destino=$3', ["aceptada", id_nuevo_amigo, id])
     const result1 = await db.query('INSERT INTO AMIGOS (id_usuario1, id_usuario2) VALUES ($1,$2)', [id, id_nuevo_amigo]);
     
-    return result1
+    return result1.rowCount === 1;
 }
 
 async function rechazar_Solicitud_Amistad(id, id_nuevo_amigo) {
     const result = await db.query('UPDATE SOLICITUD_AMISTAD SET estado=$1 WHERE id_usuario_origen=$2 AND id_usuario_destino=$3', ["rechazada", id_nuevo_amigo, id])
-    return result
+    return result.rowCount === 1;
 }
 
 async function obtener_count_solicitudes_pendientes(id) {
@@ -59,7 +59,7 @@ async function eliminar_amigo(id, id_amigo_eliminar) {
     const result = await db.query('DELETE FROM AMIGOS WHERE ((id_usuario1=$1 AND id_usuario2=$2) OR (id_usuario1=$3 AND id_usuario2=$4))', [id, id_amigo_eliminar, id_amigo_eliminar, id]);
     const result1 = await db.query('DELETE FROM SOLICITUD_AMISTAD WHERE ((id_usuario_origen=$1 AND id_usuario_destino=$2) OR (id_usuario_origen=$3 AND id_usuario_destino=$4))', [id, id_amigo_eliminar, id_amigo_eliminar, id]);
     
-    return result1;
+    return result1.rowCount === 1;
 }
 
 async function buscar_amigos(string_buscar) {

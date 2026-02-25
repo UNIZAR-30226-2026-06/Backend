@@ -22,7 +22,7 @@ async function createUser(nombre_usuario, contrasena, correo) {
     //funcion para crear un nuevo usuario y guardarlo en la base de datos
     const newUser = new User(nombre_usuario, contrasena, correo, 0, 0, 0, 0, 0, null, null);
     const result = await db.query('INSERT INTO USUARIO (nombre_usuario, contrasena, correo) VALUES ($1, $2, $3) ', [newUser.nombre_usuario, newUser.contrasena, newUser.correo]);
-    return result.rowCount; // Devuelve el ID del nuevo usuario creado
+    return result.rowCount === 1; // Devuelve true si se ha añadido 1 fila
 
 }
 
@@ -67,56 +67,56 @@ async function deleteUser(nombre_usuario) {
 //metodos para obtener y actualizar campos específicos de un usuario por su id, se pueden usar para actualizar solo un campo sin necesidad de actualizar todo el usuario
 async function setnombre_usuarioById(id, nombre_usuario) {
     const result = await db.query('UPDATE USUARIO SET nombre_usuario = $1 WHERE nombre_usuario = $2', [nombre_usuario, id]);
-    return result;
+    return result.rowCount === 1;
 }
 
 async function setCorreoById(id, correo) {
     const result = await db.query('UPDATE USUARIO SET correo = $1 WHERE nombre_usuario = $2', [correo, id]);
-    return result;
+    return result.rowCount === 1;
 }
 
 async function setMonedasById(id, monedas) {
     const result = await db.query('UPDATE USUARIO SET monedas = $1 WHERE nombre_usuario = $2', [monedas, id]);
-    return result;
+    return result.rowCount === 1;
 }
 
 async function setTotalGanadasById(id, total_ganadas) {
     const result = await db.query('UPDATE USUARIO SET total_ganadas = $1 WHERE nombre_usuario = $2', [total_ganadas, id]);
-    return result;
+    return result.rowCount === 1;
 }   
 
 async function anadirPartidaGanada_ById(id) {
     
     const result1 = await db.query('UPDATE USUARIO SET total_ganadas = total_ganadas + 1 WHERE nombre_usuario = $1', [ id]);
-    return result1;
+    return result1.rowCount === 1;
 }  
 
 async function setTotalPartidasById(id, total_partidas) {
     const result = await db.query('UPDATE USUARIO SET total_partidas = $1 WHERE nombre_usuario = $2', [total_partidas, id]);
-    return result;
+    return result.rowCount === 1;
 }
 
 async function anadir_Partida_jugada_ById(id) {
     
     const result1 = await db.query('UPDATE USUARIO SET total_partidas = total_partidas + 1 WHERE nombre_usuario = $1', [ id]);
-    return result1;
+    return result1.rowCount === 1;
 }
 
 async function setNumeroAmigosById(id, numero_amigos) {
     const result = await db.query('UPDATE USUARIO SET numero_amigos = $1 WHERE nombre_usuario = $2', [numero_amigos, id]);
-    return result;
+    return result.rowCount === 1;
 }   
 async function setNumeroSolicitudesById(id, numero_solicitudes) {
     const result = await db.query('UPDATE USUARIO SET numero_solicitudes = $1 WHERE nombre_usuario = $2', [numero_solicitudes, id]);
-    return result;
+    return result.rowCount === 1;
 }
 async function setIdAvatarSeleccionadoById(id, id_avatar_seleccionado) {
     const result = await db.query('UPDATE USUARIO SET id_avatar_seleccionado = $1 WHERE nombre_usuario = $2', [id_avatar_seleccionado, id]);
-    return result;
+    return result.rowCount === 1;
 }
 async function setIdEstiloSeleccionadoById(id, id_estilo_seleccionado) {
     const result = await db.query('UPDATE USUARIO SET id_estilo_seleccionado = $1 WHERE nombre_usuario = $2', [id_estilo_seleccionado, id]);
-    return result;
+    return result.rowCount === 1;
 }
 
 async function getNombre_usuarioById(id) {
