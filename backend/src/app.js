@@ -17,4 +17,8 @@ app.get('/api/v1/health', (req, res) => {
 const authRoutes = require('./modules/auth/auth.routes');
 app.use('/auth', authRoutes);
 
+//rutas de store
+const storeRoutes = require('./modules/store/store.routes.js');
+app.use('/store', storeRoutes);
+
 module.exports = app;

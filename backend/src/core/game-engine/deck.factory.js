@@ -3,6 +3,7 @@ class DeckFactory {
   static COLORS = ["blue", "red", "green", "yellow"];
   static NUMBERS = ["0","1","2","3","4","5","6","7","8","9"];
   static SPECIALS = ["+2", "reverse", "+2R", "skip", "extraTurn", "playOdd", "playEven"];
+  static NUM_CARTAS_CADA_TIPO = 4;
 
   static createDeck(config) {
     let deck = [];
@@ -23,15 +24,20 @@ class DeckFactory {
   static createBaseCards() {
     const deck = [];
 
+    //Mete los números
     this.COLORS.forEach(color => {
-      this.NUMBERS.forEach(number => {
-        deck.push({
-          id: `${color}-${number}`,
-          value: number,
-          color,
-          type: "normal"
+        this.NUMBERS.forEach(number => {
+
+        for (let i = 0; i < NUM_CARTAS_CADA_TIPO; i++) {
+            deck.push({
+            id: `${color}-${number}-${i}`, //id único
+            value: number,
+            color,
+            type: "normal"
+            });
+        }
+
         });
-      });
     });
 
     return deck;
