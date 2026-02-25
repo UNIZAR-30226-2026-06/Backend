@@ -63,7 +63,7 @@ CREATE TABLE PARTIDA(
     sonido BOOLEAN NOT NULL,
     musica BOOLEAN NOT NULL,
     vibracion BOOLEAN NOT NULL,
-    estado VARCHAR(20) NOT NULL CHECK (estado IN ('en curso','pausada','finalizada')),
+    estado VARCHAR(20) NOT NULL CHECK (estado IN ('en curso','pausada','finalizada', 'esperando jugadores')),
     timeout_turno INT NOT NULL,
     game_state JSONB,
     updated_at TIMESTAMP DEFAULT NOW()
