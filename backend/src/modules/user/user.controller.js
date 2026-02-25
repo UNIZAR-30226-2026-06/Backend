@@ -1,6 +1,6 @@
 // Asegúrate de que las rutas a tus archivos de servicio sean correctas
 const userService = require('./userService'); 
-const authService = require('./authentificationService');
+const authService = require('../auth/authService');
 
 class UserController {
   
