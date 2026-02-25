@@ -67,89 +67,103 @@ async function deleteUser(nombre_usuario) {
 
 //metodos para obtener y actualizar campos específicos de un usuario por su id, se pueden usar para actualizar solo un campo sin necesidad de actualizar todo el usuario
 async function setnombre_usuarioById(id, nombre_usuario) {
-    const [result] = await db.query('UPDATE USUARIO SET nombre_usuario = ? WHERE id = ?', [nombre_usuario, id]);
+    const [result] = await db.query('UPDATE USUARIO SET nombre_usuario = ? WHERE nombre_usuario = ?', [nombre_usuario, id]);
     return result;
 }
 
 async function setCorreoById(id, correo) {
-    const [result] = await db.query('UPDATE USUARIO SET correo = ? WHERE id = ?', [correo, id]);
+    const [result] = await db.query('UPDATE USUARIO SET correo = ? WHERE nombre_usuario = ?', [correo, id]);
     return result;
 }
 
 async function setMonedasById(id, monedas) {
-    const [result] = await db.query('UPDATE USUARIO SET monedas = ? WHERE id = ?', [monedas, id]);
+    const [result] = await db.query('UPDATE USUARIO SET monedas = ? WHERE nombre_usuario = ?', [monedas, id]);
     return result;
 }
 
 async function setTotalGanadasById(id, total_ganadas) {
-    const [result] = await db.query('UPDATE USUARIO SET total_ganadas = ? WHERE id = ?', [total_ganadas, id]);
+    const [result] = await db.query('UPDATE USUARIO SET total_ganadas = ? WHERE nombre_usuario = ?', [total_ganadas, id]);
     return result;
 }   
 
+async function anadirPartidaGanada_ById(id) {
+    const [result] = await db.query('SELECT total_ganadas FROM USUARIO WHERE nombre_usuario = ?', [id]);
+   
+    const [result1] = await db.query('UPDATE USUARIO SET (total_ganadas = ?) WHERE nombre_usuario = ?', [result[0].total_ganadas+1, id]);
+    return result;
+}  
+
 async function setTotalPartidasById(id, total_partidas) {
-    const [result] = await db.query('UPDATE USUARIO SET total_partidas = ? WHERE id = ?', [total_partidas, id]);
+    const [result] = await db.query('UPDATE USUARIO SET total_partidas = ? WHERE nombre_usuario = ?', [total_partidas, id]);
+    return result;
+}
+
+async function anadir_Partida_jugada_ById(id) {
+    const [result] = await db.query('SELECT  total_partidas FROM USUARIO WHERE nombre_usuario = ?', [id]);
+   
+    const [result1] = await db.query('UPDATE USUARIO SET total_partidas=? WHERE nombre_usuario = ?', [result[0].total_ganadas+1, id]);
     return result;
 }
 
 async function setNumeroAmigosById(id, numero_amigos) {
-    const [result] = await db.query('UPDATE USUARIO SET numero_amigos = ? WHERE id = ?', [numero_amigos, id]);
+    const [result] = await db.query('UPDATE USUARIO SET numero_amigos = ? WHERE nombre_usuario = ?', [numero_amigos, id]);
     return result;
 }   
 async function setNumeroSolicitudesById(id, numero_solicitudes) {
-    const [result] = await db.query('UPDATE USUARIO SET numero_solicitudes = ? WHERE id = ?', [numero_solicitudes, id]);
+    const [result] = await db.query('UPDATE USUARIO SET numero_solicitudes = ? WHERE nombre_usuario = ?', [numero_solicitudes, id]);
     return result;
 }
 async function setIdAvatarSeleccionadoById(id, id_avatar_seleccionado) {
-    const [result] = await db.query('UPDATE USUARIO SET id_avatar_seleccionado = ? WHERE id = ?', [id_avatar_seleccionado, id]);
+    const [result] = await db.query('UPDATE USUARIO SET id_avatar_seleccionado = ? WHERE nombre_usuario = ?', [id_avatar_seleccionado, id]);
     return result;
 }
 async function setIdEstiloSeleccionadoById(id, id_estilo_seleccionado) {
-    const [result] = await db.query('UPDATE USUARIO SET id_estilo_seleccionado = ? WHERE id = ?', [id_estilo_seleccionado, id]);
+    const [result] = await db.query('UPDATE USUARIO SET id_estilo_seleccionado = ? WHERE nombre_usuario = ?', [id_estilo_seleccionado, id]);
     return result;
 }
 
 async function getNombre_usuarioById(id) {
-    const [rows] = await db.query('SELECT nombre_usuario FROM USUARIO WHERE id = ?', [id]);
+    const [rows] = await db.query('SELECT nombre_usuario FROM USUARIO WHERE nombre_usuario = ?', [id]);
     return rows[0].nombre_usuario ;
 }
 
 async function getCorreoById(id) {
-    const [rows] = await db.query('SELECT correo FROM USUARIO WHERE id = ?', [id]);
+    const [rows] = await db.query('SELECT correo FROM USUARIO WHERE nombre_usuario = ?', [id]);
     return rows[0].correo;
 }
 
 async function getMonedasById(id) {
-    const [rows] = await db.query('SELECT monedas FROM USUARIO WHERE id = ?', [id]);
+    const [rows] = await db.query('SELECT monedas FROM USUARIO WHERE nombre_usuario = ?', [id]);
     return rows[0].monedas ;
 }
 
 async function getTotalGanadasById(id) {
-    const [rows] = await db.query('SELECT total_ganadas FROM USUARIO WHERE id = ?', [id]);
+    const [rows] = await db.query('SELECT total_ganadas FROM USUARIO WHERE nombre_usuario = ?', [id]);
     return rows[0].total_ganadas ;
 }
 
 async function getTotalPartidasById(id) {
-    const [rows] = await db.query('SELECT total_partidas FROM USUARIO WHERE id = ?', [id]);
+    const [rows] = await db.query('SELECT total_partidas FROM USUARIO WHERE nombre_usuario = ?', [id]);
     return rows[0].total_partidas;
 }
 
 async function getNumeroAmigosById(id) {
-    const [rows] = await db.query('SELECT numero_amigos FROM USUARIO WHERE id = ?', [id]);
+    const [rows] = await db.query('SELECT numero_amigos FROM USUARIO WHERE nombre_usuario = ?', [id]);
     return rows[0].numero_amigos;
 }
 
 async function getNumeroSolicitudesById(id) {
-    const [rows] = await db.query('SELECT numero_solicitudes FROM USUARIO WHERE id = ?', [id]);
+    const [rows] = await db.query('SELECT numero_solicitudes FROM USUARIO WHERE nombre_usuario = ?', [id]);
     return rows[0].numero_solicitudes;
 }
 
 async function getIdAvatarSeleccionadoById(id) {
-    const [rows] = await db.query('SELECT id_avatar_seleccionado FROM USUARIO WHERE id = ?', [id]);
+    const [rows] = await db.query('SELECT id_avatar_seleccionado FROM USUARIO WHERE nombre_usuario = ?', [id]);
     return rows[0].id_avatar_seleccionado;
 }
 
 async function getIdEstiloSeleccionadoById(id) {
-    const [rows] = await db.query('SELECT id_estilo_seleccionado FROM USUARIO WHERE id = ?', [id]);
+    const [rows] = await db.query('SELECT id_estilo_seleccionado FROM USUARIO WHERE nombre_usuario = ?', [id]);
     return rows[0].id_estilo_seleccionado;
 }
 
@@ -165,4 +179,5 @@ module.exports = { User, createUser, getUserByUsername, getUserByEmail, updateUs
                     setnombre_usuarioById, setCorreoById, setMonedasById, setTotalGanadasById, setTotalPartidasById, 
                     setNumeroAmigosById, setNumeroSolicitudesById, setIdAvatarSeleccionadoById, setIdEstiloSeleccionadoById,
                     existeUsuario, getCorreoById, getNumeroSolicitudesById, getIdAvatarSeleccionadoById, getIdEstiloSeleccionadoById,
-                    getNumeroAmigosById, getNombre_usuarioById, getTotalGanadasById, getTotalPartidasById, getMonedasById};
+                    getNumeroAmigosById, getNombre_usuarioById, getTotalGanadasById, getTotalPartidasById, getMonedasById, 
+                    anadir_Partida_jugada_ById, anadirPartidaGanada_ById};
