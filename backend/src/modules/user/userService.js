@@ -1,5 +1,4 @@
-
-const db = require('../../database');
+const db = require('../../config/db');
 
 class User {
     //almacena la informacion de un usuario y contiene las funciones de puede realizar

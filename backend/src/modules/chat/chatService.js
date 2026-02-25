@@ -1,4 +1,5 @@
 // Se gestiona las palabras que no se pueden enviar entre los jugadores y si los mensajes estan vacios
+const db = require('../../config/db');
 
 class chatService{
 processMatchMessage(nombre_usuario, mensaje) {
