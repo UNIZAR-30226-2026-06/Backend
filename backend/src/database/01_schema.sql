@@ -66,7 +66,10 @@ CREATE TABLE PARTIDA(
     estado VARCHAR(20) NOT NULL CHECK (estado IN ('en curso','pausada','finalizada', 'esperando jugadores')),
     timeout_turno INT NOT NULL,
     game_state JSONB,
-    updated_at TIMESTAMP DEFAULT NOW()
+    updated_at TIMESTAMP DEFAULT NOW(), 
+    max_jugadores INTEGER DEFAULT 4,
+    partida_publica BOOLEAN DEFAULT TRUE
+
 );
 
 CREATE TABLE USUARIO_EN_PARTIDA(
