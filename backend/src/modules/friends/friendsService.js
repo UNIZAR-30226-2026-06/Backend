@@ -45,9 +45,9 @@ async function obtener_amigos(id) {
     //bucle que recorre la lista para poder devolver solo una array con los ids de los amigos de "id", asi no se devuelve tupla (id1,id2) donde uno de ellos es "id"
     for (i of result) {
         if (i.id_usuario1 != id) {
-            lista.push(id_usuario1)
+            lista.push(i.id_usuario1)
         } else {
-            lista.push(id_usuario2)
+            lista.push(i.id_usuario2)
         }
     }
 

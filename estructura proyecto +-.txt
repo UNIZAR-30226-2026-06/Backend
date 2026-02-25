@@ -6,8 +6,8 @@ backend/
 │   │   ├── game-engine/
 │   │   │   ├── game.state.js      # Medio hecho
 │   │   │   ├── game.logic.js      # Medio hecho
-│   │   │   ├── turn.manager.js    #
-│   │   │   ├── card.rules.js      #
+│   │   │   ├── turn.manager.js    # Medio Hecho
+│   │   │   ├── card.rules.js      # Medio Hecho
 │   │   │   └── bot.logic.js       #
 │   │   │
 │   │   └── validators/
