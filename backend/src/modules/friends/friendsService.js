@@ -1,4 +1,4 @@
-const db = require('../../database');
+const db = require('../../config/db');
 
 async function enviar_Solicitud_Amistad(id_sender, id_receiver) {
     //funcion para enviar una solicitud de amistad de un usuario a otro

@@ -46,4 +46,8 @@ app.use('/api/v1/usuarios', userRoutes);
 const authRoutes = require('./modules/auth/auth.routes');
 app.use('/auth', authRoutes);
 
+//rutas de store
+const storeRoutes = require('./modules/store/store.routes.js');
+app.use('/store', storeRoutes);
+
 module.exports = app;
