@@ -1,99 +1,25 @@
-
-// npm run dev
 const express = require('express');
-const router = express.Router();
+const authMiddleware = require('../../middlewares/auth.middleware');
 const userController = require('./user.controller');
 
+const router = express.Router();
 
-/**
- * @swagger
- * tags:
- *   name: Usuarios
- *   description: Gestión de usuarios
- */
+// Todo requiere autenticación
+router.use(authMiddleware);
 
-/**
- * @swagger
- * /api/users/register:
- *   post:
- *     summary: Crear una nueva cuenta 
- *     tags: [Usuarios]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - nombre_usuario
- *               - contrasena
- *               - correo
- *             properties:
- *               nombre_usuario:
- *                 type: string
- *               contrasena:
- *                 type: string
- *               correo:
- *                 type: string
- *     responses:
- *       201:
- *         description: Usuario creado con éxito
- *       400:
- *         description: Error en los datos
- */
-router.post('/register', userController.register);
+// Obtener perfil
+router.get('/me', userController.getProfile);
 
-/**
- * @swagger
- * /api/users/login:
- *   post:
- *     summary: Iniciar sesión
- *     tags: [Usuarios]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - nombre_usuario
- *               - contrasena
- *             properties:
- *               nombre_usuario:
- *                 type: string
- *               contrasena:
- *                 type: string
- *     responses:
- *       200:
- *         description: Login exitoso
- *       401:
- *         description: Credenciales incorrectas
- */
-router.post('/login', userController.login);
+// Editar datos básicos
+router.put('/me', userController.updateProfile);
 
-/**
- * @swagger
- * /api/users/forgot-password:
- *   post:
- *     summary: Restablecer contraseña
- *     tags: [Usuarios]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - correo
- *             properties:
- *               correo:
- *                 type: string
- *     responses:
- *       200:
- *         description: Contraseña restablecida
- *       404:
- *         description: Usuario no encontrado
- */
-router.post('/forgot-password', userController.forgotPassword);
+// Cambiar contraseña
+router.put('/me/password', userController.changePassword);
+
+// Cambiar avatar activo
+router.put('/me/avatar', userController.changeAvatar);
+
+// Cambiar estilo activo
+router.put('/me/estilo', userController.changeStyle);
 
 module.exports = router;

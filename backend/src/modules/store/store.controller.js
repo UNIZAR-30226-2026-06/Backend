@@ -53,7 +53,7 @@ exports.modificarVisibilidadEstilo = async (req, res) => {
   try {
     const { id } = req.params;
     const { visible } = req.body;
-    const result = await storeService.modificar_visibilidad_Estilo_tienda(id, visible);
+    const result = await storeService.modificar_visibilidad_estilo_tienda(id, visible);
     res.json({ success: result });
   } catch (error) {
     res.status(400).json({ error: error.message });

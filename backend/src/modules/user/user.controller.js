@@ -1,101 +1,118 @@
-// Asegúrate de que las rutas a tus archivos de servicio sean correctas
 const userService = require('./userService'); 
 const authService = require('../auth/authService');
 
 class UserController {
-  
-  // ==========================================
-  // CREAR CUENTA (Registro)
-  // ==========================================
-  async register(req, res) {
-    try {
-      const { nombre_usuario, contrasena, correo } = req.body;
 
-      // 1. Validar que vengan los datos
-      if (!nombre_usuario || !contrasena || !correo) {
-        return res.status(400).json({ error: 'Todos los campos son obligatorios' });
-      }
-
-      // 2. Comprobar si el usuario o correo ya existen
-      const existeUser = await userService.getUserByUsername(nombre_usuario);
-      if (existeUser) return res.status(400).json({ error: 'El nombre de usuario ya existe' });
-
-      // 3. Hashear la contraseña antes de guardarla
-      const hashedPassword = await authService.hashPassword(contrasena);
-
-      // 4. Guardar en base de datos
-      const nuevoId = await userService.createUser(nombre_usuario, hashedPassword, correo);
-      
-      res.status(201).json({ mensaje: 'Usuario creado con éxito', id: nuevoId });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Error al crear la cuenta' });
-    }
-  }
-
-  // ==========================================
-  // INICIAR SESIÓN (Login)
-  // ==========================================
-  async login(req, res) {
-    try {
-      const { nombre_usuario, contrasena } = req.body;
-
-      if (!nombre_usuario || !contrasena) {
-        return res.status(400).json({ error: 'Faltan credenciales' });
-      }
-
-      // authService.authenticateUser ya busca la contraseña y la compara
-      const esValido = await authService.authenticateUser(nombre_usuario, contrasena);
-
-      if (!esValido) {
-        return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
-      }
-
-      // Aquí en el futuro generarías un JWT (Token). Por ahora devolvemos éxito.
-      const userData = await userService.getUserByUsername(nombre_usuario);
-      res.status(200).json({ mensaje: 'Login exitoso', usuario: userData.nombre_usuario });
-
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Error al iniciar sesión' });
-    }
-  }
-
-  // ==========================================
-  // HE OLVIDADO MI CONTRASEÑA
-  // ==========================================
+  // =========================
+  // OLVIDÉ MI CONTRASEÑA
+  // =========================
   async forgotPassword(req, res) {
     try {
       const { correo } = req.body;
-
       if (!correo) return res.status(400).json({ error: 'Debes proporcionar un correo' });
 
       const usuario = await userService.getUserByEmail(correo);
-      if (!usuario) {
-        // Por seguridad, es mejor devolver "Si el correo existe, se ha enviado un mail", 
-        // pero para tu desarrollo podemos ser explícitos.
-        return res.status(404).json({ error: 'No existe un usuario con ese correo' });
-      }
+      if (!usuario) return res.status(404).json({ error: 'No existe un usuario con ese correo' });
 
-      // 1. Generamos una contraseña temporal (ej: NotUno2026!)
       const tempPassword = Math.random().toString(36).slice(-8) + "Aa1!";
-      
-      // 2. La hasheamos y actualizamos
       const hashedTempPassword = await authService.hashPassword(tempPassword);
       await userService.updateUserPassword(usuario.nombre_usuario, hashedTempPassword);
 
-      // 3. (En un entorno real aquí enviarías un email). 
-      // Por ahora, se la devolvemos en la respuesta para que puedas probarlo.
       res.status(200).json({ 
         mensaje: 'Se ha restablecido tu contraseña.',
         nueva_contrasena_temporal: tempPassword 
       });
-
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Error al restablecer la contraseña' });
     }
   }
+
+  // =========================
+  // PERFIL
+  // =========================
+  async getProfile(req, res) {
+    try {
+      const username = req.user.nombre_usuario;
+      const user = await userService.getUserByUsername(username);
+
+      res.json({
+        nombre_usuario: user.nombre_usuario,
+        correo: user.correo,
+        avatar: user.id_avatar_seleccionado,
+        estilo: user.id_estilo_seleccionado
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Error al obtener perfil' });
+    }
+  }
+
+  // =========================
+  // ACTUALIZAR PERFIL
+  // =========================
+  async updateProfile(req, res) {
+    try {
+      const username = req.user.nombre_usuario;
+      const { correo } = req.body;
+      await userService.setCorreoById(username, correo);
+      res.json({ mensaje: 'Perfil actualizado' });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Error al actualizar perfil' });
+    }
+  }
+
+  // =========================
+  // CAMBIAR CONTRASEÑA
+  // =========================
+  async changePassword(req, res) {
+    try {
+      const username = req.user.nombre_usuario;
+      const { contrasena_actual, nueva_contrasena } = req.body;
+
+      const correcto = await authService.comprobarContraseñaActualCorrecta(username, contrasena_actual);
+      if (!correcto) return res.status(400).json({ error: 'Contraseña actual incorrecta' });
+
+      const hashed = await authService.hashPassword(nueva_contrasena);
+      await userService.updateUserPassword(username, hashed);
+      res.json({ mensaje: 'Contraseña actualizada' });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Error al cambiar contraseña' });
+    }
+  }
+
+  // =========================
+  // CAMBIAR AVATAR
+  // =========================
+  async changeAvatar(req, res) {
+    try {
+      const username = req.user.nombre_usuario;
+      const { avatar_id } = req.body;
+      await userService.setIdAvatarSeleccionadoById(username, avatar_id);
+      res.json({ mensaje: 'Avatar actualizado' });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Error al cambiar avatar' });
+    }
+  }
+
+  // =========================
+  // CAMBIAR ESTILO
+  // =========================
+  async changeStyle(req, res) {
+    try {
+      const username = req.user.nombre_usuario;
+      const { estilo_id } = req.body;
+      await userService.setIdEstiloSeleccionadoById(username, estilo_id);
+      res.json({ mensaje: 'Estilo actualizado' });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Error al cambiar estilo' });
+    }
+  }
+
 }
 
 module.exports = new UserController();

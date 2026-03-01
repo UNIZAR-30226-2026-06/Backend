@@ -112,7 +112,7 @@ async function comprar_estilo(id_estilo, id_user) {
     
 }
 
-async function modificar_visibilidad_Estilo_tienda(id_estilo, bool_visibilidad_estilo) {
+async function modificar_visibilidad_estilo_tienda(id_estilo, bool_visibilidad_estilo) {
     //funcion para determinar si un estilo se muestra al cargar la tienda
     const result = await db.query('UPDATE notuno.ESTILO SET muestroEstilo = $1 WHERE id_estilo = $2', [bool_visibilidad_estilo, id_estilo]);
     return result.rowCount === 1    //devuelve true si se ha modificado 1 fila
