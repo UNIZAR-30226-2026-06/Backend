@@ -1,138 +1,98 @@
 const db = require('../../config/db');
-const user = require('../user/userService.js'); // para monedas y usuario
+const userService = require('../user/userService');
 
-// Obtener todos los avatares
 async function obtener_todos_avatares() {
   const result = await db.query('SELECT * FROM notuno.AVATAR');
   return result.rows;
 }
 
-// Obtener todos los estilos
 async function obtener_todos_estilos() {
   const result = await db.query('SELECT * FROM notuno.ESTILO');
   return result.rows;
 }
 
-// Obtener avatar por id
 async function obtener_avatar_por_id(id_avatar) {
   const result = await db.query('SELECT * FROM notuno.AVATAR WHERE id_avatar = $1', [id_avatar]);
   return result.rows[0];
 }
 
-// Obtener estilo por id
 async function obtener_estilo_por_id(id_estilo) {
-    const result = await db.query('SELECT * FROM notuno.ESTILO WHERE id_estilo=$1', [id_estilo]);
-    return result.rows[0];
-        
+  const result = await db.query('SELECT * FROM notuno.ESTILO WHERE id_estilo = $1', [id_estilo]);
+  return result.rows[0];
 }
 
-// Estilos de un usuario
 async function obtener_estilos_usuario(nombre_usuario) {
   const result = await db.query(`
-    SELECT e.* FROM notuno.ESTILOS_COMPRADOS ec
+    SELECT e.* 
+    FROM notuno.ESTILOS_COMPRADOS ec
     JOIN notuno.ESTILO e ON ec.id_estilo = e.id_estilo
     WHERE ec.nombre_usuario = $1
   `, [nombre_usuario]);
   return result.rows;
 }
 
-// Avatar de un usuario
 async function obtener_avatares_usuario(nombre_usuario) {
   const result = await db.query(`
-    SELECT a.* FROM notuno.AVATARES_COMPRADOS ac
+    SELECT a.* 
+    FROM notuno.AVATARES_COMPRADOS ac
     JOIN notuno.AVATAR a ON ac.id_avatar = a.id_avatar
     WHERE ac.nombre_usuario = $1
   `, [nombre_usuario]);
   return result.rows;
 }
 
-async function estilo_ya_comprado(id_estilo, id_user) {
-    const result = await db.query('SELECT COUNT(*) AS total FROM notuno.ESTILOS_COMPRADOS WHERE nombre_usuario=$1 AND id_estilos=$2', [id_user, id_estilo] );
-    return parseInt(result.rows[0].total > 0)
+async function estilo_ya_comprado(id_estilo, nombre_usuario) {
+  const result = await db.query('SELECT COUNT(*) AS total FROM notuno.ESTILOS_COMPRADOS WHERE nombre_usuario = $1 AND id_estilo = $2', [nombre_usuario, id_estilo]);
+  return parseInt(result.rows[0].total) > 0;
 }
 
-async function avatar_ya_comprado(id_avatar, id_user) {
-    const result = await db.query('SELECT COUNT(*) AS total FROM notuno.AVATARES_COMPRADOS WHERE nombre_usuario=$1 AND id_avatar=$2', [id_user, id_avatar] );
-    return parseInt(result.rows[0].total > 0)
+async function avatar_ya_comprado(id_avatar, nombre_usuario) {
+  const result = await db.query('SELECT COUNT(*) AS total FROM notuno.AVATARES_COMPRADOS WHERE nombre_usuario = $1 AND id_avatar = $2', [nombre_usuario, id_avatar]);
+  return parseInt(result.rows[0].total) > 0;
 }
 
-// Comprar avatar
-async function comprar_avatar(id_avatar, id_user) {
-    try {
-        const avatarRes = await db.query('SELECT precioAvatar FROM notuno.AVATAR WHERE id_avatar=$1', [id_avatar]);
-        if (avatarRes.rows.length === 0){
-            throw new Error('Avatar no encontrado');
-        } 
+async function comprar_avatar(id_avatar, nombre_usuario) {
+  const avatar = await obtener_avatar_por_id(id_avatar);
+  if (!avatar) throw new Error("Avatar no encontrado");
 
-        
-        const result = await db.query('SELECT precioAvatar FROM notuno.AVATAR WHERE id_avatar=$1 ', [id_avatar] );
-        if (result.rows.length===0) {
-            throw new Error("Avatar no encontrado");
-        }
-        // se comprueba que el usuario tenga monedas suficientes para realizar la compra
-        let precio=result.rows[0].precioAvatar
-        let monedas_user_actual=await user.getMonedasById(id_user)
-        if (monedas_user_actual > precio) {
-            await user.setMonedasById(id_user, monedas_user_actual-precio)
-            const result1 = await db.query('INSERT INTO notuno.AVATARES_COMPRADOS (nombre_usuario, id_avatar) VALUES ($1,$2) ', [id_user, id_avatar] );
-            return result1.rowCount === 1    //si se ha insertado 1 fila, devuelve true
-        }else {
-            throw new Error("No tienes suficientes monedas para comprar este avatar");
-            //return false;
-        }
-    
-    
-    } catch(error) {
-        throw error;
-    }
-    
+  const monedas_user_actual = await userService.getMonedasById(nombre_usuario);
+  if (monedas_user_actual < avatar.precioAvatar) throw new Error("No tienes suficientes monedas para comprar este avatar");
+
+  await userService.setMonedasById(nombre_usuario, monedas_user_actual - avatar.precioAvatar);
+  const result = await db.query('INSERT INTO notuno.AVATARES_COMPRADOS (nombre_usuario, id_avatar) VALUES ($1, $2)', [nombre_usuario, id_avatar]);
+  return result.rowCount === 1;
 }
 
-async function comprar_estilo(id_estilo, id_user) {
-    try{
-        const result = await db.query('SELECT precioEstilo FROM notuno.ESTILO WHERE id_estilo=$1 ', [id_estilo] );
-        if (result.rows.length===0) {
-            throw new Error("Estilo no encontrado");
-        }
+async function comprar_estilo(id_estilo, nombre_usuario) {
+  const estilo = await obtener_estilo_por_id(id_estilo);
+  if (!estilo) throw new Error("Estilo no encontrado");
 
-        let precio=result.rows[0].precioEstilo
-        let monedas_user_actual=await user.getMonedasById(id_user)
-        if (monedas_user_actual > precio) {
-            await user.setMonedasById(id_user, monedas_user_actual-precio)
-            const result1 = await db.query('INSERT INTO notuno.ESTILOS_COMPRADOS (nombre_usuario, id_estilo) VALUES ($1,$2) ', [id_user, id_estilo] );
-            return result1.rowCount === 1    //si se ha insertado 1 fila, devuelve true
-        }else {
-            throw new Error("No tienes suficientes monedas para comprar este estilo");
-            //return false;
-        }
-    }catch (error) {
-        throw error;    // El error se lanza al controlador (o a quien haya llamado a esta funcion) con el mensaje
-    }
-    
-    
+  const monedas_user_actual = await userService.getMonedasById(nombre_usuario);
+  if (monedas_user_actual < estilo.precioEstilo) throw new Error("No tienes suficientes monedas para comprar este estilo");
+
+  await userService.setMonedasById(nombre_usuario, monedas_user_actual - estilo.precioEstilo);
+  const result = await db.query('INSERT INTO notuno.ESTILOS_COMPRADOS (nombre_usuario, id_estilo) VALUES ($1, $2)', [nombre_usuario, id_estilo]);
+  return result.rowCount === 1;
 }
 
-async function modificar_visibilidad_estilo_tienda(id_estilo, bool_visibilidad_estilo) {
-    //funcion para determinar si un estilo se muestra al cargar la tienda
-    const result = await db.query('UPDATE notuno.ESTILO SET muestroEstilo = $1 WHERE id_estilo = $2', [bool_visibilidad_estilo, id_estilo]);
-    return result.rowCount === 1    //devuelve true si se ha modificado 1 fila
+async function modificar_visibilidad_estilo_tienda(id_estilo, visible) {
+  const result = await db.query('UPDATE notuno.ESTILO SET muestroEstilo = $1 WHERE id_estilo = $2', [visible, id_estilo]);
+  return result.rowCount === 1;
 }
 
-async function modificar_visibilidad_avatar_tienda(id_avatar, bool_visibilidad_avatar) {
-    //funcion para determinar si un avatar se muestra al cargar la tienda
-    const result = await db.query('UPDATE notuno.AVATAR SET muestoAvatar = $1 WHERE id_avatar = $2', [bool_visibilidad_avatar, id_avatar]);
-    return result.rowCount === 1    //devuelve true si se ha modificado 1 fila
+async function modificar_visibilidad_avatar_tienda(id_avatar, visible) {
+  const result = await db.query('UPDATE notuno.AVATAR SET muestoAvatar = $1 WHERE id_avatar = $2', [visible, id_avatar]);
+  return result.rowCount === 1;
 }
 
-// Obtener avatares/estilos visibles en tienda
 async function obtener_avatares_tienda() {
-    const result = await db.query('SELECT * FROM notuno.AVATAR WHERE muestoAvatar =$1 ', [true]);
-    return result.rows
+  const result = await db.query('SELECT * FROM notuno.AVATAR WHERE muestoAvatar = $1', [true]);
+  return result.rows;
 }
 
 async function obtener_estilos_tienda() {
-    const result = await db.query('SELECT * FROM notuno.ESTILO WHERE muestroEstilo =$1 ', [true]);
-    return result.rows
+  const result = await db.query('SELECT * FROM notuno.ESTILO WHERE muestroEstilo = $1', [true]);
+  return result.rows;
 }
 
 module.exports = {

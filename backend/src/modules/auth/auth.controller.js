@@ -1,4 +1,6 @@
+// ================= AUTH CONTROLLER =================
 const authService = require('./authService');
+const userService = require('../user/userService'); // <--- corregido
 const db = require('../../config/db');
 
 exports.register = async (req, res, next) => {
@@ -16,7 +18,7 @@ exports.register = async (req, res, next) => {
     );
 
     const user = result.rows[0];
-    const token = authService.generateToken(user); // Mantienes el token con nombre_usuario
+    const token = authService.generateToken(user);
 
     res.status(201).json({ 
         token, 
@@ -49,7 +51,7 @@ exports.login = async (req, res, next) => {
 // /me usa nombre_usuario en vez de id
 exports.me = async (req, res, next) => {
     try {
-        const user = await userService.getUserByUsername(req.user.nombre_usuario);
+        const user = await authService.getUserByUsername(req.user.nombre_usuario); // <--- authService ahora devuelve solo campos seguros
         if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
         res.json(user);
     } catch (err) {

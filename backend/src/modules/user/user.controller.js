@@ -1,3 +1,4 @@
+// ================= USER CONTROLLER =================
 const userService = require('./userService'); 
 const authService = require('../auth/authService');
 
@@ -6,7 +7,7 @@ class UserController {
   // =========================
   // OLVIDÉ MI CONTRASEÑA
   // =========================
-  async forgotPassword(req, res) {
+  async forgotPassword(req, res, next) {
     try {
       const { correo } = req.body;
       if (!correo) return res.status(400).json({ error: 'Debes proporcionar un correo' });
@@ -22,19 +23,20 @@ class UserController {
         mensaje: 'Se ha restablecido tu contraseña.',
         nueva_contrasena_temporal: tempPassword 
       });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Error al restablecer la contraseña' });
+    } catch (err) {
+      next(err);
     }
   }
 
   // =========================
   // PERFIL
   // =========================
-  async getProfile(req, res) {
+  async getProfile(req, res, next) {
     try {
       const username = req.user.nombre_usuario;
       const user = await userService.getUserByUsername(username);
+
+      if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
 
       res.json({
         nombre_usuario: user.nombre_usuario,
@@ -43,30 +45,28 @@ class UserController {
         estilo: user.id_estilo_seleccionado
       });
     } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: 'Error al obtener perfil' });
+      next(err);
     }
   }
 
   // =========================
   // ACTUALIZAR PERFIL
   // =========================
-  async updateProfile(req, res) {
+  async updateProfile(req, res, next) {
     try {
       const username = req.user.nombre_usuario;
       const { correo } = req.body;
       await userService.setCorreoById(username, correo);
       res.json({ mensaje: 'Perfil actualizado' });
     } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: 'Error al actualizar perfil' });
+      next(err);
     }
   }
 
   // =========================
   // CAMBIAR CONTRASEÑA
   // =========================
-  async changePassword(req, res) {
+  async changePassword(req, res, next) {
     try {
       const username = req.user.nombre_usuario;
       const { contrasena_actual, nueva_contrasena } = req.body;
@@ -78,38 +78,35 @@ class UserController {
       await userService.updateUserPassword(username, hashed);
       res.json({ mensaje: 'Contraseña actualizada' });
     } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: 'Error al cambiar contraseña' });
+      next(err);
     }
   }
 
   // =========================
   // CAMBIAR AVATAR
   // =========================
-  async changeAvatar(req, res) {
+  async changeAvatar(req, res, next) {
     try {
       const username = req.user.nombre_usuario;
       const { avatar_id } = req.body;
       await userService.setIdAvatarSeleccionadoById(username, avatar_id);
       res.json({ mensaje: 'Avatar actualizado' });
     } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: 'Error al cambiar avatar' });
+      next(err);
     }
   }
 
   // =========================
   // CAMBIAR ESTILO
   // =========================
-  async changeStyle(req, res) {
+  async changeStyle(req, res, next) {
     try {
       const username = req.user.nombre_usuario;
       const { estilo_id } = req.body;
       await userService.setIdEstiloSeleccionadoById(username, estilo_id);
       res.json({ mensaje: 'Estilo actualizado' });
     } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: 'Error al cambiar estilo' });
+      next(err);
     }
   }
 

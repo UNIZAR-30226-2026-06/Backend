@@ -1,3 +1,4 @@
+// ================= AUTH ROUTES =================
 const express = require('express');
 const authMiddleware = require('../../middlewares/auth.middleware');
 const authController = require('./auth.controller');

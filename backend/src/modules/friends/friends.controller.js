@@ -1,99 +1,93 @@
-const friendsModel = require('./friends.model');
+// ================= FRIENDS CONTROLLER =================
+const friendsService = require('./friendsService');
 
-exports.enviarSolicitud = async (req, res) => {
+exports.enviarSolicitud = async (req, res, next) => {
     try {
-        const id_sender = req.user.id;
-        const id_receiver = parseInt(req.params.id);
+        const sender = req.user.nombre_usuario;
+        const receiver = req.params.id; // espera nombre_usuario del receptor
 
-        if (id_sender === id_receiver) {
+        if (sender === receiver) {
             return res.status(400).json({ message: "No puedes enviarte solicitud a ti mismo." });
         }
-        await friendsModel.enviar_Solicitud_Amistad(id_sender, id_receiver);
+
+        await friendsService.enviarSolicitud(sender, receiver);
         res.status(201).json({ message: "Solicitud enviada." });
-
-    } catch (error) {
+    } catch (err) {
         next(err);
     }
 };
 
-exports.cancelarSolicitud = async (req, res) => {
+exports.cancelarSolicitud = async (req, res, next) => {
     try {
-        const id_sender = req.user.id;
-        const id_receiver = parseInt(req.params.id);
-        await friendsModel.eliminar_solicitud_amistad(id_sender, id_receiver);
+        const sender = req.user.nombre_usuario;
+        const receiver = req.params.id;
+        await friendsService.cancelarSolicitud(sender, receiver);
         res.json({ message: "Solicitud cancelada." });
-
-    } catch (error) {
+    } catch (err) {
         next(err);
     }
 };
 
-exports.aceptarSolicitud = async (req, res) => {
+exports.aceptarSolicitud = async (req, res, next) => {
     try {
-        const id = req.user.id;
-        const id_nuevo_amigo = parseInt(req.params.id);
-        await friendsModel.aceptar_Solicitud_Amistad(id, id_nuevo_amigo);
+        const usuario = req.user.nombre_usuario;
+        const nuevoAmigo = req.params.id;
+        await friendsService.aceptarSolicitud(usuario, nuevoAmigo);
         res.json({ message: "Solicitud aceptada." });
-
-    } catch (error) {
+    } catch (err) {
         next(err);
     }
 };
 
-exports.rechazarSolicitud = async (req, res) => {
+exports.rechazarSolicitud = async (req, res, next) => {
     try {
-        const id = req.user.id;
-        const id_nuevo_amigo = parseInt(req.params.id);
-        await friendsModel.rechazar_Solicitud_Amistad(id, id_nuevo_amigo);
+        const usuario = req.user.nombre_usuario;
+        const nuevoAmigo = req.params.id;
+        await friendsService.rechazarSolicitud(usuario, nuevoAmigo);
         res.json({ message: "Solicitud rechazada." });
-
-    } catch (error) {
+    } catch (err) {
         next(err);
     }
 };
 
-exports.obtenerSolicitudesPendientes = async (req, res) => {
+exports.obtenerSolicitudesPendientes = async (req, res, next) => {
     try {
-        const id = req.user.id;
-        const solicitudes = await friendsModel.obtener_Solicitudes_Pendientes(id);
+        const usuario = req.user.nombre_usuario;
+        const solicitudes = await friendsService.obtenerSolicitudesPendientes(usuario);
         res.json(solicitudes);
-
-    } catch (error) {
+    } catch (err) {
         next(err);
     }
 };
 
-exports.obtenerAmigos = async (req, res) => {
+exports.obtenerAmigos = async (req, res, next) => {
     try {
-        const id = req.user.id;
-        const amigos = await friendsModel.obtener_amigos(id);
+        const usuario = req.user.nombre_usuario;
+        const amigos = await friendsService.obtenerAmigos(usuario);
         res.json(amigos);
-
-    } catch (error) {
+    } catch (err) {
         next(err);
     }
 };
 
-exports.eliminarAmigo = async (req, res) => {
+exports.eliminarAmigo = async (req, res, next) => {
     try {
-        const id = req.user.id;
-        const id_amigo = parseInt(req.params.id);
-        await friendsModel.eliminar_amigo(id, id_amigo);
+        const usuario = req.user.nombre_usuario;
+        const amigo = req.params.id;
+        await friendsService.eliminarAmigo(usuario, amigo);
         res.json({ message: "Amigo eliminado." });
-
-    } catch (error) {
+    } catch (err) {
         next(err);
     }
 };
 
-exports.buscarUsuarios = async (req, res) => {
+exports.buscarUsuarios = async (req, res, next) => {
     try {
         const query = req.params.query;
-        const id_actual = req.user.id;
-        const usuarios = await friendsModel.buscar_amigos(query, id_actual);
+        const usuarioActual = req.user.nombre_usuario;
+        const usuarios = await friendsService.buscarUsuarios(query, usuarioActual);
         res.json(usuarios);
-
-    } catch (error) {
+    } catch (err) {
         next(err);
     }
 };

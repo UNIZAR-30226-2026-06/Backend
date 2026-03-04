@@ -1,10 +1,11 @@
+// ================= CHAT ROUTES =================
 const express = require('express');
 const router = express.Router();
-const chatService = require('./chat.service');
+const chatController = require('./chat.controller');
 const authMiddleware = require('../../middlewares/auth.middleware');
 
 router.use(authMiddleware);
 
-router.post('/match', chatController, (req, res));
-   
+router.post('/match', chatController.sendMatchMessage);
+
 module.exports = router;

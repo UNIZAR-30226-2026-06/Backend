@@ -28,13 +28,13 @@ async function loginUser(nombre_usuario, password) {
 
 function generateToken(user) {
     return jwt.sign(
-        { nombre_usuario: user.nombre_usuario }, // <--- solo nombre_usuario
+        { nombre_usuario: user.nombre_usuario },
         process.env.JWT_SECRET, 
         { expiresIn: '1h' }
     );
 }
 
-// ================= MODIFICADO PARA OPCIÓN A =================
+// ================= USUARIO =================
 async function getUserByUsername(nombre_usuario) {
     const result = await db.query(
         'SELECT nombre_usuario, correo, id_avatar_seleccionado, id_estilo_seleccionado FROM notuno.USUARIO WHERE nombre_usuario = $1',
@@ -49,8 +49,7 @@ async function comprobarContraseñaActualCorrecta(nombre_usuario, contrasena_act
         [nombre_usuario]
     );
     if (result.rows.length > 0) {
-        const contrasenaAlmacenada = result.rows[0].contrasena;
-        return await comparePassword(contrasena_actual, contrasenaAlmacenada);
+        return await comparePassword(contrasena_actual, result.rows[0].contrasena);
     }
     return false;
 }
@@ -60,6 +59,6 @@ module.exports = {
     comparePassword,
     loginUser,
     generateToken,
-    getUserByUsername, // <--- usamos este
+    getUserByUsername,
     comprobarContraseñaActualCorrecta
 };

@@ -1,3 +1,4 @@
+// ================= ERROR HANDLER MIDDLEWARE =================
 const errorMiddleware = (err, req, res, next) => {
     console.error(err.stack);
 
