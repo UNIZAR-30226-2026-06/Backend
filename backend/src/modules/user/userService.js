@@ -13,19 +13,19 @@ class User {
     }
 }
 
-// Crear usuario
+// ================= CREAR USUARIO =================
 async function createUser(nombre_usuario, contrasena, correo) {
     const result = await db.query(
-        'INSERT INTO USUARIO (nombre_usuario, contrasena, correo) VALUES ($1, $2, $3)',
+        'INSERT INTO notuno.USUARIO (nombre_usuario, contrasena, correo) VALUES ($1, $2, $3)',
         [nombre_usuario, contrasena, correo]
     );
     return result.rowCount === 1;
 }
 
-// Obtener usuario por username
+// ================= OBTENER USUARIO =================
 async function getUserByUsername(nombre_usuario) {
     const result = await db.query(
-        'SELECT * FROM USUARIO WHERE nombre_usuario = $1',
+        'SELECT * FROM notuno.USUARIO WHERE nombre_usuario = $1',
         [nombre_usuario]
     );
     if (result.rows.length > 0) {
@@ -35,10 +35,9 @@ async function getUserByUsername(nombre_usuario) {
     return null;
 }
 
-// Obtener usuario por email
 async function getUserByEmail(correo) {
     const result = await db.query(
-        'SELECT * FROM USUARIO WHERE correo = $1',
+        'SELECT * FROM notuno.USUARIO WHERE correo = $1',
         [correo]
     );
     if (result.rows.length > 0) {
@@ -48,95 +47,89 @@ async function getUserByEmail(correo) {
     return null;
 }
 
-// Actualizar usuario
+// ================= ACTUALIZAR USUARIO =================
 async function updateUser(user) {
     await db.query(
-        `UPDATE USUARIO SET correo=$1, monedas=$2, total_ganadas=$3, total_partidas=$4,
+        `UPDATE notuno.USUARIO SET correo=$1, monedas=$2, total_ganadas=$3, total_partidas=$4,
          id_avatar_seleccionado=$5, id_estilo_seleccionado=$6 WHERE nombre_usuario=$7`,
         [user.correo, user.monedas, user.total_ganadas, user.total_partidas, user.id_avatar_seleccionado, user.id_estilo_seleccionado, user.nombre_usuario]
     );
 }
 
-// Actualizar contraseña
 async function updateUserPassword(nombre_usuario, newPassword) {
-    await db.query('UPDATE USUARIO SET contrasena=$1 WHERE nombre_usuario=$2', [newPassword, nombre_usuario]);
+    await db.query('UPDATE notuno.USUARIO SET contrasena=$1 WHERE nombre_usuario=$2', [newPassword, nombre_usuario]);
 }
 
-// Eliminar usuario
+// ================= ELIMINAR USUARIO =================
 async function deleteUser(nombre_usuario) {
-    await db.query('DELETE FROM USUARIO WHERE nombre_usuario=$1', [nombre_usuario]);
+    await db.query('DELETE FROM notuno.USUARIO WHERE nombre_usuario=$1', [nombre_usuario]);
 }
 
-// Métodos por campo
-async function setNombreUsuarioById(id, nombre_usuario) {
-    const result = await db.query('UPDATE USUARIO SET nombre_usuario=$1 WHERE nombre_usuario=$2', [nombre_usuario, id]);
-    return result.rowCount === 1;
-}
-
+// ================= MÉTODOS POR CAMPO =================
 async function setCorreoById(id, correo) {
-    const result = await db.query('UPDATE USUARIO SET correo=$1 WHERE nombre_usuario=$2', [correo, id]);
+    const result = await db.query('UPDATE notuno.USUARIO SET correo=$1 WHERE nombre_usuario=$2', [correo, id]);
     return result.rowCount === 1;
 }
 
 async function setIdAvatarSeleccionadoById(id, id_avatar_seleccionado) {
-    const result = await db.query('UPDATE USUARIO SET id_avatar_seleccionado=$1 WHERE nombre_usuario=$2', [id_avatar_seleccionado, id]);
+    const result = await db.query('UPDATE notuno.USUARIO SET id_avatar_seleccionado=$1 WHERE nombre_usuario=$2', [id_avatar_seleccionado, id]);
     return result.rowCount === 1;
 }
 
 async function setIdEstiloSeleccionadoById(id, id_estilo_seleccionado) {
-    const result = await db.query('UPDATE USUARIO SET id_estilo_seleccionado=$1 WHERE nombre_usuario=$2', [id_estilo_seleccionado, id]);
+    const result = await db.query('UPDATE notuno.USUARIO SET id_estilo_seleccionado=$1 WHERE nombre_usuario=$2', [id_estilo_seleccionado, id]);
     return result.rowCount === 1;
 }
 
-// Métodos de lectura por campo
+// ================= LECTURA POR CAMPO =================
 async function getNombreUsuarioById(id) {
-    const result = await db.query('SELECT nombre_usuario FROM USUARIO WHERE nombre_usuario=$1', [id]);
-    return result.rows[0].nombre_usuario;
+    const result = await db.query('SELECT nombre_usuario FROM notuno.USUARIO WHERE nombre_usuario=$1', [id]);
+    return result.rows[0]?.nombre_usuario;
 }
 
 async function getCorreoById(id) {
-    const result = await db.query('SELECT correo FROM USUARIO WHERE nombre_usuario=$1', [id]);
-    return result.rows[0].correo;
+    const result = await db.query('SELECT correo FROM notuno.USUARIO WHERE nombre_usuario=$1', [id]);
+    return result.rows[0]?.correo;
 }
 
 async function getIdAvatarSeleccionadoById(id) {
-    const result = await db.query('SELECT id_avatar_seleccionado FROM USUARIO WHERE nombre_usuario=$1', [id]);
-    return result.rows[0].id_avatar_seleccionado;
+    const result = await db.query('SELECT id_avatar_seleccionado FROM notuno.USUARIO WHERE nombre_usuario=$1', [id]);
+    return result.rows[0]?.id_avatar_seleccionado;
 }
 
 async function getIdEstiloSeleccionadoById(id) {
-    const result = await db.query('SELECT id_estilo_seleccionado FROM USUARIO WHERE nombre_usuario=$1', [id]);
-    return result.rows[0].id_estilo_seleccionado;
+    const result = await db.query('SELECT id_estilo_seleccionado FROM notuno.USUARIO WHERE nombre_usuario=$1', [id]);
+    return result.rows[0]?.id_estilo_seleccionado;
 }
 
 async function getMonedasById(id) {
-    const result = await db.query('SELECT monedas FROM USUARIO WHERE nombre_usuario=$1', [id]);
-    return result.rows[0].monedas;
+    const result = await db.query('SELECT monedas FROM notuno.USUARIO WHERE nombre_usuario=$1', [id]);
+    return result.rows[0]?.monedas;
 }
 
 async function getTotalGanadasById(id) {
-    const result = await db.query('SELECT total_ganadas FROM USUARIO WHERE nombre_usuario=$1', [id]);
-    return result.rows[0].total_ganadas;
+    const result = await db.query('SELECT total_ganadas FROM notuno.USUARIO WHERE nombre_usuario=$1', [id]);
+    return result.rows[0]?.total_ganadas;
 }
 
 async function getTotalPartidasById(id) {
-    const result = await db.query('SELECT total_partidas FROM USUARIO WHERE nombre_usuario=$1', [id]);
-    return result.rows[0].total_partidas;
+    const result = await db.query('SELECT total_partidas FROM notuno.USUARIO WHERE nombre_usuario=$1', [id]);
+    return result.rows[0]?.total_partidas;
 }
 
 async function anadirPartidaGanadaById(id) {
-    const result = await db.query('UPDATE USUARIO SET total_ganadas = total_ganadas + 1 WHERE nombre_usuario=$1', [id]);
+    const result = await db.query('UPDATE notuno.USUARIO SET total_ganadas = total_ganadas + 1 WHERE nombre_usuario=$1', [id]);
     return result.rowCount === 1;
 }
 
 async function anadirPartidaJugadaById(id) {
-    const result = await db.query('UPDATE USUARIO SET total_partidas = total_partidas + 1 WHERE nombre_usuario=$1', [id]);
+    const result = await db.query('UPDATE notuno.USUARIO SET total_partidas = total_partidas + 1 WHERE nombre_usuario=$1', [id]);
     return result.rowCount === 1;
 }
 
 async function existeUsuario(nombre_usuario) {
-    const result = await db.query('SELECT COUNT(*) AS count FROM USUARIO WHERE nombre_usuario=$1', [nombre_usuario]);
-    return result.rows[0].count > 0;
+    const result = await db.query('SELECT COUNT(*) AS count FROM notuno.USUARIO WHERE nombre_usuario=$1', [nombre_usuario]);
+    return result.rows[0]?.count > 0;
 }
 
 module.exports = {
@@ -147,7 +140,6 @@ module.exports = {
     updateUser,
     updateUserPassword,
     deleteUser,
-    setNombreUsuarioById,
     setCorreoById,
     setIdAvatarSeleccionadoById,
     setIdEstiloSeleccionadoById,

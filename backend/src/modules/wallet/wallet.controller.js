@@ -1,5 +1,5 @@
 // ================= WALLET CONTROLLER =================
-const walletService = require('./wallet.service');
+const walletService = require('./walletService');
 
 exports.getBalance = async (req, res, next) => {
     try {

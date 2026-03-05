@@ -50,4 +50,7 @@ app.use('/auth', authRoutes);
 const storeRoutes = require('./modules/store/store.routes.js');
 app.use('/store', storeRoutes);
 
+const walletRoutes = require('./modules/wallet/wallet.routes');
+app.use('/wallet', walletRoutes);
+
 module.exports = app;
