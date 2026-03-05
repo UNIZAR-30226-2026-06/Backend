@@ -1,5 +1,6 @@
 // ================= AUTH CONTROLLER =================
 const authService = require('./authService');
+console.log("AUTH SERVICE CARGADO:", authService)
 const userService = require('../user/userService'); // <--- corregido
 const db = require('../../config/db');
 
