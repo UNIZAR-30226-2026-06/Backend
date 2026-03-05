@@ -1,5 +1,5 @@
 // ================= CHAT CONTROLLER =================
-const chatService = require('./chat.service');
+const chatService = require('./chatService');
 
 exports.sendMatchMessage = (req, res) => {
     try {

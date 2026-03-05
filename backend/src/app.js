@@ -53,4 +53,13 @@ app.use('/store', storeRoutes);
 const walletRoutes = require('./modules/wallet/wallet.routes');
 app.use('/wallet', walletRoutes);
 
+const friendsRoutes = require('./modules/friends/friends.routes');
+app.use('/friends', friendsRoutes);
+
+const chatRoutes = require('./modules/chat/chat.routes');
+app.use('/chat', chatRoutes);
+
+const gameRoutes = require('./modules/game/game.routes');
+app.use('/partidas', gameRoutes);
+
 module.exports = app;

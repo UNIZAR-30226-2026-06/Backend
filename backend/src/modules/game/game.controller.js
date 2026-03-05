@@ -1,4 +1,4 @@
-const gameService = require('./game.service');
+const gameService = require('./gameService');
 
 async function crearPartida(req, res, next) {
     try {
