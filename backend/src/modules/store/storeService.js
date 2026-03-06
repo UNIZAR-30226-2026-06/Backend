@@ -11,13 +11,30 @@ async function obtener_todos_estilos() {
   return result.rows;
 }
 
-async function obtener_avatar_por_id(id_avatar) {
-  const result = await db.query('SELECT * FROM notuno.AVATAR WHERE id_avatar = $1', [id_avatar]);
+async function obtener_avatar_por_id(id_avatar, client = db) {
+  const result = await client.query(`
+    SELECT 
+      id_avatar,
+      muestoavatar AS "muestroAvatar",
+      precioavatar AS "precioAvatar"
+    FROM notuno.AVATAR
+    WHERE id_avatar = $1
+  `, [id_avatar]);
   return result.rows[0];
 }
 
-async function obtener_estilo_por_id(id_estilo) {
-  const result = await db.query('SELECT * FROM notuno.ESTILO WHERE id_estilo = $1', [id_estilo]);
+async function obtener_estilo_por_id(id_estilo, client = db) {
+  const result = await client.query(`
+    SELECT
+      id_estilo,
+      fondo,
+      reverso,
+      muestroestilo AS "muestroEstilo",
+      precioestilo AS "precioEstilo"
+    FROM notuno.ESTILO
+    WHERE id_estilo = $1
+  `, [id_estilo]);
+
   return result.rows[0];
 }
 
@@ -41,57 +58,147 @@ async function obtener_avatares_usuario(nombre_usuario) {
   return result.rows;
 }
 
-async function estilo_ya_comprado(id_estilo, nombre_usuario) {
-  const result = await db.query('SELECT COUNT(*) AS total FROM notuno.ESTILOS_COMPRADOS WHERE nombre_usuario = $1 AND id_estilo = $2', [nombre_usuario, id_estilo]);
-  return parseInt(result.rows[0].total) > 0;
+async function avatar_ya_comprado(id_avatar, nombre_usuario, client) {
+  const result = await client.query(
+    'SELECT COUNT(*) AS total FROM notuno.AVATARES_COMPRADOS WHERE nombre_usuario = $1 AND id_avatar = $2',
+    [nombre_usuario, id_avatar]
+  );
+  return parseInt(result.rows[0].total, 10) > 0;
 }
 
-async function avatar_ya_comprado(id_avatar, nombre_usuario) {
-  const result = await db.query('SELECT COUNT(*) AS total FROM notuno.AVATARES_COMPRADOS WHERE nombre_usuario = $1 AND id_avatar = $2', [nombre_usuario, id_avatar]);
-  return parseInt(result.rows[0].total) > 0;
+async function estilo_ya_comprado(id_estilo, nombre_usuario, client) {
+  const result = await client.query(
+    'SELECT COUNT(*) AS total FROM notuno.ESTILOS_COMPRADOS WHERE nombre_usuario = $1 AND id_estilo = $2',
+    [nombre_usuario, id_estilo]
+  );
+  return parseInt(result.rows[0].total, 10) > 0;
 }
 
-async function comprar_avatar(id_avatar, nombre_usuario) {
-  const avatar = await obtener_avatar_por_id(id_avatar);
-  if (!avatar) throw new Error("Avatar no encontrado");
+async function comprarAvatar(id_avatar, nombre_usuario) {
+  const client = await db.connect();
 
-  const monedas_user_actual = await userService.getMonedasById(nombre_usuario);
-  if (monedas_user_actual < avatar.precioAvatar) throw new Error("No tienes suficientes monedas para comprar este avatar");
+  try {
+    await client.query('BEGIN');
 
-  await userService.setMonedasById(nombre_usuario, monedas_user_actual - avatar.precioAvatar);
-  const result = await db.query('INSERT INTO notuno.AVATARES_COMPRADOS (nombre_usuario, id_avatar) VALUES ($1, $2)', [nombre_usuario, id_avatar]);
-  return result.rowCount === 1;
+    const avatar = await obtener_avatar_por_id(id_avatar, client);
+    if (!avatar) throw new Error('Avatar no encontrado');
+
+    const yaComprado = await avatar_ya_comprado(id_avatar, nombre_usuario, client);
+    if (yaComprado) throw new Error('Ya has comprado este avatar');
+
+    const userRes = await client.query(
+      'SELECT monedas FROM notuno.USUARIO WHERE nombre_usuario = $1',
+      [nombre_usuario]
+    );
+    const monedas = userRes.rows[0].monedas;
+
+    if (monedas < avatar.precioAvatar) throw new Error('No tienes suficientes monedas');
+
+    await client.query(
+      'UPDATE notuno.USUARIO SET monedas = $1 WHERE nombre_usuario = $2',
+      [monedas - avatar.precioAvatar, nombre_usuario]
+    );
+
+    const insertRes = await client.query(
+      'INSERT INTO notuno.AVATARES_COMPRADOS (nombre_usuario, id_avatar) VALUES ($1, $2)',
+      [nombre_usuario, id_avatar]
+    );
+
+    await client.query('COMMIT');
+    return insertRes.rowCount === 1;
+
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
 }
 
-async function comprar_estilo(id_estilo, nombre_usuario) {
-  const estilo = await obtener_estilo_por_id(id_estilo);
-  if (!estilo) throw new Error("Estilo no encontrado");
+async function comprarEstilo(id_estilo, nombre_usuario) {
+  const client = await db.connect();
 
-  const monedas_user_actual = await userService.getMonedasById(nombre_usuario);
-  if (monedas_user_actual < estilo.precioEstilo) throw new Error("No tienes suficientes monedas para comprar este estilo");
+  try {
+    await client.query('BEGIN');
 
-  await userService.setMonedasById(nombre_usuario, monedas_user_actual - estilo.precioEstilo);
-  const result = await db.query('INSERT INTO notuno.ESTILOS_COMPRADOS (nombre_usuario, id_estilo) VALUES ($1, $2)', [nombre_usuario, id_estilo]);
+    const estilo = await obtener_estilo_por_id(id_estilo, client);
+    if (!estilo) throw new Error('Estilo no encontrado');
+
+    const yaComprado = await estilo_ya_comprado(id_estilo, nombre_usuario, client);
+    if (yaComprado) throw new Error('Ya has comprado este estilo');
+
+    const userRes = await client.query(
+      'SELECT monedas FROM notuno.USUARIO WHERE nombre_usuario = $1',
+      [nombre_usuario]
+    );
+    const monedas = userRes.rows[0].monedas;
+
+    if (monedas < estilo.precioEstilo) throw new Error('No tienes suficientes monedas');
+
+    await client.query(
+      'UPDATE notuno.USUARIO SET monedas = $1 WHERE nombre_usuario = $2',
+      [monedas - estilo.precioEstilo, nombre_usuario]
+    );
+
+    const insertRes = await client.query(
+      'INSERT INTO notuno.ESTILOS_COMPRADOS (nombre_usuario, id_estilo) VALUES ($1, $2)',
+      [nombre_usuario, id_estilo]
+    );
+
+    await client.query('COMMIT');
+    return insertRes.rowCount === 1;
+
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+async function modificar_visibilidad_avatar_tienda(id_avatar, visible) {
+  const result = await db.query(
+    'UPDATE notuno.AVATAR SET muestoavatar = $1 WHERE id_avatar = $2',
+    [visible, id_avatar]
+  );
   return result.rowCount === 1;
 }
 
 async function modificar_visibilidad_estilo_tienda(id_estilo, visible) {
-  const result = await db.query('UPDATE notuno.ESTILO SET muestroEstilo = $1 WHERE id_estilo = $2', [visible, id_estilo]);
+  const result = await db.query(
+    'UPDATE notuno.ESTILO SET muestroestilo = $1 WHERE id_estilo = $2',
+    [visible, id_estilo]
+  );
   return result.rowCount === 1;
 }
 
-async function modificar_visibilidad_avatar_tienda(id_avatar, visible) {
-  const result = await db.query('UPDATE notuno.AVATAR SET muestoAvatar = $1 WHERE id_avatar = $2', [visible, id_avatar]);
-  return result.rowCount === 1;
-}
+async function obtenerAvataresTienda() {
+  const result = await db.query(`
+    SELECT
+      id_avatar,
+      nombre AS "nombreAvatar",
+      imagen AS "imagenAvatar",
+      muestoavatar AS "muestroAvatar",
+      precioavatar AS "precioAvatar"
+    FROM notuno.AVATAR
+    WHERE muestoavatar = $1
+  `, [true]);
 
-async function obtener_avatares_tienda() {
-  const result = await db.query('SELECT * FROM notuno.AVATAR WHERE muestoAvatar = $1', [true]);
   return result.rows;
 }
 
-async function obtener_estilos_tienda() {
-  const result = await db.query('SELECT * FROM notuno.ESTILO WHERE muestroEstilo = $1', [true]);
+async function obtenerEstilosTienda() {
+  const result = await db.query(`
+    SELECT
+      id_estilo,
+      fondo,
+      reverso,
+      muestroestilo AS "muestroEstilo",
+      precioestilo AS "precioEstilo"
+    FROM notuno.ESTILO
+    WHERE muestroestilo = $1
+  `, [true]);
+
   return result.rows;
 }
 
@@ -104,10 +211,10 @@ module.exports = {
   obtener_avatares_usuario,
   estilo_ya_comprado,
   avatar_ya_comprado,
-  comprar_avatar,
-  comprar_estilo,
+  comprarAvatar,
+  comprarEstilo,
   modificar_visibilidad_avatar_tienda,
   modificar_visibilidad_estilo_tienda,
-  obtener_avatares_tienda,
-  obtener_estilos_tienda
+  obtenerAvataresTienda,
+  obtenerEstilosTienda
 };
