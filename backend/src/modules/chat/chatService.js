@@ -1,5 +1,6 @@
+// ================= CHAT SERVICE =================
 class ChatService {
-  
+
   processMessage(nombre_usuario, mensaje) {
     if (!mensaje || mensaje.trim() === '') {
       throw new Error('Mensaje vacío');
@@ -15,7 +16,6 @@ class ChatService {
       texto = texto.replace(regex, '***');
     });
 
-    // Devolver objeto listo para frontend
     return {
       remitente: nombre_usuario,
       texto,

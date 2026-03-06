@@ -57,7 +57,7 @@ const friendsRoutes = require('./modules/friends/friends.routes');
 app.use('/friends', friendsRoutes);
 
 const chatRoutes = require('./modules/chat/chat.routes');
-app.use('/chat', chatRoutes);
+app.use('/api/v1/chat', chatRoutes);
 
 const gameRoutes = require('./modules/game/game.routes');
 app.use('/partidas', gameRoutes);
