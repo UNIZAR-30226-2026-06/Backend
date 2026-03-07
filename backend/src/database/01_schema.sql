@@ -79,7 +79,7 @@ CREATE TABLE ROL(
 -- =========================
 -- PARTIDA
 -- =========================
-CREATE TYPE estado_partida AS ENUM (
+CREATE TYPE estado_partida_new AS ENUM (
   'esperando_jugadores',
   'en_curso',
   'pausada',

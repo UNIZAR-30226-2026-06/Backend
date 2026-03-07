@@ -1,15 +1,25 @@
+// src/core/game-engine/card.rules.js
 class CardRules {
     constructor(state, turnManager, gameLogic) {
         this.state = state;
         this.turnManager = turnManager;
         this.gameLogic = gameLogic;
     }
-    canplay(card){
+
+    canPlay(card) {
         const currentCard = this.state.getCurrentCard();
+        const currentPlayer = this.state.getCurrentPlayer();
+
+        // filtrar si hay restricciones temporales
+        const filterFn = this.turnManager.getFilter(currentPlayer.id);
+
+        if (filterFn && !filterFn(card.value)) return false;
+
         return !currentCard || card.color === currentCard.color || card.value === currentCard.value || card.color === 'black';
     }
-    applyEffect(card, playerID){
-        switch(card.value){
+
+    applyEffect(card, playerID) {
+        switch (card.value) {
             case 'reverse':
                 this.turnManager.reverse();
                 break;
@@ -24,24 +34,27 @@ class CardRules {
                 this.applyDraw(playerID, 4);
                 this.turnManager.skip();
                 break;
+            case 'extraTurn':
+                this.turnManager.stay();
+                break;
+            case 'playOdd':
+                this.turnManager.setFilter(playerID, cardValue => parseInt(cardValue) % 2 === 1);
+                break;
+            case 'playEven':
+                this.turnManager.setFilter(playerID, cardValue => parseInt(cardValue) % 2 === 0);
+                break;
             default:
-                // no effect
                 break;
         }
-            }   
-    
-    applyDraw(playerID, count){
-        const players = this.state.players;
-        const currentIndex = this.state.currentTurn;
-        const dir = this.state.getDirection();
-        const total = this.state.getPlayersCount();
-        const targetIndex = (currentIndex + dir + total) % total;
-        const targetPlayer = players[targetIndex];
+    }
 
-        for(let i = 0; i < count; i++){
+    applyDraw(playerID, count) {
+        const targetPlayer = this.turnManager.getNextPlayer();
+        for (let i = 0; i < count; i++) {
             const card = this.gameLogic.drawCard();
             this.state.addCardToPlayer(targetPlayer.id, card);
         }
     }
 }
+
 module.exports = CardRules;

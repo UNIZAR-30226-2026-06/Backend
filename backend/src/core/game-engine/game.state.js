@@ -35,6 +35,21 @@ class GameState {
     return this.players.find(p => p.id === id);
   }
 
+  getPlayerByIndex(index) {
+    const total = this.players.length;
+    return this.players[(index + total) % total];
+  }
+
+  getCurrentCard() {
+    return this.currentCard;
+  }
+
+  getPlayerHand(playerID) {
+    const player = this.getPlayerById(playerID);
+    if (!player) throw new Error('Jugador no encontrado para getPlayerHand');
+    return player.hand;
+  }
+
   //  Operaciones simples
 
   setStatus(status) {

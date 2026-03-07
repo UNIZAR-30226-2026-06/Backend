@@ -1,6 +1,8 @@
 // src/core/game-engine/game.logic.js
-
+const DeckFactory = require('./deck.factory');
+const TurnManager = require('./turn.manager');
 const CardRules = require('./card.rules');
+
 class GameLogic {
   constructor(gameState) {
     this.state = gameState;
@@ -21,14 +23,14 @@ class GameLogic {
     if (this.state.drawPile.length > 0) return;
 
     if (this.state.discardPile.length <= 1) {
-      throw new Error('No quedan cartas para robar');
+        throw new Error('No quedan cartas para robar');
     }
 
-    const currentCard = this.state.removeTopDiscard();
+    const currentCard = this.state.removeTopDiscard(); // la carta que queda visible
     const newPile = this.shuffle(this.state.discardPile);
 
     this.state.setDrawPile(newPile);
-    this.state.setDiscardPile([currentCard]);
+    this.state.setDiscardPile([currentCard]); // la carta actual vuelve al descarte
   }
 
   drawCard() {
@@ -79,22 +81,24 @@ class GameLogic {
   }
 
   playCard(playerId, card) {
-    if (this.state.status !== 'playing')
-      throw new Error('La partida no está en juego');
+      if (this.state.status !== 'playing')
+          throw new Error('La partida no está en juego');
 
-    const currentPlayer = this.turnManager.getCurrentPlayer();
+      const currentPlayer = this.turnManager.getCurrentPlayer();
 
-    if (currentPlayer.id !== playerId)
-      throw new Error('No es el turno del jugador');
+      if (currentPlayer.id !== playerId)
+          throw new Error('No es el turno del jugador');
 
-    if(!this.cardRules.canPlay(card))
-      throw new Error('Carta no válida');
+      if(!this.cardRules.canPlay(card))
+          throw new Error('Carta no válida');
 
-    this.state.removeCardFromPlayer(playerId, card);
-    this.state.setCurrentCard(card);
-    this.state.addToDiscardPile(card);
+      this.state.removeCardFromPlayer(playerId, card);
+      this.state.setCurrentCard(card);
+      this.state.addToDiscardPile(card);
 
-    this.turnManager.next();
+      this.cardRules.applyEffect(card, playerId);
+
+      this.turnManager.next();
   }
 
   pauseGame() {
@@ -105,7 +109,5 @@ class GameLogic {
     this.state.setStatus('finished');
   }
 }
-
-const TurnManager = require('./turn.manager');
 
 module.exports = GameLogic;

@@ -18,26 +18,24 @@ class DeckFactory {
       deck = deck.concat(this.createRoleCards());
     }
 
-    return deck;
+    // Mezclar antes de devolver
+    return this.shuffle(deck);
   }
 
   static createBaseCards() {
     const deck = [];
 
-    //Mete los números
     this.COLORS.forEach(color => {
-        this.NUMBERS.forEach(number => {
-
-        for (let i = 0; i < NUM_CARTAS_CADA_TIPO; i++) {
-            deck.push({
-            id: `${color}-${number}-${i}`, //id único
+      this.NUMBERS.forEach(number => {
+        for (let i = 0; i < this.NUM_CARTAS_CADA_TIPO; i++) {
+          deck.push({
+            id: `${color}-${number}-${i}`, // ID único
             value: number,
             color,
             type: "normal"
-            });
+          });
         }
-
-        });
+      });
     });
 
     return deck;
@@ -48,12 +46,14 @@ class DeckFactory {
 
     this.COLORS.forEach(color => {
       this.SPECIALS.forEach(special => {
-        deck.push({
-          id: `${color}-${special}`,
-          value: special,
-          color,
-          type: "normal"
-        });
+        for (let i = 0; i < this.NUM_CARTAS_CADA_TIPO; i++) {
+          deck.push({
+            id: `${color}-${special}-${i}`, // ID único
+            value: special,
+            color,
+            type: "special"
+          });
+        }
       });
     });
 
@@ -61,8 +61,16 @@ class DeckFactory {
   }
 
   static createRoleCards() {
-    // De momento vacío si no están definidas
+    // Por ahora vacío; implementar según roles de juego
     return [];
+  }
+
+  static shuffle(deck) {
+    for (let i = deck.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+    return deck;
   }
 }
 
