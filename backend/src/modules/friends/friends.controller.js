@@ -30,9 +30,11 @@ exports.cancelarSolicitud = async (req, res, next) => {
 
 exports.aceptarSolicitud = async (req, res, next) => {
     try {
-        const usuario = req.user.nombre_usuario;
+        const usuarioAcepta = req.user.nombre_usuario;
         const nuevoAmigo = req.params.id;
-        await friendsService.aceptarSolicitud(usuario, nuevoAmigo);
+        await friendsService.aceptarSolicitud(usuarioAcepta, nuevoAmigo);
+        
+        
         res.json({ message: "Solicitud aceptada." });
     } catch (err) {
         next(err);
@@ -54,6 +56,16 @@ exports.obtenerSolicitudesPendientes = async (req, res, next) => {
     try {
         const usuario = req.user.nombre_usuario;
         const solicitudes = await friendsService.obtenerSolicitudesPendientes(usuario);
+        res.json(solicitudes);
+    } catch (err) {
+        next(err);
+    }
+};
+
+exports.obtenerSolicitudesEnviadas = async (req, res, next) => {
+    try {
+        const usuario = req.user.nombre_usuario;
+        const solicitudes = await friendsService.obtenerSolicitudesEnviadas(usuario);
         res.json(solicitudes);
     } catch (err) {
         next(err);
