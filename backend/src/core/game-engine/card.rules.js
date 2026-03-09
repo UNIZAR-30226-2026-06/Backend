@@ -19,6 +19,7 @@ class CardRules {
     }
 
     applyEffect(card, playerID) {
+        let nextPlayer;
         switch (card.value) {
             case 'reverse':
                 this.turnManager.reverse();
@@ -37,13 +38,22 @@ class CardRules {
             case 'extraTurn':
                 this.turnManager.stay();
                 break;
-            case 'playOdd':
-                this.turnManager.setFilter(playerID, cardValue => parseInt(cardValue) % 2 === 1);
+            
+            case 'playOdd': 
+                nextPlayer = this.turnManager.getNextPlayer();
+                this.turnManager.setFilter(
+                    nextPlayer.id,
+                    cardValue => parseInt(cardValue) % 2 === 1
+                );
                 break;
-            case 'playEven':
-                this.turnManager.setFilter(playerID, cardValue => parseInt(cardValue) % 2 === 0);
+            case 'playEven': 
+                nextPlayer = this.turnManager.getNextPlayer();
+                this.turnManager.setFilter(
+                    nextPlayer.id,
+                    cardValue => parseInt(cardValue) % 2 === 0
+                );
                 break;
-            default:
+                default:
                 break;
         }
     }

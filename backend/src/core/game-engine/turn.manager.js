@@ -61,6 +61,15 @@ class TurnManager {
     getFilter(playerId) {
         return this.turnFilters[playerId] || null;
     }
+
+    getNextPlayer() {
+        const current = this.state.getCurrentTurnIndex();
+        const dir = this.state.getDirection();
+        const total = this.state.getPlayersCount();
+
+        const nextIndex = (current + dir + total) % total;
+        return this.state.getPlayers()[nextIndex];
+    }
 }
 
 module.exports = TurnManager;
