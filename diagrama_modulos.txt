@@ -1,0 +1,45 @@
+backend/
+│
+├── src/
+│   ├── core/                      
+│   │   ├── game-engine/
+│   │   │   ├── game.state.js        # Estado real de la partida
+│   │   │   ├── turn.manager.js      # Controla turnos, timeout, locks
+│   │   │   ├── rule.engine.js       # Lógica de cartas y efectos
+│   │   │   ├── bot.manager.js       # IA de bots integrada con turnos
+│   │   │   ├── deck.factory.js      # Crea y reparte mazos
+│   │   │   └── card.validator.js    # Valida jugadas enviadas por clientes
+│   │   └── …
+│   │
+│   ├── modules/
+│   │   ├── game/
+│   │   │   ├── game.controller.js
+│   │   │   ├── game.service.js
+│   │   │   └── game.routes.js
+│   │   ├── user/
+│   │   │   ├── user.controller.js
+│   │   │   ├── user.service.js
+│   │   │   └── user.routes.js
+│   │   ├── auth/ …
+│   │   ├── friends/ …
+│   │   ├── wallet/ …
+│   │   └── chat/ …
+│   │
+│   ├── realtime/
+│   │   ├── socket.server.js
+│   │   ├── rooms.manager.js         # Maneja estados, locks, reconexiones
+│   │   └── event.queue.js           # Serializa acciones para consistencia
+│   │
+│   ├── repositories/
+│   │   ├── users.repo.js
+│   │   ├── partidas.repo.js
+│   │   └── jugadas.repo.js
+│   │
+│   ├── shared/ …
+│   ├── config/ …
+│   ├── database/ …
+│   └── middlewares/ …
+│
+├── init-db.js
+├── .env
+└── package.json
