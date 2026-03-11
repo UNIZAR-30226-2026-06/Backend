@@ -4,12 +4,12 @@ backend/
 │   │
 │   ├── core/                      # Lógica central del juego (NO HTTP)
 │   │   ├── game-engine/
-│   │   │   ├── game.state.js      # Medio hecho
-│   │   │   ├── game.logic.js      # Medio hecho
+│   │   │   ├── game.state.js      # Medio Hecho
+│   │   │   ├── game.logic.js      # Medio Hecho
 │   │   │   ├── turn.manager.js    # Medio Hecho
 │   │   │   ├── card.rules.js      # Medio Hecho
-│   │   │   ├── deck.factory.js      # Medio Hecho
-│   │   │   └── bot.logic.js       #
+│   │   │   ├── deck.factory.js    # Medio Hecho
+│   │   │   └── bot.logic.js       # Medio Hecho 
 │   │   │
 │   │   └── validators/
 │   │
@@ -17,7 +17,7 @@ backend/
 │   │   ├── game/
 │   │   │   ├── game.routes.js      # Medio Hecho
 │   │   │   ├── game.controller.js  # Medio Hecho
-│   │   │   └── game.service.js     # Medio Hecho
+│   │   │   └── game.service.js     # Medio Hecho (Faltan las funciones de la lógica)
 │   │   │
 │   │   ├── store/
 │   │   │   ├── store.routes.js     # Hecho
