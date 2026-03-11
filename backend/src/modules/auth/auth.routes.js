@@ -29,17 +29,33 @@ const router = express.Router();
  *               correo:
  *                 type: string
  *                 format: email
- *               contrasena:
+ *               password:
  *                 type: string
  *             required:
  *               - nombre_usuario
  *               - correo
- *               - contrasena
+ *               - password
  *     responses:
  *       201:
  *         description: Usuario registrado correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     nombre_usuario:
+ *                       type: string
+ *                     correo:
+ *                       type: string
  *       400:
- *         description: Datos inválidos o usuario ya existente
+ *         description: Todos los campos son obligatorios
+ *       500:
+ *         description: Error interno del servidor
  */
 router.post('/register', authController.register);
 
@@ -56,14 +72,13 @@ router.post('/register', authController.register);
  *           schema:
  *             type: object
  *             properties:
- *               correo:
+ *               nombre_usuario:
  *                 type: string
- *                 format: email
- *               contrasena:
+ *               password:
  *                 type: string
  *             required:
- *               - correo
- *               - contrasena
+ *               - nombre_usuario
+ *               - password
  *     responses:
  *       200:
  *         description: Login exitoso
@@ -72,14 +87,48 @@ router.post('/register', authController.register);
  *             schema:
  *               type: object
  *               properties:
- *                 access_token:
+ *                 token:
  *                   type: string
- *                 refresh_token:
- *                   type: string
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     nombre_usuario:
+ *                       type: string
  *       401:
- *         description: Credenciales incorrectas
+ *         description: Credenciales inválidas
+ *       500:
+ *         description: Error interno del servidor
  */
 router.post('/login', authController.login);
+
+/**
+ * @swagger
+ * /auth/me:
+ *   get:
+ *     summary: Obtener datos del usuario autenticado
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Usuario encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 nombre_usuario:
+ *                   type: string
+ *                 correo:
+ *                   type: string
+ *       404:
+ *         description: Usuario no encontrado
+ *       401:
+ *         description: No autorizado
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.get('/me', authMiddleware, authController.me);
 
 /**
  * @swagger
@@ -98,9 +147,16 @@ router.post('/login', authController.login);
  *                 type: string
  *     responses:
  *       200:
- *         description: Nuevo access token generado
- *       401:
- *         description: Refresh token inválido o expirado
+ *         description: Pendiente implementar refresh token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
  */
 router.post('/refresh', authController.refresh);
 
@@ -114,9 +170,16 @@ router.post('/refresh', authController.refresh);
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Sesión cerrada correctamente
- *       401:
- *         description: No autorizado
+ *         description: Pendiente implementar logout
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
  */
 router.post('/logout', authMiddleware, authController.logout);
 
