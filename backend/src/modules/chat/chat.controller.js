@@ -14,7 +14,6 @@ exports.sendMatchMessage = async (req, res) => {
             return res.status(400).json({ message: 'Error al enviar el mensaje' });
         }
 
-        // Se asume que processMessage devuelve algún objeto con info del mensaje
         const mensajeProcesado = await chatService.processMessage(nombre_usuario, partida_id, mensaje);
 
         return res.status(200).json({ message: 'Mensaje enviado correctamente', data: mensajeProcesado });

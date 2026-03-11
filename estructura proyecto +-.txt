@@ -15,35 +15,35 @@ backend/
 │   │
 │   ├── modules/
 │   │   ├── game/
-│   │   │   ├── game.routes.js
-│   │   │   ├── game.controller.js
-│   │   │   └── game.service.js
+│   │   │   ├── game.routes.js      # Medio Hecho
+│   │   │   ├── game.controller.js  # Medio Hecho
+│   │   │   └── game.service.js     # Medio Hecho
 │   │   │
 │   │   ├── store/
-│   │   │   ├── store.routes.js
-│   │   │   ├── store.controller.js
-│   │   │   └── store.service.js
+│   │   │   ├── store.routes.js     # Hecho
+│   │   │   ├── store.controller.js # Hecho
+│   │   │   └── store.service.js     # Hecho
 │   │   │
 │   │   ├── user/
-│   │   │   ├── user.routes.js
-│   │   │   ├── user.controller.js
-│   │   │   └── user.service.js
+│   │   │   ├── user.routes.js     # Hecho
+│   │   │   ├── user.controller.js # Hecho
+│   │   │   └── user.service.js    # Hecho
 │   │   ├── auth/
-│   │   │   ├── auth.routes.js
-│   │   │   ├── auth.controller.js
-│   │   │   └── auth.service.js
+│   │   │   ├── auth.routes.js     # Hecho
+│   │   │   ├── auth.controller.js # Hecho
+│   │   │   └── auth.service.js    # Hecho
 │   │   ├── friends/
-│   │   │   ├── friends.routes.js
-│   │   │   ├── friends.controller.js
-│   │   │   └── friends.service.js
+│   │   │   ├── friends.routes.js  # Hecho
+│   │   │   ├── friends.controller.js  # Hecho
+│   │   │   └── friends.service.js     # Hecho
 │   │   ├── wallet/                # monedas
-│   │   │   ├── wallet.routes.js
-│   │   │   ├── wallet.controller.js
-│   │   │   └── wallet.service.js
+│   │   │   ├── wallet.routes.js      # Hecho
+│   │   │   ├── wallet.controller.js  # Hecho
+│   │   │   └── wallet.service.js     # Hecho
 │   │   └── chat/
-│   │       ├── chat.routes.js
-│   │       ├── chat.controller.js
-│   │       └── chat.service.js
+│   │       ├── chat.routes.js     # Hecho
+│   │       ├── chat.controller.js # Hecho
+│   │       └── chat.service.js    # Hecho
 │   │
 │   ├── realtime/                  # WebSockets
 │   │   ├── socket.server.js
@@ -56,19 +56,19 @@ backend/
 │   │   └── utils/
 │   │
 │   ├── config/
-│   │   ├── db.js
-│   │   └── env.js
+│   │   ├── db.js       # Hecho
+│   │   └── env.js      # Hecho
 │   │
 │   ├── database/
 │   │   ├── 01_schema.js # crear
 │   │   └── 02_seed.js # poblar
 │   │    
 │   ├── middlewares/
-│   │   ├── auth.middleware
-│   │   └── error.middleware
+│   │   ├── auth.middleware      # Hecho
+│   │   └── error.middleware     # Hecho
 |   |
-│   ├── app.js
-│   └── server.js
+│   ├── app.js                   # Hecho
+│   └── server.js                # Hecho
 |
 │
 ├── init-db.js
