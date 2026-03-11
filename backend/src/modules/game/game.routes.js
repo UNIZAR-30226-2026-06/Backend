@@ -47,4 +47,24 @@ const authMiddleware = require('../../middlewares/auth.middleware');
  */
 router.post('/', authMiddleware, gameController.crearPartida);
 
+/**
+ * Unirse a una partida
+ */
+router.post('/:gameId/join', authMiddleware, gameController.unirsePartida);
+
+/**
+ * Empezar partida
+ */
+router.post('/:gameId/start', authMiddleware, gameController.empezarPartida);
+
+/**
+ * Obtener información básica de la partida
+ */
+router.get('/:gameId', authMiddleware, gameController.obtenerPartida);
+
+/**
+ * Obtener estado completo de partida (para renderizar el juego)
+ */
+router.get('/:gameId/state', authMiddleware, gameController.obtenerEstadoPartida);
+
 module.exports = router;
