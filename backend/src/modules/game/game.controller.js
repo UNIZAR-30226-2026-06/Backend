@@ -25,6 +25,70 @@ async function crearPartida(req, res, next) {
   }
 }
 
+
+async function unirsePartida(req, res, next) {
+  try {
+
+    const username = req.user.nombre_usuario;
+    const gameId = req.params.gameId;
+
+    const result = await gameService.unirsePartida(gameId, username);
+
+    res.json(result);
+
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function empezarPartida(req, res, next) {
+  try {
+
+    const username = req.user.nombre_usuario;
+    const gameId = req.params.gameId;
+
+    const result = await gameService.empezarPartida(gameId, username);
+
+    res.json(result);
+
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function obtenerPartida(req, res, next) {
+  try {
+
+    const gameId = req.params.gameId;
+
+    const partida = await gameService.obtenerPartida(gameId);
+
+    res.json(partida);
+
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function obtenerEstadoPartida(req, res, next) {
+  try {
+
+    const username = req.user.nombre_usuario;
+    const gameId = req.params.gameId;
+
+    const estado = await gameService.obtenerEstadoPartida(gameId, username);
+
+    res.json(estado);
+
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
-  crearPartida
+  crearPartida,
+  unirsePartida,
+  empezarPartida,
+  obtenerPartida,
+  obtenerEstadoPartida
 };
