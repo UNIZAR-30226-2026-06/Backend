@@ -1,6 +1,7 @@
 const express = require('express');
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
+const path = require('path');
 
 const app = express();
 
@@ -33,13 +34,22 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: 'http://localhost:3000/api/v1'
+        url: 'http://localhost:3000/api/v1' // Todo partirá de aquí
       }
     ],
+    
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+    },
   },
   apis: [
-    './src/modules/**/*.js',
-    './modules/**/*.js'
+    path.join(__dirname, 'modules', '**', '*.js')
   ],
 };
 
