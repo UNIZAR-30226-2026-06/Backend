@@ -215,4 +215,74 @@ router.get('/:gameId', authMiddleware, gameController.obtenerPartida);
  */
 router.get('/:gameId/state', authMiddleware, gameController.obtenerEstadoPartida);
 
+/**
+ * @swagger
+ * /partidas/{gameId}/pause:
+ *   post:
+ *     summary: Pausar una partida en curso
+ *     tags: [Partidas]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: gameId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la partida a pausar
+ *     responses:
+ *       200:
+ *         description: Partida pausada correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Partida pausada
+ *       400:
+ *         description: Error en la petición
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Partida no encontrada
+ */
+router.post('/:gameId/pause', authMiddleware, gameController.pausarPartida);
+
+/**
+ * @swagger
+ * /partidas/{gameId}/end:
+ *   post:
+ *     summary: Finalizar una partida
+ *     tags: [Partidas]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: gameId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la partida a finalizar
+ *     responses:
+ *       200:
+ *         description: Partida finalizada correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Partida finalizada
+ *       400:
+ *         description: Error en la petición
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Partida no encontrada
+ */
+router.post('/:gameId/end', authMiddleware, gameController.finalizarPartida);
+
 module.exports = router;

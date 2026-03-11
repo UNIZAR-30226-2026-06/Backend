@@ -1,5 +1,6 @@
 // ================= GAME CONTROLLER =================
 const gameService = require('./gameService');
+const activeGames = require('./gameService').activeGames;
 
 async function crearPartida(req, res, next) {
   try {
@@ -105,10 +106,42 @@ async function obtenerEstadoPartida(req, res, next) {
   }
 }
 
+async function pausarPartida(req, res, next) {
+  try {
+    const gameId = req.params.gameId;
+    const gameState = activeGames.get(gameId);
+    if (!gameState) throw new Error('Partida no encontrada');
+
+    gameState.setPhase('paused'); // marcar estado interno
+    await gameService.persistirPartida(gameId); // guardar en DB
+
+    res.json({ message: 'Partida pausada' });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function finalizarPartida(req, res, next) {
+  try {
+    const gameId = req.params.gameId;
+    const gameState = activeGames.get(gameId);
+    if (!gameState) throw new Error('Partida no encontrada');
+
+    gameState.setPhase('finished'); // marcar estado interno
+    await gameService.persistirPartida(gameId); // guardar en DB y limpiar memoria
+
+    res.json({ message: 'Partida finalizada' });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   crearPartida,
   unirsePartida,
   empezarPartida,
   obtenerPartida,
-  obtenerEstadoPartida
+  obtenerEstadoPartida,
+  pausarPartida,
+  finalizarPartida
 };

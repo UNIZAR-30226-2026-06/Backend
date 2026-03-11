@@ -3,29 +3,40 @@
 class GameState {
   constructor({ id, players, numCardsIni, specialCardsMode, rolesMode }) {
     this.id = id;
-    this.status = 'waiting';
+    this.phase = 'waiting'; // waiting, playing, finished
 
-    this.players = players.map((p, index) => ({
+    this.players = players.map((p) => ({
       id: p.userId,
       hand: [],
       rol: p.id_rol || null,
       rolUses: p.rolUsesGame || 0,
-      turnOrder: index
+      connected: true,
+      isBot: false,
+      saidUno: false
     }));
 
     this.currentTurn = 0;
-    this.direction = 1;
+    this.direction = 1; // 1 = normal, -1 = reversed
+
+    this.turnDeadline = null; // timestamp en ms
 
     this.drawPile = [];
     this.discardPile = [];
-    this.currentCard = null;
+
+    this.pendingDraw = 0; // acumulado de +2 o +4
+    this.skipNext = false; // skip activado por carta
 
     this.numCardsIni = numCardsIni;
     this.specialCardsMode = specialCardsMode;
     this.rolesMode = rolesMode;
+
+    this.createdAt = Date.now();
+    this.lastShuffle = null; // para debug y reconstrucción
   }
 
-  //  Getters
+  // ======================
+  // Getters
+  // ======================
 
   getCurrentPlayer() {
     return this.players[this.currentTurn];
@@ -40,20 +51,34 @@ class GameState {
     return this.players[(index + total) % total];
   }
 
-  getCurrentCard() {
-    return this.currentCard;
-  }
-
   getPlayerHand(playerID) {
     const player = this.getPlayerById(playerID);
     if (!player) throw new Error('Jugador no encontrado para getPlayerHand');
     return player.hand;
   }
 
-  //  Operaciones simples
+  getPlayersCount() {
+    return this.players.length;
+  }
 
-  setStatus(status) {
-    this.status = status;
+  getCurrentTurnIndex() {
+    return this.currentTurn;
+  }
+
+  getDirection() {
+    return this.direction;
+  }
+
+  getTopDiscard() {
+    return this.discardPile[this.discardPile.length - 1] || null;
+  }
+
+  // ======================
+  // Setters / operaciones simples
+  // ======================
+
+  setPhase(phase) {
+    this.phase = phase;
   }
 
   setDirection(direction) {
@@ -68,6 +93,10 @@ class GameState {
     this.currentTurn = index;
   }
 
+  setTurnDeadline(timestamp) {
+    this.turnDeadline = timestamp;
+  }
+
   setDrawPile(pile) {
     this.drawPile = pile;
   }
@@ -80,9 +109,9 @@ class GameState {
     this.players.forEach(p => p.hand = []);
   }
 
-  setCurrentCard(card) {
-    this.currentCard = card;
-  }
+  // ======================
+  // Operaciones de cartas
+  // ======================
 
   addCardToPlayer(playerId, card) {
     const player = this.getPlayerById(playerId);
@@ -112,19 +141,27 @@ class GameState {
     return this.drawPile.shift();
   }
 
-  getPlayersCount() {
-    return this.players.length; 
+  // ======================
+  // Bot / conectividad
+  // ======================
+
+  setPlayerConnected(playerId, connected) {
+    const player = this.getPlayerById(playerId);
+    if (!player) throw new Error('Jugador no encontrado');
+    player.connected = connected;
   }
 
-  getCurrentTurnIndex() {
-    return this.currentTurn;
+  setPlayerIsBot(playerId, isBot) {
+    const player = this.getPlayerById(playerId);
+    if (!player) throw new Error('Jugador no encontrado');
+    player.isBot = isBot;
   }
 
-  getDirection() {
-    return this.direction;
+  setPlayerSaidUno(playerId, saidUno) {
+    const player = this.getPlayerById(playerId);
+    if (!player) throw new Error('Jugador no encontrado');
+    player.saidUno = saidUno;
   }
-  
 }
-
 
 module.exports = GameState;
