@@ -4,46 +4,46 @@ backend/
 │   │
 │   ├── core/                      # Lógica central del juego (NO HTTP)
 │   │   ├── game-engine/
-│   │   │   ├── game.state.js      # Medio Hecho
-│   │   │   ├── game.logic.js      # Medio Hecho
-│   │   │   ├── turn.manager.js    # Medio Hecho
-│   │   │   ├── card.rules.js      # Medio Hecho
-│   │   │   ├── deck.factory.js    # Medio Hecho
-│   │   │   └── bot.logic.js       # Medio Hecho 
+│   │   │   ├── game.state.js          # Medio Hecho
+│   │   │   ├── game.logic.js          # Medio Hecho
+│   │   │   ├── turn.manager.js        # Medio Hecho
+│   │   │   ├── card.rules.js          # Medio Hecho
+│   │   │   ├── deck.factory.js        # Medio Hecho
+│   │   │   └── bot.logic.js           # Medio Hecho 
 │   │   │
 │   │   └── validators/
 │   │
 │   ├── modules/
 │   │   ├── game/
-│   │   │   ├── game.routes.js      # Medio Hecho
-│   │   │   ├── game.controller.js  # Medio Hecho
-│   │   │   └── game.service.js     # Medio Hecho (Faltan las funciones de la lógica)
+│   │   │   ├── game.routes.js         # Medio Hecho
+│   │   │   ├── game.controller.js     # Medio Hecho
+│   │   │   └── game.service.js        # Medio Hecho (Faltan las funciones de la lógica)
 │   │   │
 │   │   ├── store/
-│   │   │   ├── store.routes.js     # Hecho
-│   │   │   ├── store.controller.js # Hecho
-│   │   │   └── store.service.js     # Hecho
+│   │   │   ├── store.routes.js        # Hecho
+│   │   │   ├── store.controller.js    # Hecho
+│   │   │   └── store.service.js       # Hecho
 │   │   │
 │   │   ├── user/
-│   │   │   ├── user.routes.js     # Hecho
-│   │   │   ├── user.controller.js # Hecho
-│   │   │   └── user.service.js    # Hecho
+│   │   │   ├── user.routes.js         # Hecho
+│   │   │   ├── user.controller.js     # Hecho
+│   │   │   └── user.service.js        # Hecho
 │   │   ├── auth/
-│   │   │   ├── auth.routes.js     # Hecho
-│   │   │   ├── auth.controller.js # Hecho
-│   │   │   └── auth.service.js    # Hecho
+│   │   │   ├── auth.routes.js         # Hecho
+│   │   │   ├── auth.controller.js     # Hecho
+│   │   │   └── auth.service.js        # Hecho
 │   │   ├── friends/
-│   │   │   ├── friends.routes.js  # Hecho
+│   │   │   ├── friends.routes.js      # Hecho
 │   │   │   ├── friends.controller.js  # Hecho
 │   │   │   └── friends.service.js     # Hecho
-│   │   ├── wallet/                # monedas
-│   │   │   ├── wallet.routes.js      # Hecho
-│   │   │   ├── wallet.controller.js  # Hecho
-│   │   │   └── wallet.service.js     # Hecho
+│   │   ├── wallet/                
+│   │   │   ├── wallet.routes.js       # Hecho
+│   │   │   ├── wallet.controller.js   # Hecho
+│   │   │   └── wallet.service.js      # Hecho
 │   │   └── chat/
-│   │       ├── chat.routes.js     # Hecho
-│   │       ├── chat.controller.js # Hecho
-│   │       └── chat.service.js    # Hecho
+│   │       ├── chat.routes.js         # Hecho
+│   │       ├── chat.controller.js     # Hecho
+│   │       └── chat.service.js        # Hecho
 │   │
 │   ├── realtime/                  # WebSockets
 │   │   ├── socket.server.js
