@@ -89,8 +89,27 @@ class UserController {
     try {
       const username = req.user.nombre_usuario;
       const { avatar_id } = req.body;
+
+      if (!avatar_id) {
+        return res.status(400).json({ message: 'Debes proporcionar un avatar_id' });
+      }
+
+      //validar existencia
+      const existe = await userService.existeAvatar(avatar_id);
+      if (!existe) {
+        return res.status(404).json({ message: 'El avatar no existe' });
+      }
+
+      // Validar propiedad
+      const tieneAvatar = await userService.tieneAvatar(username, avatar_id);
+      if (!tieneAvatar) {
+        return res.status(403).json({ message: 'No posees este avatar' });
+      }
+
       await userService.setIdAvatarSeleccionadoById(username, avatar_id);
+
       res.status(200).json({ message: 'Avatar actualizado' });
+
     } catch (err) {
       next(err);
     }
@@ -103,12 +122,53 @@ class UserController {
     try {
       const username = req.user.nombre_usuario;
       const { estilo_id } = req.body;
+
+      if (!estilo_id) {
+        return res.status(400).json({ message: 'Debes proporcionar un estilo_id' });
+      }
+
+      //Validar existencia
+      const existe = await userService.existeEstilo(estilo_id);
+      if (!existe) {
+        return res.status(404).json({ message: 'El estilo no existe' });
+      }
+
+      // Validar propiedad
+      const tieneEstilo = await userService.tieneEstilo(username, estilo_id);
+      if (!tieneEstilo) {
+        return res.status(403).json({ message: 'No posees este estilo' });
+      }
+
       await userService.setIdEstiloSeleccionadoById(username, estilo_id);
+
       res.status(200).json({ message: 'Estilo actualizado' });
+
     } catch (err) {
       next(err);
     }
   }
+
+  async getAvataresComprados(req, res, next) {
+  try {
+    const username = req.user.nombre_usuario;
+    const avatares = await userService.getAvataresComprados(username);
+
+    res.status(200).json(avatares);
+  } catch (err) {
+    next(err);
+  }
+}
+
+async getEstilosComprados(req, res, next) {
+  try {
+    const username = req.user.nombre_usuario;
+    const estilos = await userService.getEstilosComprados(username);
+
+    res.status(200).json(estilos);
+  } catch (err) {
+    next(err);
+  }
+}
 
 }
 

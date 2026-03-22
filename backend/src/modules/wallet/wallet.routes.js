@@ -1,26 +1,24 @@
-// wallet.routes.js
+// ================= WALLET ROUTES =================
 const express = require('express');
 const router = express.Router();
 const walletController = require('./wallet.controller');
 const authMiddleware = require('../../middlewares/auth.middleware');
 
-// ================= Middleware de autenticación =================
+// Todo requiere autenticación
 router.use(authMiddleware);
-
-// ================= WALLET ROUTES =================
 
 /**
  * @swagger
  * tags:
  *   name: Wallet
- *   description: Gestión de monedas del usuario
+ *   description: Gestión de monedas y compras del usuario
  */
 
 /**
  * @swagger
- * /api/v1/wallet/balance:
+ * /wallet/balance:
  *   get:
- *     summary: Obtener balance de monedas del usuario
+ *     summary: Obtener el balance de monedas del usuario
  *     tags: [Wallet]
  *     security:
  *       - bearerAuth: []
@@ -42,9 +40,10 @@ router.get('/balance', walletController.getBalance);
 
 /**
  * @swagger
- * /api/v1/wallet/add:
+ * /wallet/add:
  *   post:
  *     summary: Añadir monedas al usuario
+ *     description: Incrementa el saldo del usuario (uso interno o recompensas)
  *     tags: [Wallet]
  *     security:
  *       - bearerAuth: []
@@ -80,9 +79,10 @@ router.post('/add', walletController.addCoins);
 
 /**
  * @swagger
- * /api/v1/wallet/deduct:
+ * /wallet/deduct:
  *   post:
  *     summary: Restar monedas al usuario
+ *     description: Reduce el saldo del usuario si tiene suficientes monedas
  *     tags: [Wallet]
  *     security:
  *       - bearerAuth: []
@@ -118,9 +118,10 @@ router.post('/deduct', walletController.deductCoins);
 
 /**
  * @swagger
- * /api/v1/wallet/purchase/avatar:
+ * /wallet/purchase/avatar:
  *   post:
- *     summary: Comprar un avatar con monedas
+ *     summary: Comprar un avatar
+ *     description: Realiza la compra de un avatar si el usuario tiene suficientes monedas y no lo posee previamente
  *     tags: [Wallet]
  *     security:
  *       - bearerAuth: []
@@ -131,30 +132,72 @@ router.post('/deduct', walletController.deductCoins);
  *           schema:
  *             type: object
  *             required:
- *               - avatarId
+ *               - id_avatar
  *             properties:
- *               avatarId:
- *                 type: string
- *                 example: "avatar_dragon"
+ *               id_avatar:
+ *                 type: integer
+ *                 example: 1
  *     responses:
  *       200:
- *         description: Avatar comprado correctamente
+ *         description: Compra realizada correctamente
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 coins:
+ *                 success:
+ *                   type: boolean
+ *                 monedas:
  *                   type: integer
- *                   example: 900
- *                 avatarUnlocked:
- *                   type: string
- *                   example: avatar_dragon
+ *                 avatar_id:
+ *                   type: integer
  *       400:
- *         description: No hay monedas suficientes o avatar inválido
+ *         description: Datos inválidos o monedas insuficientes
  *       401:
  *         description: No autorizado
  */
 router.post('/purchase/avatar', walletController.purchaseAvatar);
+
+/**
+ * @swagger
+ * /wallet/purchase/estilo:
+ *   post:
+ *     summary: Comprar un estilo
+ *     description: Realiza la compra de un estilo si el usuario tiene suficientes monedas y no lo posee previamente
+ *     tags: [Wallet]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - id_estilo
+ *             properties:
+ *               id_estilo:
+ *                 type: integer
+ *                 example: 2
+ *     responses:
+ *       200:
+ *         description: Compra realizada correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 monedas:
+ *                   type: integer
+ *                 estilo_id:
+ *                   type: integer
+ *       400:
+ *         description: Datos inválidos o monedas insuficientes
+ *       401:
+ *         description: No autorizado
+ */
+router.post('/purchase/estilo', walletController.purchaseEstilo);
 
 module.exports = router;

@@ -135,4 +135,32 @@ router.put('/me/avatar', userController.changeAvatar);
  */
 router.put('/me/estilo', userController.changeStyle);
 
+/**
+ * @swagger
+ * /usuarios/me/avatares:
+ *   get:
+ *     summary: Obtener los avatares comprados del usuario
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de avatares comprados
+ */
+router.get('/me/avatares', userController.getAvataresComprados);
+
+/**
+ * @swagger
+ * /usuarios/me/estilos:
+ *   get:
+ *     summary: Obtener los estilos comprados del usuario
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de estilos comprados
+ */
+router.get('/me/estilos', userController.getEstilosComprados);
+
 module.exports = router;
