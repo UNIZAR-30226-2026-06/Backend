@@ -14,7 +14,7 @@ const authMiddleware = require('../../middlewares/auth.middleware');
 // ================= CREAR PARTIDA =================
 /**
  * @swagger
- * /api/v1/partidas:
+ * /partidas:
  *   post:
  *     summary: Crear una nueva partida
  *     tags: [Partidas]
@@ -66,7 +66,7 @@ router.post('/', authMiddleware, gameController.crearPartida);
 // ================= UNIRSE A PARTIDA =================
 /**
  * @swagger
- * /api/v1/partidas/{gameId}/join:
+ * /partidas/{gameId}/join:
  *   post:
  *     summary: Unirse a una partida existente
  *     tags: [Partidas]
@@ -103,7 +103,7 @@ router.post('/:gameId/join', authMiddleware, gameController.unirsePartida);
 // ================= EMPEZAR PARTIDA =================
 /**
  * @swagger
- * /api/v1/partidas/{gameId}/start:
+ * /partidas/{gameId}/start:
  *   post:
  *     summary: Iniciar una partida
  *     tags: [Partidas]
@@ -129,7 +129,7 @@ router.post('/:gameId/start', authMiddleware, gameController.empezarPartida);
 // ================= OBTENER PARTIDA =================
 /**
  * @swagger
- * /api/v1/partidas/{gameId}:
+ * /partidas/{gameId}:
  *   get:
  *     summary: Obtener información básica de la partida
  *     tags: [Partidas]
@@ -169,7 +169,7 @@ router.get('/:gameId', authMiddleware, gameController.obtenerPartida);
 // ================= OBTENER ESTADO COMPLETO =================
 /**
  * @swagger
- * /api/v1/partidas/{gameId}/state:
+ * /partidas/{gameId}/state:
  *   get:
  *     summary: Obtener el estado completo de la partida (para renderizar el juego)
  *     tags: [Partidas]
