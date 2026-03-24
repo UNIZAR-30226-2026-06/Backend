@@ -6,7 +6,7 @@ async function obtenerAvataresTienda() {
       id_avatar,
       nombre,
       image,
-      precio_avatar
+      precioavatar
     FROM notuno.AVATAR
     WHERE muestro_avatar = true
   `);
@@ -21,7 +21,7 @@ async function obtenerEstilosTienda() {
       nombre,
       fondo,
       reverso,
-      precio_estilo
+      precioestilo
     FROM notuno.ESTILO
     WHERE muestro_estilo = true
   `);

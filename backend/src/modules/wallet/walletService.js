@@ -39,7 +39,7 @@ class WalletService {
       await client.query('BEGIN');
 
       const avatarRes = await client.query(
-        'SELECT precio_avatar FROM notuno.AVATAR WHERE id_avatar = $1',
+        'SELECT precioavatar FROM notuno.AVATAR WHERE id_avatar = $1',
         [id_avatar]
       );
 
@@ -47,7 +47,7 @@ class WalletService {
         throw new Error('Avatar no existe');
       }
 
-      const precio = avatarRes.rows[0].precio_avatar;
+      const precio = avatarRes.rows[0].precioavatar;
 
       const yaComprado = await client.query(
         'SELECT 1 FROM notuno.AVATARES_COMPRADOS WHERE nombre_usuario = $1 AND id_avatar = $2',
@@ -95,7 +95,7 @@ class WalletService {
       await client.query('BEGIN');
 
       const estiloRes = await client.query(
-        'SELECT precio_estilo FROM notuno.ESTILO WHERE id_estilo = $1',
+        'SELECT precioestilo FROM notuno.ESTILO WHERE id_estilo = $1',
         [id_estilo]
       );
 
@@ -103,7 +103,7 @@ class WalletService {
         throw new Error('Estilo no existe');
       }
 
-      const precio = estiloRes.rows[0].precio_estilo;
+      const precio = estiloRes.rows[0].precioestilo;
 
       const yaComprado = await client.query(
         'SELECT 1 FROM notuno.ESTILOS_COMPRADOS WHERE nombre_usuario = $1 AND id_estilo = $2',
