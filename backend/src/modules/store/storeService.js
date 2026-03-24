@@ -8,7 +8,6 @@ async function obtenerAvataresTienda() {
       image,
       precioavatar
     FROM notuno.AVATAR
-    WHERE muestro_avatar = true
   `);
 
   return result.rows;
@@ -23,7 +22,6 @@ async function obtenerEstilosTienda() {
       reverso,
       precioestilo
     FROM notuno.ESTILO
-    WHERE muestro_estilo = true
   `);
 
   return result.rows;
