@@ -4,6 +4,7 @@ async function obtenerAvataresTienda() {
   const result = await db.query(`
     SELECT
       id_avatar,
+      nombre,
       image,
       precio_avatar
     FROM notuno.AVATAR
@@ -17,6 +18,7 @@ async function obtenerEstilosTienda() {
   const result = await db.query(`
     SELECT
       id_estilo,
+      nombre,
       fondo,
       reverso,
       precio_estilo
