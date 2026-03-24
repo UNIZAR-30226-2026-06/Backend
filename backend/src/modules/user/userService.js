@@ -134,7 +134,7 @@ async function existeUsuario(nombre_usuario) {
 
 async function getAvataresComprados(nombre_usuario) {
     const result = await db.query(`
-        SELECT a.id_avatar, a.image, a.precio_avatar
+        SELECT a.id_avatar, a.image, a.precioavatar
         FROM notuno.AVATAR a
         INNER JOIN notuno.AVATARES_COMPRADOS ac 
             ON a.id_avatar = ac.id_avatar
@@ -146,7 +146,7 @@ async function getAvataresComprados(nombre_usuario) {
 
 async function getEstilosComprados(nombre_usuario) {
     const result = await db.query(`
-        SELECT e.id_estilo, e.fondo, e.reverso, e.precio_estilo
+        SELECT e.id_estilo, e.fondo, e.reverso, e.precioestilo
         FROM notuno.ESTILO e
         INNER JOIN notuno.ESTILOS_COMPRADOS ec 
             ON e.id_estilo = ec.id_estilo

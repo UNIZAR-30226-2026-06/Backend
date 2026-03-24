@@ -30,6 +30,9 @@ const storeController = require('./store.controller');
  *                   id_avatar:
  *                     type: integer
  *                     example: 1
+ *                   nombre_avatar:
+ *                     type: string
+ *                     example: "Guerrero"
  *                   image:
  *                     type: string
  *                     example: "avatar1.png"
@@ -61,6 +64,9 @@ router.get('/avatars', storeController.obtenerAvataresTienda);
  *                   id_estilo:
  *                     type: integer
  *                     example: 1
+ *                   nombre_estilo:
+ *                     type: string
+ *                     example: "Fuego oscuro"
  *                   fondo:
  *                     type: string
  *                     example: "fondo1.png"
