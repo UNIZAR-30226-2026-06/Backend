@@ -89,10 +89,20 @@ class FriendsService {
 
   async obtenerAmigos(userId) {
     const result = await db.query(
-      'SELECT * FROM notuno.AMIGOS WHERE id_usuario1=$1 OR id_usuario2=$1',
+      `SELECT
+         u.nombre_usuario,
+         u.monedas,
+         u.id_avatar_seleccionado AS avatar
+       FROM notuno.AMIGOS a
+       JOIN notuno.USUARIO u
+         ON u.nombre_usuario = CASE
+           WHEN a.id_usuario1 = $1 THEN a.id_usuario2
+           ELSE a.id_usuario1
+         END
+       WHERE a.id_usuario1 = $1 OR a.id_usuario2 = $1`,
       [userId]
     );
-    return result.rows.map(row => (row.id_usuario1 === userId ? row.id_usuario2 : row.id_usuario1));
+    return result.rows;
   }
 
   async eliminarAmigo(userId, friendId) {
