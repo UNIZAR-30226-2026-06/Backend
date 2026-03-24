@@ -4,10 +4,33 @@ class FriendsService {
 
   async enviarSolicitud(senderId, receiverId) {
     const result = await db.query(
-      'INSERT INTO notuno.SOLICITUD_AMISTAD (id_usuario_origen, id_usuario_destino, estado) VALUES ($1, $2, $3)',
-      [senderId, receiverId, 'pendiente']
+      `INSERT INTO notuno.SOLICITUD_AMISTAD (id_usuario_origen, id_usuario_destino, estado)
+       VALUES ($1, $2, 'pendiente')
+       ON CONFLICT (id_usuario_origen, id_usuario_destino)
+       DO UPDATE
+         SET estado = 'pendiente'
+       WHERE notuno.SOLICITUD_AMISTAD.estado = 'rechazada'
+       RETURNING estado`,
+      [senderId, receiverId]
     );
-    return result.rowCount === 1;
+
+    if (result.rowCount === 1) {
+      return true;
+    }
+
+    const existing = await db.query(
+      'SELECT estado FROM notuno.SOLICITUD_AMISTAD WHERE id_usuario_origen=$1 AND id_usuario_destino=$2',
+      [senderId, receiverId]
+    );
+
+    const estadoActual = existing.rows[0]?.estado;
+    const error = new Error(
+      estadoActual === 'aceptada'
+        ? 'Ya sois amigos'
+        : 'Ya existe una solicitud pendiente'
+    );
+    error.status = 409;
+    throw error;
   }
 
   async cancelarSolicitud(senderId, receiverId) {
