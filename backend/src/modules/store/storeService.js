@@ -18,8 +18,6 @@ async function obtenerEstilosTienda() {
     SELECT
       id_estilo,
       nombre,
-      fondo,
-      reverso,
       precioestilo
     FROM notuno.ESTILO
   `);

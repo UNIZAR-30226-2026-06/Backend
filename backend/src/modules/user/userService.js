@@ -146,7 +146,7 @@ async function getAvataresComprados(nombre_usuario) {
 
 async function getEstilosComprados(nombre_usuario) {
     const result = await db.query(`
-        SELECT e.id_estilo, e.fondo, e.reverso, e.precioestilo
+        SELECT e.id_estilo, e.precioestilo
         FROM notuno.ESTILO e
         INNER JOIN notuno.ESTILOS_COMPRADOS ec 
             ON e.id_estilo = ec.id_estilo
