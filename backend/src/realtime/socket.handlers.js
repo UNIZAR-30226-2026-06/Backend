@@ -21,6 +21,7 @@ function registerSocketHandlers(io) {
     }
 
     joinUserRoom(socket, username);
+    console.log(`[socket] conectado: ${username}`);
     socket.emit('socket:ready', { connected: true, usuario: username });
 
     getPendingFriendRequests(username)
