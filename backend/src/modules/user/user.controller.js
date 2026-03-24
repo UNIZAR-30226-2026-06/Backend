@@ -42,7 +42,10 @@ class UserController {
         nombre_usuario: user.nombre_usuario,
         correo: user.correo,
         avatar: user.id_avatar_seleccionado,
-        estilo: user.id_estilo_seleccionado
+        estilo: user.id_estilo_seleccionado,
+        victorias: user.total_ganadas,
+        partidas: user.total_partidas,
+        monedas: user.monedas
       });
     } catch (err) {
       next(err);

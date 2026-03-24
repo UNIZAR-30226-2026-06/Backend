@@ -32,12 +32,25 @@ router.use(authMiddleware);
  *               properties:
  *                 nombre_usuario:
  *                   type: string
+ *                   example: "gonzalo"
  *                 correo:
  *                   type: string
+ *                   example: "gonzalo@email.com"
  *                 avatar:
  *                   type: integer
+ *                   example: 1
  *                 estilo:
  *                   type: integer
+ *                   example: 2
+ *                 victorias:
+ *                   type: integer
+ *                   example: 10
+ *                 partidas:
+ *                   type: integer
+ *                   example: 25
+ *                 monedas:
+ *                   type: integer
+ *                   example: 1500
  *       404:
  *         description: Usuario no encontrado
  *   put:
@@ -146,6 +159,19 @@ router.put('/me/estilo', userController.changeStyle);
  *     responses:
  *       200:
  *         description: Lista de avatares comprados
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id_avatar:
+ *                     type: integer
+ *                   image:
+ *                     type: string
+ *                   precioavatar:
+ *                     type: integer
  */
 router.get('/me/avatares', userController.getAvataresComprados);
 
@@ -160,6 +186,17 @@ router.get('/me/avatares', userController.getAvataresComprados);
  *     responses:
  *       200:
  *         description: Lista de estilos comprados
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id_estilo:
+ *                     type: integer
+ *                   precioestilo:
+ *                     type: integer
  */
 router.get('/me/estilos', userController.getEstilosComprados);
 
