@@ -1,6 +1,6 @@
 
 const fetch = require('node-fetch');
-const API = 'http://localhost:3000';
+const API = 'http://localhost:3000/api/v1';
 
 function randomUser() {
     const r = Date.now();
