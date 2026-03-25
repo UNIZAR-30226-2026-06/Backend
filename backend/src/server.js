@@ -31,12 +31,17 @@ io.on('connection',(socket) => {
 })
 
 const errorMiddleware = require('./middlewares/error.middleware');
+const http = require('http');
+const { initSocket } = require('./realtime/socket.server');
 
 const PORT = process.env.PORT || 3000;
 
 app.use(errorMiddleware);
 
-app.listen(PORT, () => {
+const server = http.createServer(app);
+initSocket(server);
+
+server.listen(PORT, () => {
   console.log(`Servidor escuchando en http://localhost:${PORT}`);
 });
 

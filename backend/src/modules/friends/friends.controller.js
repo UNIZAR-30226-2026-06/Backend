@@ -1,5 +1,6 @@
 // ================= FRIENDS CONTROLLER =================
 const friendsService = require('./friendsService');
+const { notifyFriendRequest, notifyPendingRequests } = require('../../realtime/socket.server');
 
 exports.enviarSolicitud = async (req, res, next) => {
     try {
@@ -11,6 +12,19 @@ exports.enviarSolicitud = async (req, res, next) => {
         }
 
         await friendsService.enviarSolicitud(sender, receiver);
+        notifyFriendRequest(receiver, {
+            from: sender,
+            to: receiver,
+            type: 'friend_request',
+            createdAt: new Date().toISOString()
+        });
+
+        try {
+            const pendientesActualizadas = await friendsService.obtenerSolicitudesPendientes(receiver);
+            notifyPendingRequests(receiver, pendientesActualizadas);
+        } catch (_) {
+            // Si falla la emision realtime no bloquea la respuesta HTTP
+        }
         res.status(201).json({ message: "Solicitud enviada." });
     } catch (err) {
         next(err);

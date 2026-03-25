@@ -2,15 +2,83 @@
 const express = require('express');
 const router = express.Router();
 const storeController = require('./store.controller');
-const authMiddleware = require('../../middlewares/auth.middleware');
 
+/**
+ * @swagger
+ * tags:
+ *   - name: Store
+ *     description: Catálogo de avatares y estilos disponibles en la tienda
+ */
+
+/**
+ * @swagger
+ * /store/avatars:
+ *   get:
+ *     summary: Obtener avatares disponibles en la tienda
+ *     description: Devuelve únicamente los avatares visibles (muestro_avatar = true)
+ *     tags: [Store]
+ *     responses:
+ *       200:
+ *         description: Lista de avatares disponibles
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id_avatar:
+ *                     type: integer
+ *                     example: 1
+ *                   nombre_avatar:
+ *                     type: string
+ *                     example: "Guerrero"
+ *                   image:
+ *                     type: string
+ *                     example: "avatar1.png"
+ *                   precio_avatar:
+ *                     type: integer
+ *                     example: 500
+ *       500:
+ *         description: Error interno del servidor
+ */
 router.get('/avatars', storeController.obtenerAvataresTienda);
+
+/**
+ * @swagger
+ * /store/estilos:
+ *   get:
+ *     summary: Obtener estilos disponibles en la tienda
+ *     description: Devuelve únicamente los estilos visibles (muestro_estilo = true)
+ *     tags: [Store]
+ *     responses:
+ *       200:
+ *         description: Lista de estilos disponibles
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id_estilo:
+ *                     type: integer
+ *                     example: 1
+ *                   nombre_estilo:
+ *                     type: string
+ *                     example: "Fuego oscuro"
+ *                   fondo:
+ *                     type: string
+ *                     example: "fondo1.png"
+ *                   reverso:
+ *                     type: string
+ *                     example: "reverso1.png"
+ *                   precio_estilo:
+ *                     type: integer
+ *                     example: 300
+ *       500:
+ *         description: Error interno del servidor
+ */
 router.get('/estilos', storeController.obtenerEstilosTienda);
-
-router.post('/purchase/avatar', authMiddleware, storeController.comprarAvatar);
-router.post('/purchase/estilo', authMiddleware, storeController.comprarEstilo);
-
-router.patch('/avatar/:id/visibilidad', authMiddleware, storeController.modificarVisibilidadAvatar);
-router.patch('/estilo/:id/visibilidad', authMiddleware, storeController.modificarVisibilidadEstilo);
 
 module.exports = router;

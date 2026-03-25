@@ -1,75 +1,63 @@
-// src/core/game-engine/turn.manager.js
 class TurnManager {
-    constructor(state) {
-        this.state = state;
-        this.turnFilters = {}; // filtros temporales por jugador
-    }
+  constructor(state) {
+    this.state = state;
+    this.turnFilters = {};
+  }
 
-    getCurrentPlayer() {
-        const player = this.state.getCurrentPlayer();
-        return player;
-    }
+  getCurrentPlayer() {
+    return this.state.getCurrentPlayer();
+  }
 
-    next() {
-        const current = this.state.getCurrentTurnIndex();
-        const dir = this.state.getDirection();
-        const total = this.state.getPlayersCount();
+  next() {
+    const current = this.state.getCurrentTurnIndex();
+    const dir = this.state.getDirection();
+    const total = this.state.getPlayersCount();
 
-        // avanzar al siguiente jugador
-        let nextIndex = (current + dir + total) % total;
+    let nextIndex = (current + dir + total) % total;
 
-        // limpiar filtros del jugador que acaba de jugar
-        const currentPlayerId = this.state.getCurrentPlayer().id;
-        this.clearFilter(currentPlayerId);
+    const currentPlayerId = this.state.getCurrentPlayer().id;
+    this.clearFilter(currentPlayerId);
 
-        this.state.setCurrentTurnIndex(nextIndex);
-    }
+    this.state.setCurrentTurnIndex(nextIndex);
+  }
 
-    advance(steps = 1) {
-        const total = this.state.getPlayersCount();
-        if (total === 0) return;
-        const current = this.state.getCurrentTurnIndex();
-        const dir = this.state.getDirection();
-        const next = (current + dir * steps + total) % total;
-        this.state.setCurrentTurnIndex(next);
-    }
+  advance(steps = 1) {
+    const total = this.state.getPlayersCount();
+    if (total === 0) return;
+    const current = this.state.getCurrentTurnIndex();
+    const dir = this.state.getDirection();
+    const next = (current + dir * steps + total) % total;
+    this.state.setCurrentTurnIndex(next);
+  }
 
-    skip(times = 1) {
-        this.advance(times + 1);
-    }
+  skip(times = 1) {
+    this.advance(times + 1);
+  }
 
-    reverse() {
-        const currentDir = this.state.getDirection();
-        this.state.setDirection(-currentDir);
-    }
+  reverse() {
+    this.state.setDirection(-this.state.getDirection());
+  }
 
-    stay() {
-        // no hacer nada, jugador repite turno
-    }
+  stay() {}
 
-    // ==========================
-    // filtros temporales
-    // ==========================
-    setFilter(playerId, filterFn) {
-        this.turnFilters[playerId] = filterFn;
-    }
+  setFilter(playerId, filterFn) {
+    this.turnFilters[playerId] = filterFn;
+  }
 
-    clearFilter(playerId) {
-        delete this.turnFilters[playerId];
-    }
+  clearFilter(playerId) {
+    delete this.turnFilters[playerId];
+  }
 
-    getFilter(playerId) {
-        return this.turnFilters[playerId] || null;
-    }
+  getFilter(playerId) {
+    return this.turnFilters[playerId] || null;
+  }
 
-    getNextPlayer() {
-        const current = this.state.getCurrentTurnIndex();
-        const dir = this.state.getDirection();
-        const total = this.state.getPlayersCount();
-
-        const nextIndex = (current + dir + total) % total;
-        return this.state.getPlayers()[nextIndex];
-    }
+  getNextPlayer() {
+    const current = this.state.getCurrentTurnIndex();
+    const dir = this.state.getDirection();
+    const total = this.state.getPlayersCount();
+    return this.state.getPlayerByIndex(current + dir);
+  }
 }
 
 module.exports = TurnManager;

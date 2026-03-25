@@ -10,7 +10,8 @@ CREATE TABLE AVATAR(
     id_avatar SERIAL PRIMARY KEY,
     image TEXT NOT NULL,
     muestro_avatar BOOLEAN NOT NULL DEFAULT true,
-    precio_avatar INTEGER NOT NULL CHECK (precio_avatar >= 0)
+    precio_avatar INTEGER NOT NULL CHECK (precio_avatar >= 0),
+    nombre VARCHAR(100)
 );
 
 -- =========================
@@ -18,10 +19,9 @@ CREATE TABLE AVATAR(
 -- =========================
 CREATE TABLE ESTILO(
     id_estilo SERIAL PRIMARY KEY,
-    fondo TEXT NOT NULL,
-    reverso TEXT NOT NULL,
     muestro_estilo BOOLEAN NOT NULL DEFAULT true,
-    precio_estilo INTEGER NOT NULL CHECK (precio_estilo >= 0)
+    precio_estilo INTEGER NOT NULL CHECK (precio_estilo >= 0),
+    nombre VARCHAR(100)
 );
 
 -- =========================

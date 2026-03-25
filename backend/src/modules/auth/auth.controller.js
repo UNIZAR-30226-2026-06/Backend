@@ -1,7 +1,7 @@
 // ================= AUTH CONTROLLER =================
 const authService = require('./authService');
 console.log("AUTH SERVICE CARGADO:", authService)
-const userService = require('../user/userService'); // <--- corregido
+const userService = require('../user/userService');
 const db = require('../../config/db');
 
 exports.register = async (req, res, next) => {
@@ -26,6 +26,21 @@ exports.register = async (req, res, next) => {
         user: { nombre_usuario: user.nombre_usuario, correo: user.correo } 
     });
   } catch (err) {
+      if (err.code === '23505') {
+          const constraint = err.constraint || '';
+          const detail = err.detail || '';
+
+          if (constraint.includes('usuario_pkey') || constraint.includes('nombre_usuario') || detail.includes('(nombre_usuario)')) {
+              return res.status(409).json({ error: 'El nombre de usuario ya existe' });
+          }
+
+          if (constraint.includes('correo') || detail.includes('(correo)')) {
+              return res.status(409).json({ error: 'El correo ya está registrado' });
+          }
+
+          return res.status(409).json({ error: 'Datos duplicados' });
+      }
+
       next(err);
   }
 };

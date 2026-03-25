@@ -132,6 +132,70 @@ async function existeUsuario(nombre_usuario) {
     return result.rows[0]?.count > 0;
 }
 
+async function getAvataresComprados(nombre_usuario) {
+    const result = await db.query(`
+        SELECT a.id_avatar, a.image, a.precioavatar
+        FROM notuno.AVATAR a
+        INNER JOIN notuno.AVATARES_COMPRADOS ac 
+            ON a.id_avatar = ac.id_avatar
+        WHERE ac.nombre_usuario = $1
+    `, [nombre_usuario]);
+
+    return result.rows;
+}
+
+async function getEstilosComprados(nombre_usuario) {
+    const result = await db.query(`
+        SELECT e.id_estilo, e.precioestilo
+        FROM notuno.ESTILO e
+        INNER JOIN notuno.ESTILOS_COMPRADOS ec 
+            ON e.id_estilo = ec.id_estilo
+        WHERE ec.nombre_usuario = $1
+    `, [nombre_usuario]);
+
+    return result.rows;
+}
+
+async function tieneEstilo(nombre_usuario, id_estilo) {
+    const result = await db.query(`
+        SELECT 1 
+        FROM notuno.ESTILOS_COMPRADOS 
+        WHERE nombre_usuario = $1 AND id_estilo = $2
+    `, [nombre_usuario, id_estilo]);
+
+    return result.rowCount > 0;
+}
+
+async function tieneAvatar(nombre_usuario, id_avatar) {
+    const result = await db.query(`
+        SELECT 1 
+        FROM notuno.AVATARES_COMPRADOS 
+        WHERE nombre_usuario = $1 AND id_avatar = $2
+    `, [nombre_usuario, id_avatar]);
+
+    return result.rowCount > 0;
+}
+
+async function existeAvatar(id_avatar) {
+    const result = await db.query(`
+        SELECT 1 
+        FROM notuno.AVATAR 
+        WHERE id_avatar = $1
+    `, [id_avatar]);
+
+    return result.rowCount > 0;
+}
+
+async function existeEstilo(id_estilo) {
+    const result = await db.query(`
+        SELECT 1 
+        FROM notuno.ESTILO 
+        WHERE id_estilo = $1
+    `, [id_estilo]);
+
+    return result.rowCount > 0;
+}
+
 module.exports = {
     User,
     createUser,
@@ -152,5 +216,12 @@ module.exports = {
     getTotalPartidasById,
     anadirPartidaGanadaById,
     anadirPartidaJugadaById,
-    existeUsuario
+    existeUsuario,
+    getAvataresComprados,
+    getEstilosComprados,
+    tieneEstilo,
+    tieneAvatar,
+    existeAvatar,
+    existeEstilo
+
 };

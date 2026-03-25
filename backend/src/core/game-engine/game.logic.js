@@ -1,13 +1,14 @@
-// src/core/game-engine/game.logic.js
 const DeckFactory = require('./deck.factory');
 const TurnManager = require('./turn.manager');
 const CardRules = require('./card.rules');
+const BotLogic = require('./bot.logic');
 
 class GameLogic {
   constructor(gameState) {
     this.state = gameState;
     this.turnManager = new TurnManager(this.state);
     this.cardRules = new CardRules(this.state, this.turnManager, this);
+    this.botLogic = new BotLogic(this.state, this.cardRules, this.turnManager);
   }
 
   shuffle(deck) {
@@ -26,11 +27,11 @@ class GameLogic {
         throw new Error('No quedan cartas para robar');
     }
 
-    const currentCard = this.state.removeTopDiscard(); // la carta que queda visible
+    const currentCard = this.state.removeTopDiscard(); 
     const newPile = this.shuffle(this.state.discardPile);
 
     this.state.setDrawPile(newPile);
-    this.state.setDiscardPile([currentCard]); // la carta actual vuelve al descarte
+    this.state.setDiscardPile([currentCard]); 
   }
 
   drawCard() {
@@ -39,7 +40,7 @@ class GameLogic {
   }
 
   startGame() {
-    if (this.state.status !== 'waiting')
+    if (this.state.phase !== 'waiting')
       throw new Error('La partida ya ha comenzado');
 
     if (this.state.getPlayersCount() < 2)
@@ -61,7 +62,7 @@ class GameLogic {
     this.state.setDrawPile(deck);
     this.state.setDiscardPile([]);
 
-    this.state.setStatus('playing');
+    this.state.setPhase('playing');
     this.state.resetTurn();
     this.state.setDirection(1);
     this.state.clearHands();
@@ -78,10 +79,13 @@ class GameLogic {
     const initialCard = this.drawCard();
     this.state.setCurrentCard(initialCard);
     this.state.addToDiscardPile(initialCard);
+
+    // disparar turnos automáticos de bots si hay
+    this.processBots();
   }
 
   playCard(playerId, card) {
-      if (this.state.status !== 'playing')
+      if (this.state.phase !== 'playing')
           throw new Error('La partida no está en juego');
 
       const currentPlayer = this.turnManager.getCurrentPlayer();
@@ -99,14 +103,32 @@ class GameLogic {
       this.cardRules.applyEffect(card, playerId);
 
       this.turnManager.next();
+
+      // procesar bots después de cada turno
+      this.processBots();
+  }
+
+  processBots() {
+    let currentPlayer = this.turnManager.getCurrentPlayer();
+    while (currentPlayer.isBot && this.state.phase === 'playing') {
+      const decision = this.botLogic.decideMove(currentPlayer.id);
+      if (decision.type === 'draw') {
+        const card = this.drawCard();
+        this.state.addCardToPlayer(currentPlayer.id, card);
+      } else if (decision.type === 'play') {
+        this.playCard(currentPlayer.id, decision.card);
+      }
+
+      currentPlayer = this.turnManager.getCurrentPlayer();
+    }
   }
 
   pauseGame() {
-    this.state.setStatus('paused');
+    this.state.setPhase('paused');
   }
 
   endGame() {
-    this.state.setStatus('finished');
+    this.state.setPhase('finished');
   }
 }
 
