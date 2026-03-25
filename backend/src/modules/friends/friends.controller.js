@@ -1,7 +1,7 @@
 // ================= FRIENDS CONTROLLER =================
 const friendsService = require('./friendsService');
 const { notifyFriendRequest, notifyPendingRequests } = require('../../realtime/socket.server');
-
+const {connectedUsers} = require('../../realtime/socket.handlers')
 exports.enviarSolicitud = async (req, res, next) => {
     try {
         const sender = req.user.nombre_usuario;
@@ -96,6 +96,16 @@ exports.obtenerAmigos = async (req, res, next) => {
     }
 };
 
+exports.obtenerNumeroAmigos = async (req, res, next) => {
+    try {
+        const usuario = req.user.nombre_usuario;
+        const numAmigos = await friendsService.countFriends(usuario);
+        res.json(numAmigos);
+    } catch (err) {
+        next(err);
+    }
+};
+
 exports.eliminarAmigo = async (req, res, next) => {
     try {
         const usuario = req.user.nombre_usuario;
@@ -117,3 +127,14 @@ exports.buscarUsuarios = async (req, res, next) => {
         next(err);
     }
 };
+
+exports.obtenerAmigosConectados = (req,res) => {
+      const res_amigosOnline=[]
+      const amigos=friendsService.obtenerAmigos(req.user.nombre_usuario)
+      for (const i in amigos) {
+        if (connectedUsers.has(i)) {
+          res_amigosOnline.push(i)
+        }
+      }
+      res.json(res_amigosOnline)
+    }

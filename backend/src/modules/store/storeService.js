@@ -13,11 +13,26 @@ async function obtenerAvataresTienda() {
   return result.rows;
 }
 
+async function obtenerAvatarporId(id) {
+  const result = await db.query(`
+    SELECT
+      id_avatar,
+      nombre,
+      image,
+      precioavatar
+    FROM notuno.AVATAR
+    WHERE id_avatar=$1
+  `, [id]);
+
+  return result.rows;
+}
+
 async function obtenerEstilosTienda() {
   const result = await db.query(`
     SELECT
       id_estilo,
       nombre,
+      image,
       precioestilo
     FROM notuno.ESTILO
   `);
@@ -25,7 +40,23 @@ async function obtenerEstilosTienda() {
   return result.rows;
 }
 
+async function obtenerEstiloporId(id) {
+  const result = await db.query(`
+    SELECT
+      id_estilo,
+      nombre,
+      image,
+      precioestilo
+    FROM notuno.ESTILO
+    WHERE id_estilo=$1
+  `, [id]);
+
+  return result.rows;
+}
+
 module.exports = {
   obtenerAvataresTienda,
-  obtenerEstilosTienda
+  obtenerEstilosTienda,
+  obtenerEstiloporId,
+  obtenerAvatarporId
 };

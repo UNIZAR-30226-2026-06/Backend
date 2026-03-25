@@ -19,6 +19,7 @@ CREATE TABLE AVATAR(
 -- =========================
 CREATE TABLE ESTILO(
     id_estilo SERIAL PRIMARY KEY,
+    image TEXT NOT NULL,
     muestro_estilo BOOLEAN NOT NULL DEFAULT true,
     precio_estilo INTEGER NOT NULL CHECK (precio_estilo >= 0),
     nombre VARCHAR(100)

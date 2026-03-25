@@ -17,3 +17,21 @@ exports.obtenerEstilosTienda = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.obtenerAvatarID = async (req, res, next) => {
+  try {
+    const avatar = await storeService.obtenerAvatarporId(req.body.id);
+    res.json(avatar);
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.obtenerEstiloID = async (req, res, next) => {
+  try {
+    const estilo = await storeService.obtenerEstiloporId(req.body.id);
+    res.json(estilo);
+  } catch (err) {
+    next(err);
+  }
+};

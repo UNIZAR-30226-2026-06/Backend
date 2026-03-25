@@ -143,6 +143,20 @@ router.get('/', friendsController.obtenerAmigos);
 
 /**
  * @swagger
+ * /friends/count:
+ *   get:
+ *     summary: Obtener numero de amigos
+ *     tags: [Amigos]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Numero de amigos
+ */
+router.get('/count', friendsController.obtenerNumeroAmigos);
+
+/**
+ * @swagger
  * /friends/{id}:
  *   delete:
  *     summary: Eliminar un amigo
@@ -182,5 +196,20 @@ router.delete('/:id', friendsController.eliminarAmigo);
  *         description: Resultados de búsqueda
  */
 router.get('/search/:query', friendsController.buscarUsuarios);
+
+
+/**
+ * @swagger
+ * /friends/connected:
+ *   get:
+ *     summary: Obtener amigos en linea
+ *     tags: [Amigos]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Resultados de búsqueda
+ */
+router.get('/connected/', friendsController.obtenerAmigosConectados);
 
 module.exports = router;

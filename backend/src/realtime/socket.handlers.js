@@ -1,6 +1,11 @@
 const { joinUserRoom } = require('./rooms.manager');
 const db = require('../config/db');
 const { processMessage } = require('../modules/chat/chatService');
+const {authService} = require('../modules/auth/auth.controller');
+const {chatController} = require('../modules/chat/chat.controller');
+const {friendsService}=require('../modules/friends/friendsService');
+const { Socket } = require('socket.io');
+
 
 async function getPendingFriendRequests(username) {
   const result = await db.query(
@@ -17,8 +22,9 @@ async function crear_room(io, partidaID) {
     io.join(partidaID)
 
 }
+const connectedUsers=new Map();
 
- function registerSocketHandlers(io) {
+function registerSocketHandlers(io) {
   io.on('connection', (socket) => {
     const username = socket.user?.nombre_usuario;
     if (!username) {
@@ -27,6 +33,9 @@ async function crear_room(io, partidaID) {
     }
 
     console.log("Usuario ", socket.user?.nombre_usuario, " envia peticion de conexion")
+    //me guardo el id del socket para enviarle mensajes solo a el
+    connectedUsers.set(username, socket.id)
+
 
     
     socket.on(`newMessage`, data => {
@@ -50,6 +59,61 @@ async function crear_room(io, partidaID) {
         next(err)
       }
     })
+
+    socket.on('newFriendRequest', async (id) =>  {
+      if (connectedUsers.has(id)) {
+        socket.to(connectedUsers.get(id)).emit(`mostrarFriendRequest`, username)
+
+      }
+    })
+
+    socket.on('newFriendRequestAccepted', async (id) =>  {
+      if (connectedUsers.has(id)) {
+        socket.to(connectedUsers.get(id)).emit(`mostrarAceptadaFriendRequest`, username)
+
+      }
+    })
+
+    socket.on('newFriendRequestReject', async (id) =>  {
+      if (connectedUsers.has(id)) {
+        socket.to(connectedUsers.get(id)).emit(`mostrarRechazadaFriendRequest`, username)
+
+      }
+    })
+
+    socket.on('avisarAmigosConectados_UserOnline',() => {
+      const amigos=friendsService.obtenerAmigos(username)
+      for (const i in amigos) {
+        if (connectedUsers.has(i)) {
+          socket.to(connectedUsers.get(id)).emit(`amigoConectado`, username)
+        }
+      }
+    })
+    socket.on('avisarAmigosConectados_UserDisconnect',() => {
+      const amigos=friendsService.obtenerAmigos(username)
+      for (const i in amigos) {
+        if (connectedUsers.has(i)) {
+          socket.to(connectedUsers.get(id)).emit(`amigoDesconectado`, username)
+        }
+      }
+    })
+
+    
+
+    socket.on('start_game', (data) => {
+      //tareas a realizar para implementar una partida
+
+    })
+
+    socket.on('next_turn', (data) => {
+      //comprobar turno valido y enviar mensaje a siguiente jugador de que es su turno
+    })
+
+    socket.on('disconnect', () => {
+      if(username) {
+        connectedUsers.delete(username)
+      }
+    })
     
 
 
@@ -58,5 +122,5 @@ async function crear_room(io, partidaID) {
 }
 
 module.exports = {
-  registerSocketHandlers
+  registerSocketHandlers, connectedUsers
 };

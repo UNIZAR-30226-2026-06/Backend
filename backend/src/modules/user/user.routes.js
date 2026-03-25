@@ -168,6 +168,8 @@ router.put('/me/estilo', userController.changeStyle);
  *                 properties:
  *                   id_avatar:
  *                     type: integer
+ *                   nombre:
+ *                      type: string
  *                   image:
  *                     type: string
  *                   precioavatar:
@@ -195,6 +197,10 @@ router.get('/me/avatares', userController.getAvataresComprados);
  *                 properties:
  *                   id_estilo:
  *                     type: integer
+ *                   nombre:
+ *                      type: string
+ *                   image:
+ *                      type: string
  *                   precioestilo:
  *                     type: integer
  */
