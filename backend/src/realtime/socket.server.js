@@ -1,6 +1,7 @@
 const { Server } = require('socket.io');
 const jwt = require('jsonwebtoken');
 const { registerSocketHandlers } = require('./socket.handlers');
+
 const { emitToUser } = require('./rooms.manager');
 
 let io = null;
@@ -27,7 +28,7 @@ function extractTokenFromSocket(socket) {
 }
 
 function initSocket(httpServer) {
-  io = new Server(httpServer, {
+  const io = new Server(httpServer, {
     cors: {
       origin: (origin, callback) => {
         if (!origin || allowedOrigins.includes(origin)) {
@@ -78,6 +79,8 @@ function notifyPendingRequests(receiverUsername, pendingRequests) {
   console.log(`[socket] friends:request:pending -> ${receiverUsername} (${pendingRequests.length})`);
   emitToUser(io, receiverUsername, 'friends:request:pending', pendingRequests);
 }
+
+
 
 module.exports = {
   initSocket,

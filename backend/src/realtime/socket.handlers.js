@@ -1,5 +1,6 @@
 const { joinUserRoom } = require('./rooms.manager');
 const db = require('../config/db');
+const { processMessage } = require('../modules/chat/chatService');
 
 async function getPendingFriendRequests(username) {
   const result = await db.query(
@@ -12,7 +13,12 @@ async function getPendingFriendRequests(username) {
   return result.rows;
 }
 
-function registerSocketHandlers(io) {
+async function crear_room(io, partidaID) {
+    io.join(partidaID)
+
+}
+
+ function registerSocketHandlers(io) {
   io.on('connection', (socket) => {
     const username = socket.user?.nombre_usuario;
     if (!username) {
@@ -20,17 +26,34 @@ function registerSocketHandlers(io) {
       return;
     }
 
-    joinUserRoom(socket, username);
-    console.log(`[socket] conectado: ${username}`);
-    socket.emit('socket:ready', { connected: true, usuario: username });
+    console.log("Usuario ", socket.user?.nombre_usuario, " envia peticion de conexion")
 
-    getPendingFriendRequests(username)
-      .then((solicitudes) => {
-        socket.emit('friends:request:pending', solicitudes);
-      })
-      .catch(() => {
-        socket.emit('friends:request:pending', []);
-      });
+    
+    socket.on(`newMessage`, data => {
+      const mensaje_filtrado=processMessage(username, data.mensaje)
+      socket.emit('mensajeMostrar', mensaje_filtrado) //respondo al que me envia el mensaje con el mensaje correcto
+      socket.to(data.partidaID).emit('nuevoMensajeChat',mensaje_filtrado)   //respondo a todo el grupo excepto a que me envia (ya se lo he mandado antes)
+    })
+
+    socket.on(`prueba_recibida`, data => {
+      console.log("he recibido mensaje: ", data.mensaje, "\n le contesto: te estoy contestando")
+      socket.emit('respuesta', "te estoy contestando") //respondo al que me envia el mensaje con el mensaje correcto
+    })
+
+    socket.on('pendingFriendRequests', async () =>  {
+      try {
+        const res=await getPendingFriendRequests(username) 
+        socket.emit(`res_pendingFriendRequests`, res.json())
+
+
+      } catch (err) {
+        next(err)
+      }
+    })
+    
+
+
+    
   });
 }
 

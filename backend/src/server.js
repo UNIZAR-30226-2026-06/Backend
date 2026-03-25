@@ -11,8 +11,8 @@ console.log('JWT_SECRET =', process.env.JWT_SECRET);
 const app = require('./app');
 const http = require('http');
 const { Server } = require('socket.io');
-const server = http.createServer(app);
-const io=new Server(Server)
+/*const server = http.createServer(app);
+const io=new Server(server)
 
 //se crea un websocket que el usuario cliente usara para unirse a rooms para cada partida
 io.on('connection',(socket) => {
@@ -28,10 +28,10 @@ io.on('connection',(socket) => {
     socket.on('siguiente_turno', (nombre_usuario) => {
       console.log('jugador pasa turno')
     });
-})
+})*/
 
 const errorMiddleware = require('./middlewares/error.middleware');
-const http = require('http');
+
 const { initSocket } = require('./realtime/socket.server');
 
 const PORT = process.env.PORT || 3000;
@@ -39,10 +39,10 @@ const PORT = process.env.PORT || 3000;
 app.use(errorMiddleware);
 
 const server = http.createServer(app);
-initSocket(server);
+const io=initSocket(server);
 
 server.listen(PORT, () => {
   console.log(`Servidor escuchando en http://localhost:${PORT}`);
 });
 
-module.exports = {server,io}
+module.exports = {server}
