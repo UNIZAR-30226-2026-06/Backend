@@ -1,25 +1,122 @@
 const db = require('../../config/db');
 const GameState = require('../../core/game-engine/game.state');
-const GameLogic = require('../../core/game-engine/game.logic');
 
-// Map en memoria para partidas activas
 const activeGames = new Map();
 
+// =========================
+// UTILS
+// =========================
+
+function generarCodigo() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let codigo = '';
+  for (let i = 0; i < 6; i++) {
+    codigo += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return codigo;
+}
+
+async function generarCodigoUnico() {
+  let codigo;
+  let exists = true;
+
+  while (exists) {
+    codigo = generarCodigo();
+
+    const result = await db.query(
+      'SELECT 1 FROM notuno.partida WHERE codigo = $1',
+      [codigo]
+    );
+
+    exists = result.rowCount > 0;
+  }
+
+  return codigo;
+}
+
+// =========================
+// VALIDACIÓN
+// =========================
+
+function validarConfig(config) {
+  if (!config.maxJugadores || config.maxJugadores < 2 || config.maxJugadores > 4) {
+    throw new Error('maxJugadores inválido');
+  }
+
+  if (config.numCartasInicio && config.numCartasInicio <= 0) {
+    throw new Error('numCartasInicio inválido');
+  }
+
+  if (config.timeoutTurno && config.timeoutTurno <= 0) {
+    throw new Error('timeoutTurno inválido');
+  }
+}
+
+// =========================
+// REHIDRATAR PARTIDA
+// =========================
+
+async function cargarPartidaEnMemoria(gameId) {
+  const result = await db.query(
+    `SELECT game_state FROM notuno.partida WHERE id_partida = $1`,
+    [gameId]
+  );
+
+  if (result.rowCount === 0) {
+    throw new Error('Partida no encontrada en DB');
+  }
+
+  const savedState = result.rows[0].game_state;
+
+  if (!savedState) {
+    throw new Error('Partida sin estado guardado');
+  }
+
+  const gameState = new GameState(savedState);
+
+  activeGames.set(gameId, gameState);
+
+  return gameState;
+}
+
+// =========================
+// CREAR PARTIDA
+// =========================
+
 async function crearPartida(id_creador, config) {
+  validarConfig(config);
+
+  let codigo = null;
+
+  if (config.privada) {
+    codigo = await generarCodigoUnico();
+  }
+
   const initialState = new GameState({
     id: null,
-    players: [{ userId: id_creador }],
+    players: [{
+      id: id_creador,
+      hand: [],
+      rol: null,
+      rolUses: 0,
+      connected: true,
+      isBot: false,
+      saidUno: false
+    }],
     numCardsIni: config.numCartasInicio,
     specialCardsMode: config.modoCartasEspeciales,
-    rolesMode: config.modoRoles
+    rolesMode: config.modoRoles,
+    phase: 'waiting'
   });
 
   const result = await db.query(
     `INSERT INTO notuno.partida
-     (num_cartas_inicio, modo_cartas_especiales, modo_roles, sonido, musica, vibracion,
-      estado, timeout_turno, max_jugadores, partida_publica, game_state)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
-     RETURNING id_partida, estado`,
+     (num_cartas_inicio, modo_cartas_especiales, modo_roles,
+      sonido, musica, vibracion,
+      estado, timeout_turno, max_jugadores,
+      partida_publica, codigo, game_state)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+     RETURNING id_partida, codigo`,
     [
       config.numCartasInicio,
       config.modoCartasEspeciales,
@@ -30,83 +127,147 @@ async function crearPartida(id_creador, config) {
       'esperando_jugadores',
       config.timeoutTurno ?? 30,
       config.maxJugadores,
-      config.partidaPublica ?? true,
+      !config.privada,
+      codigo,
       initialState
     ]
   );
 
   const partida = result.rows[0];
+
   initialState.id = partida.id_partida;
 
-  // Guardamos en memoria para juego en tiempo real
   activeGames.set(partida.id_partida, initialState);
 
   return partida;
 }
 
-async function unirsePartida(gameId, username) {
-  const gameState = activeGames.get(gameId);
-  if (!gameState) throw new Error('Partida no encontrada en memoria');
+// =========================
+// UNIRSE POR ID
+// =========================
 
-  if (gameState.players.find(p => p.id === username)) {
-    return { message: 'Jugador ya estaba en la partida' };
+async function unirsePartida(gameId, username) {
+  const client = await db.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    const partidaResult = await client.query(
+      `SELECT max_jugadores, estado
+       FROM notuno.partida
+       WHERE id_partida = $1
+       FOR UPDATE`,
+      [gameId]
+    );
+
+    if (partidaResult.rowCount === 0) {
+      throw new Error('Partida no encontrada');
+    }
+
+    const { max_jugadores, estado } = partidaResult.rows[0];
+
+    if (estado !== 'esperando_jugadores') {
+      throw new Error('La partida no admite jugadores');
+    }
+
+    const jugadoresResult = await client.query(
+      `SELECT COUNT(*) FROM notuno.usuario_en_partida
+       WHERE id_partida = $1`,
+      [gameId]
+    );
+
+    const numJugadores = parseInt(jugadoresResult.rows[0].count);
+
+    if (numJugadores >= max_jugadores) {
+      throw new Error('Partida llena');
+    }
+
+    const exists = await client.query(
+      `SELECT 1 FROM notuno.usuario_en_partida
+       WHERE id_partida = $1 AND id_usuario = $2`,
+      [gameId, username]
+    );
+
+    if (exists.rowCount === 0) {
+      await client.query(
+        `INSERT INTO notuno.usuario_en_partida (id_partida, id_usuario)
+         VALUES ($1,$2)`,
+        [gameId, username]
+      );
+    }
+
+    await client.query('COMMIT');
+
+    // ===== SINCRONIZAR MEMORIA =====
+    let gameState = activeGames.get(gameId);
+    if (!gameState) {
+      gameState = await cargarPartidaEnMemoria(gameId);
+    }
+
+    if (!gameState.players.find(p => p.id === username)) {
+      gameState.players.push({
+        id: username,
+        hand: [],
+        rol: null,
+        rolUses: 0,
+        connected: true,
+        isBot: false,
+        saidUno: false
+      });
+    }
+
+    // ===== PERSISTIR ESTADO =====
+    await db.query(
+      `UPDATE notuno.partida
+       SET game_state = $2
+       WHERE id_partida = $1`,
+      [gameId, gameState]
+    );
+
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+// =========================
+// UNIRSE POR CÓDIGO
+// =========================
+
+async function unirsePorCodigo(codigo, username) {
+  const result = await db.query(
+    `SELECT id_partida FROM notuno.partida WHERE codigo = $1`,
+    [codigo]
+  );
+
+  if (result.rowCount === 0) {
+    throw new Error('Código inválido');
   }
 
-  // Añadimos jugador
-  gameState.players.push({ id: username, hand: [], rol: null, rolUses: 0, connected: true, isBot: false, saidUno: false });
-
-  await db.query(
-    `INSERT INTO notuno.usuario_en_partida (id_partida, id_usuario)
-     VALUES ($1,$2)`,
-    [gameId, username]
-  );
-
-  return { message: 'Jugador unido a la partida' };
+  return await unirsePartida(result.rows[0].id_partida, username);
 }
 
-async function empezarPartida(gameId, username) {
-  const gameState = activeGames.get(gameId);
-  if (!gameState) throw new Error('Partida no encontrada en memoria');
-
-  const logic = new GameLogic(gameState);
-  logic.startGame();
-
-  // Actualizamos DB: cambiamos estado y guardamos game_state inicial
-  await db.query(
-    `UPDATE notuno.partida
-     SET estado = 'en_curso', game_state = $2
-     WHERE id_partida = $1`,
-    [gameId, gameState]
-  );
-
-  return { message: 'Partida iniciada' };
-}
-
-async function obtenerPartida(gameId) {
-  const result = await db.query(
-    `SELECT id_partida, estado, max_jugadores
-     FROM notuno.partida
-     WHERE id_partida = $1`,
-    [gameId]
-  );
-
-  return result.rows[0];
-}
+// =========================
+// ESTADO COMPLETO
+// =========================
 
 async function obtenerEstadoPartida(gameId, username) {
-  const gameState = activeGames.get(gameId);
-  if (!gameState) throw new Error('Partida no encontrada en memoria');
+  let gameState = activeGames.get(gameId);
 
-  // Clonamos para no exponer referencias internas
+  if (!gameState) {
+    gameState = await cargarPartidaEnMemoria(gameId);
+  }
+
   const state = JSON.parse(JSON.stringify(gameState));
 
-  const filteredPlayers = state.players.map(p => {
+  const players = state.players.map(p => {
     if (p.id === username) return p;
+
     return {
       id: p.id,
       hand: p.hand.length,
-      rol: p.rol,
-      rolUses: p.rolUses,
       connected: p.connected,
       isBot: p.isBot,
       saidUno: p.saidUno
@@ -118,42 +279,77 @@ async function obtenerEstadoPartida(gameId, username) {
     phase: state.phase,
     currentTurn: state.currentTurn,
     direction: state.direction,
-    turnDeadline: state.turnDeadline,
-    drawPileCount: state.drawPile.length,
-    discardPileTop: state.discardPile[state.discardPile.length - 1] || null,
-    pendingDraw: state.pendingDraw,
-    skipNext: state.skipNext,
-    players: filteredPlayers,
-    numCardsIni: state.numCardsIni,
-    specialCardsMode: state.specialCardsMode,
-    rolesMode: state.rolesMode
+    discardTop: state.discardPile?.at(-1) || null,
+    drawCount: state.drawPile?.length || 0,
+    players
   };
 }
 
-/**
- * Guardar partida en DB cuando se pausa o finaliza
- */
-async function persistirPartida(gameId) {
-  const gameState = activeGames.get(gameId);
-  if (!gameState) return;
+// =========================
+// INFO LOBBY
+// =========================
+
+async function obtenerPartida(gameId) {
+  const result = await db.query(
+    `SELECT id_partida, estado, max_jugadores
+     FROM notuno.partida
+     WHERE id_partida = $1`,
+    [gameId]
+  );
+
+  if (result.rowCount === 0) {
+    throw new Error('Partida no encontrada');
+  }
+
+  const jugadores = await db.query(
+    `SELECT id_usuario FROM notuno.usuario_en_partida
+     WHERE id_partida = $1`,
+    [gameId]
+  );
+
+  return {
+    gameId: result.rows[0].id_partida,
+    estado: result.rows[0].estado,
+    maxJugadores: result.rows[0].max_jugadores,
+    jugadores: jugadores.rows.map(j => j.id_usuario)
+  };
+}
+
+// =========================
+// FINALIZAR PARTIDA
+// =========================
+
+async function finalizarPartida(gameId, username) {
+  let gameState = activeGames.get(gameId);
+
+  if (!gameState) {
+    gameState = await cargarPartidaEnMemoria(gameId);
+  }
+
+  const owner = gameState.players[0]?.id;
+
+  if (owner !== username) {
+    throw new Error('No autorizado para finalizar la partida');
+  }
+
+  gameState.phase = 'finished';
 
   await db.query(
     `UPDATE notuno.partida
-     SET game_state = $2, estado = $3
+     SET estado = 'finalizada', game_state = $2
      WHERE id_partida = $1`,
-    [gameId, gameState, gameState.phase]
+    [gameId, gameState]
   );
 
-  if (gameState.phase === 'finished') {
-    activeGames.delete(gameId); // limpiar memoria
-  }
+  activeGames.delete(gameId);
 }
 
 module.exports = {
   crearPartida,
   unirsePartida,
-  empezarPartida,
-  obtenerPartida,
+  unirsePorCodigo,
+  cargarPartidaEnMemoria,
   obtenerEstadoPartida,
-  persistirPartida
+  obtenerPartida,
+  finalizarPartida
 };

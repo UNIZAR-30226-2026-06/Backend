@@ -1,8 +1,7 @@
-// ================= GAME CONTROLLER =================
 const gameService = require('./gameService');
-const activeGames = require('./gameService').activeGames;
 
-async function crearPartida(req, res, next) {
+// ================= CREAR =================
+async function crearPartida(req, res) {
   try {
     const id_creador = req.user.nombre_usuario;
 
@@ -15,133 +14,100 @@ async function crearPartida(req, res, next) {
       sonido: req.body.sonido,
       musica: req.body.musica,
       vibracion: req.body.vibracion,
-      privada: req.body.privada,
-      contrasena: req.body.contrasena
+      privada: req.body.privada
     };
 
     const partida = await gameService.crearPartida(id_creador, config);
 
     res.status(201).json({
-      gameId: partida.gameId,
-      max_jugadores: partida.maxJugadores,
-      privada: partida.privada
+      gameId: partida.id_partida,
+      codigo: partida.codigo || null
     });
+
   } catch (error) {
-    // Error de datos inválidos
-    res.status(400).json({ message: 'Error en los datos enviados' });
+    res.status(400).json({ message: error.message });
   }
 }
 
-async function unirsePartida(req, res, next) {
-  try {
-    const username = req.user.nombre_usuario;
-    const gameId = req.params.gameId;
-    const { contrasena } = req.body;
-
-    const result = await gameService.unirsePartida(gameId, username, contrasena);
-
-    if (!result.success) {
-      return res.status(400).json({ message: 'Error al unirse (partida llena o contraseña incorrecta)' });
-    }
-
-    res.status(200).json({ message: 'Usuario agregado a la partida' });
-  } catch (error) {
-    res.status(401).json({ message: 'No autorizado' });
-  }
-}
-
-async function empezarPartida(req, res, next) {
+// ================= JOIN =================
+async function unirsePartida(req, res) {
   try {
     const username = req.user.nombre_usuario;
     const gameId = req.params.gameId;
 
-    const result = await gameService.empezarPartida(gameId, username);
+    await gameService.unirsePartida(gameId, username);
 
-    if (!result.success) {
-      return res.status(400).json({ message: 'No se puede iniciar la partida (menos de 2 jugadores)' });
-    }
+    res.status(200).json({ message: 'Unido correctamente' });
 
-    res.status(200).json({ message: 'Partida iniciada correctamente' });
   } catch (error) {
-    res.status(401).json({ message: 'No autorizado' });
+    res.status(400).json({ message: error.message });
   }
 }
 
-async function obtenerPartida(req, res, next) {
+// ================= JOIN POR CÓDIGO =================
+async function unirsePorCodigo(req, res) {
+  try {
+    const username = req.user.nombre_usuario;
+    const { codigo } = req.body;
+
+    await gameService.unirsePorCodigo(codigo, username);
+
+    res.status(200).json({ message: 'Unido por código' });
+
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+}
+
+// ================= LOBBY =================
+async function obtenerPartida(req, res) {
   try {
     const gameId = req.params.gameId;
+
     const partida = await gameService.obtenerPartida(gameId);
 
-    if (!partida) return res.status(404).json({ message: 'Partida no encontrada' });
+    res.status(200).json(partida);
 
-    res.status(200).json({
-      gameId: partida.gameId,
-      jugadores: partida.jugadores,
-      estado: partida.estado
-    });
   } catch (error) {
-    res.status(401).json({ message: 'No autorizado' });
+    res.status(404).json({ message: error.message });
   }
 }
 
-async function obtenerEstadoPartida(req, res, next) {
+// ================= STATE (CORE) =================
+async function obtenerEstadoPartida(req, res) {
   try {
     const username = req.user.nombre_usuario;
     const gameId = req.params.gameId;
 
     const estado = await gameService.obtenerEstadoPartida(gameId, username);
 
-    if (!estado) return res.status(404).json({ message: 'Partida no encontrada' });
+    res.status(200).json(estado);
 
-    res.status(200).json({
-      gameId: estado.gameId,
-      turnoActual: estado.turnoActual,
-      cartasEnMano: estado.cartasEnMano,
-      pila: estado.pila,
-      direccion: estado.direccion,
-      estado: estado.estado
-    });
   } catch (error) {
-    res.status(401).json({ message: 'No autorizado' });
+    res.status(400).json({ message: error.message });
   }
 }
 
-async function pausarPartida(req, res, next) {
+// ================= END =================
+async function finalizarPartida(req, res) {
   try {
+    const username = req.user.nombre_usuario;
     const gameId = req.params.gameId;
-    const gameState = activeGames.get(gameId);
-    if (!gameState) throw new Error('Partida no encontrada');
 
-    gameState.setPhase('paused'); // marcar estado interno
-    await gameService.persistirPartida(gameId); // guardar en DB
+    await gameService.finalizarPartida(gameId, username);
 
-    res.json({ message: 'Partida pausada' });
+    res.status(200).json({ message: 'Partida finalizada' });
+
   } catch (error) {
-    next(error);
-  }
-}
-
-async function finalizarPartida(req, res, next) {
-  try {
-    const gameId = req.params.gameId;
-    const gameState = activeGames.get(gameId);
-    if (!gameState) throw new Error('Partida no encontrada');
-
-    gameState.setPhase('finished'); // marcar estado interno
-    await gameService.persistirPartida(gameId); // guardar en DB y limpiar memoria
-
-    res.json({ message: 'Partida finalizada' });
-  } catch (error) {
-    next(error);
+    res.status(403).json({ message: error.message });
   }
 }
 
 module.exports = {
   crearPartida,
   unirsePartida,
-  empezarPartida,
+  unirsePorCodigo,
   obtenerPartida,
   obtenerEstadoPartida,
-  pausarPartida,
   finalizarPartida
 };

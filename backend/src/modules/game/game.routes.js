@@ -1,4 +1,3 @@
-// game.routes.js
 const express = require('express');
 const router = express.Router();
 const gameController = require('./game.controller');
@@ -8,40 +7,46 @@ const authMiddleware = require('../../middlewares/auth.middleware');
  * @swagger
  * tags:
  *   - name: Partidas
- *     description: Gestión y creación de partidas
+ *     description: Gestión de partidas multijugador
  */
 
-// ================= CREAR PARTIDA =================
+// ================= CREAR =================
 /**
  * @swagger
  * /partidas:
  *   post:
- *     summary: Crear una nueva partida
+ *     summary: Crear una nueva partida (pública o privada)
  *     tags: [Partidas]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
- *       required: false
+ *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
  *             properties:
- *               max_jugadores:
+ *               maxJugadores:
  *                 type: integer
- *                 description: Número máximo de jugadores permitidos
  *                 example: 4
  *               privada:
  *                 type: boolean
- *                 description: Si la partida es privada o pública
+ *                 example: true
+ *               modoCartasEspeciales:
+ *                 type: boolean
+ *                 example: true
+ *               modoRoles:
+ *                 type: boolean
  *                 example: false
- *               contrasena:
- *                 type: string
- *                 description: Contraseña de la sala (si es privada)
- *                 example: "1234"
+ *               numCartasInicio:
+ *                 type: integer
+ *                 example: 7
+ *               timeoutTurno:
+ *                 type: integer
+ *                 example: 30
  *     responses:
  *       201:
- *         description: Partida creada exitosamente
+ *         description: Partida creada correctamente
  *         content:
  *           application/json:
  *             schema:
@@ -49,26 +54,24 @@ const authMiddleware = require('../../middlewares/auth.middleware');
  *               properties:
  *                 gameId:
  *                   type: string
- *                   example: "abc123"
- *                 max_jugadores:
- *                   type: integer
- *                   example: 4
- *                 privada:
- *                   type: boolean
- *                   example: false
+ *                   example: "uuid-partida"
+ *                 codigo:
+ *                   type: string
+ *                   nullable: true
+ *                   example: "A1B2C3"
  *       400:
- *         description: Error en los datos enviados
+ *         description: Error en los datos
  *       401:
  *         description: No autorizado
  */
 router.post('/', authMiddleware, gameController.crearPartida);
 
-// ================= UNIRSE A PARTIDA =================
+// ================= JOIN =================
 /**
  * @swagger
  * /partidas/{gameId}/join:
  *   post:
- *     summary: Unirse a una partida existente
+ *     summary: Unirse a una partida pública
  *     tags: [Partidas]
  *     security:
  *       - bearerAuth: []
@@ -78,60 +81,52 @@ router.post('/', authMiddleware, gameController.crearPartida);
  *         required: true
  *         schema:
  *           type: string
- *         description: ID de la partida a unirse
- *     requestBody:
- *       required: false
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               contrasena:
- *                 type: string
- *                 description: Contraseña si la sala es privada
- *                 example: "1234"
+ *         description: ID de la partida
  *     responses:
  *       200:
- *         description: Usuario agregado a la partida
+ *         description: Usuario unido correctamente
  *       400:
- *         description: Error al unirse (partida llena o contraseña incorrecta)
+ *         description: Error (partida llena o no válida)
  *       401:
  *         description: No autorizado
  */
 router.post('/:gameId/join', authMiddleware, gameController.unirsePartida);
 
-// ================= EMPEZAR PARTIDA =================
+// ================= JOIN PRIVADA =================
 /**
  * @swagger
- * /partidas/{gameId}/start:
+ * /partidas/join-by-code:
  *   post:
- *     summary: Iniciar una partida
+ *     summary: Unirse a una partida privada mediante código
  *     tags: [Partidas]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: gameId
- *         required: true
- *         schema:
- *           type: string
- *         description: ID de la partida a iniciar
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               codigo:
+ *                 type: string
+ *                 example: "A1B2C3"
  *     responses:
  *       200:
- *         description: Partida iniciada correctamente
+ *         description: Usuario unido correctamente
  *       400:
- *         description: No se puede iniciar la partida (menos de 2 jugadores)
+ *         description: Código inválido o partida no disponible
  *       401:
  *         description: No autorizado
  */
-router.post('/:gameId/start', authMiddleware, gameController.empezarPartida);
+router.post('/join-by-code', authMiddleware, gameController.unirsePorCodigo);
 
-// ================= OBTENER PARTIDA =================
+// ================= LOBBY =================
 /**
  * @swagger
  * /partidas/{gameId}:
  *   get:
- *     summary: Obtener información básica de la partida
+ *     summary: Obtener información básica de la partida (lobby)
  *     tags: [Partidas]
  *     security:
  *       - bearerAuth: []
@@ -144,7 +139,7 @@ router.post('/:gameId/start', authMiddleware, gameController.empezarPartida);
  *         description: ID de la partida
  *     responses:
  *       200:
- *         description: Información básica de la partida
+ *         description: Información de la partida
  *         content:
  *           application/json:
  *             schema:
@@ -152,26 +147,30 @@ router.post('/:gameId/start', authMiddleware, gameController.empezarPartida);
  *               properties:
  *                 gameId:
  *                   type: string
- *                   example: "abc123"
+ *                 estado:
+ *                   type: string
+ *                   example: "esperando_jugadores"
+ *                 maxJugadores:
+ *                   type: integer
+ *                   example: 4
  *                 jugadores:
  *                   type: array
  *                   items:
  *                     type: string
  *                   example: ["user1", "user2"]
- *                 estado:
- *                   type: string
- *                   example: "pendiente"
+ *       404:
+ *         description: Partida no encontrada
  *       401:
  *         description: No autorizado
  */
 router.get('/:gameId', authMiddleware, gameController.obtenerPartida);
 
-// ================= OBTENER ESTADO COMPLETO =================
+// ================= STATE =================
 /**
  * @swagger
  * /partidas/{gameId}/state:
  *   get:
- *     summary: Obtener el estado completo de la partida (para renderizar el juego)
+ *     summary: Obtener el estado completo de la partida (render del juego)
  *     tags: [Partidas]
  *     security:
  *       - bearerAuth: []
@@ -184,7 +183,7 @@ router.get('/:gameId', authMiddleware, gameController.obtenerPartida);
  *         description: ID de la partida
  *     responses:
  *       200:
- *         description: Estado completo de la partida
+ *         description: Estado completo del juego
  *         content:
  *           application/json:
  *             schema:
@@ -192,69 +191,47 @@ router.get('/:gameId', authMiddleware, gameController.obtenerPartida);
  *               properties:
  *                 gameId:
  *                   type: string
- *                   example: "abc123"
- *                 turnoActual:
+ *                 phase:
+ *                   type: string
+ *                   example: "playing"
+ *                 currentTurn:
  *                   type: string
  *                   example: "user1"
- *                 cartasEnMano:
- *                   type: object
- *                   example: { "user1": ["red1", "blue2"], "user2": ["yellow3"] }
- *                 pila:
- *                   type: array
- *                   items:
- *                     type: string
- *                   example: ["red5", "green2"]
- *                 direccion:
+ *                 direction:
  *                   type: string
  *                   example: "clockwise"
- *                 estado:
+ *                 discardTop:
  *                   type: string
- *                   example: "jugando"
+ *                   example: "red_5"
+ *                 drawCount:
+ *                   type: integer
+ *                   example: 30
+ *                 players:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       hand:
+ *                         oneOf:
+ *                           - type: array
+ *                           - type: integer
+ *                       connected:
+ *                         type: boolean
+ *       400:
+ *         description: Error al obtener estado
  *       401:
  *         description: No autorizado
  */
 router.get('/:gameId/state', authMiddleware, gameController.obtenerEstadoPartida);
 
-/**
- * @swagger
- * /partidas/{gameId}/pause:
- *   post:
- *     summary: Pausar una partida en curso
- *     tags: [Partidas]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: gameId
- *         required: true
- *         schema:
- *           type: string
- *         description: ID de la partida a pausar
- *     responses:
- *       200:
- *         description: Partida pausada correctamente
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Partida pausada
- *       400:
- *         description: Error en la petición
- *       401:
- *         description: No autorizado
- *       404:
- *         description: Partida no encontrada
- */
-router.post('/:gameId/pause', authMiddleware, gameController.pausarPartida);
-
+// ================= END =================
 /**
  * @swagger
  * /partidas/{gameId}/end:
  *   post:
- *     summary: Finalizar una partida
+ *     summary: Finalizar una partida (solo creador)
  *     tags: [Partidas]
  *     security:
  *       - bearerAuth: []
@@ -264,24 +241,14 @@ router.post('/:gameId/pause', authMiddleware, gameController.pausarPartida);
  *         required: true
  *         schema:
  *           type: string
- *         description: ID de la partida a finalizar
+ *         description: ID de la partida
  *     responses:
  *       200:
  *         description: Partida finalizada correctamente
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Partida finalizada
- *       400:
- *         description: Error en la petición
+ *       403:
+ *         description: No autorizado para finalizar
  *       401:
  *         description: No autorizado
- *       404:
- *         description: Partida no encontrada
  */
 router.post('/:gameId/end', authMiddleware, gameController.finalizarPartida);
 
