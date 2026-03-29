@@ -103,11 +103,40 @@ async function finalizarPartida(req, res) {
   }
 }
 
+async function jugarCarta(req, res, next) {
+  try {
+    const username = req.user.nombre_usuario;
+    const { gameId } = req.params;
+    const { cardId } = req.body;
+
+    const result = await gameService.jugarCarta(gameId, username, cardId);
+
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function robarCarta(req, res, next) {
+  try {
+    const username = req.user.nombre_usuario;
+    const { gameId } = req.params;
+
+    const result = await gameService.robarCarta(gameId, username);
+
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   crearPartida,
   unirsePartida,
   unirsePorCodigo,
   obtenerPartida,
   obtenerEstadoPartida,
-  finalizarPartida
+  finalizarPartida,
+  jugarCarta,
+  robarCarta
 };

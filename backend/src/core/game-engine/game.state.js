@@ -1,41 +1,51 @@
-// src/core/game-engine/game.state.js
-
 class GameState {
   constructor({ id, players, numCardsIni, specialCardsMode, rolesMode }) {
     this.id = id;
-    this.phase = 'waiting'; // waiting, playing, finished
+    this.phase = 'waiting';
 
     this.players = players.map((p) => ({
-      id: p.userId,
+      id: p.userId || p.id,
       hand: [],
-      rol: p.id_rol || null,
-      rolUses: p.rolUsesGame || 0,
-      connected: true,
-      isBot: false,
-      saidUno: false
+      rol: p.rol || null,
+      rolUses: p.rolUses || 0,
+      connected: p.connected ?? true,
+      isBot: p.isBot ?? false,
+      saidUno: p.saidUno ?? false
     }));
 
     this.currentTurn = 0;
-    this.direction = 1; // 1 = normal, -1 = reversed
+    this.direction = 1;
 
-    this.turnDeadline = null; // timestamp en ms
+    // 🔥 CRÍTICO
+    this.turnDeadline = null;
 
     this.drawPile = [];
     this.discardPile = [];
 
-    this.pendingDraw = 0; // acumulado de +2 o +4
-    this.skipNext = false; // skip activado por carta
+    this.pendingDraw = 0;
+    this.skipNext = false;
 
     this.numCardsIni = numCardsIni;
     this.specialCardsMode = specialCardsMode;
     this.rolesMode = rolesMode;
 
     this.createdAt = Date.now();
-    this.lastShuffle = null; // para debug y reconstrucción
   }
 
   // ======================
-  // Getters
+  // TURNOS (NUEVO)
+  // ======================
+
+  setNewTurnDeadline(durationMs) {
+    this.turnDeadline = Date.now() + durationMs;
+  }
+
+  isTurnExpired() {
+    return this.turnDeadline && Date.now() >= this.turnDeadline;
+  }
+
+  // ======================
+  // GETTERS
   // ======================
 
   getCurrentPlayer() {
@@ -53,7 +63,7 @@ class GameState {
 
   getPlayerHand(playerID) {
     const player = this.getPlayerById(playerID);
-    if (!player) throw new Error('Jugador no encontrado para getPlayerHand');
+    if (!player) throw new Error('Jugador no encontrado');
     return player.hand;
   }
 
@@ -74,7 +84,7 @@ class GameState {
   }
 
   // ======================
-  // Setters / operaciones simples
+  // SETTERS
   // ======================
 
   setPhase(phase) {
@@ -93,10 +103,6 @@ class GameState {
     this.currentTurn = index;
   }
 
-  setTurnDeadline(timestamp) {
-    this.turnDeadline = timestamp;
-  }
-
   setDrawPile(pile) {
     this.drawPile = pile;
   }
@@ -110,7 +116,7 @@ class GameState {
   }
 
   // ======================
-  // Operaciones de cartas
+  // CARTAS
   // ======================
 
   addCardToPlayer(playerId, card) {
@@ -142,7 +148,7 @@ class GameState {
   }
 
   // ======================
-  // Bot / conectividad
+  // CONECTIVIDAD
   // ======================
 
   setPlayerConnected(playerId, connected) {

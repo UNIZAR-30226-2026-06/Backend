@@ -252,4 +252,88 @@ router.get('/:gameId/state', authMiddleware, gameController.obtenerEstadoPartida
  */
 router.post('/:gameId/end', authMiddleware, gameController.finalizarPartida);
 
+/**
+ * @swagger
+ * /games/{gameId}/play-card:
+ *   post:
+ *     summary: Jugar una carta en la partida
+ *     tags:
+ *       - Game
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: gameId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la partida
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               cardId:
+ *                 type: string
+ *                 description: ID de la carta que el jugador quiere jugar
+ *             required:
+ *               - cardId
+ *     responses:
+ *       200:
+ *         description: Carta jugada correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *       400:
+ *         description: Error en los parámetros o turno inválido
+ *       401:
+ *         description: No autorizado
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.post('/:gameId/play-card', authMiddleware, gameController.jugarCarta);
+
+/**
+ * @swagger
+ * /games/{gameId}/draw-card:
+ *   post:
+ *     summary: Robar una carta durante el turno del jugador
+ *     tags:
+ *       - Game
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: gameId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la partida
+ *     responses:
+ *       200:
+ *         description: Carta robada correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 cardDrawn:
+ *                   type: object
+ *                   description: Carta que fue robada por el jugador
+ *       400:
+ *         description: Error en los parámetros o turno inválido
+ *       401:
+ *         description: No autorizado
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.post('/:gameId/draw-card', authMiddleware, gameController.robarCarta);
+
 module.exports = router;

@@ -16,6 +16,10 @@ const errorMiddleware = require('./middlewares/error.middleware');
 
 const { initSocket } = require('./realtime/socket.server');
 
+const { startTurnWorker } = require('./src/core/game-engine/turn.worker');
+
+startTurnWorker(); // ✅ arranca el worker global al iniciar el backend
+
 const PORT = process.env.PORT || 3000;
 
 app.use(errorMiddleware);

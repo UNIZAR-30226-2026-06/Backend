@@ -1,5 +1,6 @@
 const db = require('../../config/db');
 const GameState = require('../../core/game-engine/game.state');
+const { resolveTimeoutIfNeeded } = require('../../core/game-engine/game.utils');
 
 const activeGames = new Map();
 
@@ -87,10 +88,7 @@ async function crearPartida(id_creador, config) {
   validarConfig(config);
 
   let codigo = null;
-
-  if (config.privada) {
-    codigo = await generarCodigoUnico();
-  }
+  if (config.privada) codigo = await generarCodigoUnico();
 
   const initialState = new GameState({
     id: null,
@@ -134,9 +132,7 @@ async function crearPartida(id_creador, config) {
   );
 
   const partida = result.rows[0];
-
   initialState.id = partida.id_partida;
-
   activeGames.set(partida.id_partida, initialState);
 
   return partida;
@@ -160,49 +156,35 @@ async function unirsePartida(gameId, username) {
       [gameId]
     );
 
-    if (partidaResult.rowCount === 0) {
-      throw new Error('Partida no encontrada');
-    }
+    if (partidaResult.rowCount === 0) throw new Error('Partida no encontrada');
 
     const { max_jugadores, estado } = partidaResult.rows[0];
-
-    if (estado !== 'esperando_jugadores') {
-      throw new Error('La partida no admite jugadores');
-    }
+    if (estado !== 'esperando_jugadores') throw new Error('La partida no admite jugadores');
 
     const jugadoresResult = await client.query(
-      `SELECT COUNT(*) FROM notuno.usuario_en_partida
-       WHERE id_partida = $1`,
+      `SELECT COUNT(*) FROM notuno.usuario_en_partida WHERE id_partida = $1`,
       [gameId]
     );
 
-    const numJugadores = parseInt(jugadoresResult.rows[0].count);
-
-    if (numJugadores >= max_jugadores) {
+    if (parseInt(jugadoresResult.rows[0].count) >= max_jugadores) {
       throw new Error('Partida llena');
     }
 
     const exists = await client.query(
-      `SELECT 1 FROM notuno.usuario_en_partida
-       WHERE id_partida = $1 AND id_usuario = $2`,
+      `SELECT 1 FROM notuno.usuario_en_partida WHERE id_partida = $1 AND id_usuario = $2`,
       [gameId, username]
     );
 
     if (exists.rowCount === 0) {
       await client.query(
-        `INSERT INTO notuno.usuario_en_partida (id_partida, id_usuario)
-         VALUES ($1,$2)`,
+        `INSERT INTO notuno.usuario_en_partida (id_partida, id_usuario) VALUES ($1,$2)`,
         [gameId, username]
       );
     }
 
     await client.query('COMMIT');
 
-    // ===== SINCRONIZAR MEMORIA =====
-    let gameState = activeGames.get(gameId);
-    if (!gameState) {
-      gameState = await cargarPartidaEnMemoria(gameId);
-    }
+    let gameState = activeGames.get(gameId) || await cargarPartidaEnMemoria(gameId);
 
     if (!gameState.players.find(p => p.id === username)) {
       gameState.players.push({
@@ -216,13 +198,7 @@ async function unirsePartida(gameId, username) {
       });
     }
 
-    // ===== PERSISTIR ESTADO =====
-    await db.query(
-      `UPDATE notuno.partida
-       SET game_state = $2
-       WHERE id_partida = $1`,
-      [gameId, gameState]
-    );
+    await db.query(`UPDATE notuno.partida SET game_state = $2 WHERE id_partida = $1`, [gameId, gameState]);
 
   } catch (error) {
     await client.query('ROLLBACK');
@@ -237,14 +213,8 @@ async function unirsePartida(gameId, username) {
 // =========================
 
 async function unirsePorCodigo(codigo, username) {
-  const result = await db.query(
-    `SELECT id_partida FROM notuno.partida WHERE codigo = $1`,
-    [codigo]
-  );
-
-  if (result.rowCount === 0) {
-    throw new Error('Código inválido');
-  }
+  const result = await db.query(`SELECT id_partida FROM notuno.partida WHERE codigo = $1`, [codigo]);
+  if (result.rowCount === 0) throw new Error('Código inválido');
 
   return await unirsePartida(result.rows[0].id_partida, username);
 }
@@ -254,17 +224,11 @@ async function unirsePorCodigo(codigo, username) {
 // =========================
 
 async function obtenerEstadoPartida(gameId, username) {
-  let gameState = activeGames.get(gameId);
-
-  if (!gameState) {
-    gameState = await cargarPartidaEnMemoria(gameId);
-  }
-
+  let gameState = activeGames.get(gameId) || await cargarPartidaEnMemoria(gameId);
   const state = JSON.parse(JSON.stringify(gameState));
 
   const players = state.players.map(p => {
     if (p.id === username) return p;
-
     return {
       id: p.id,
       hand: p.hand.length,
@@ -291,19 +255,14 @@ async function obtenerEstadoPartida(gameId, username) {
 
 async function obtenerPartida(gameId) {
   const result = await db.query(
-    `SELECT id_partida, estado, max_jugadores
-     FROM notuno.partida
-     WHERE id_partida = $1`,
+    `SELECT id_partida, estado, max_jugadores FROM notuno.partida WHERE id_partida = $1`,
     [gameId]
   );
 
-  if (result.rowCount === 0) {
-    throw new Error('Partida no encontrada');
-  }
+  if (result.rowCount === 0) throw new Error('Partida no encontrada');
 
   const jugadores = await db.query(
-    `SELECT id_usuario FROM notuno.usuario_en_partida
-     WHERE id_partida = $1`,
+    `SELECT id_usuario FROM notuno.usuario_en_partida WHERE id_partida = $1`,
     [gameId]
   );
 
@@ -320,28 +279,108 @@ async function obtenerPartida(gameId) {
 // =========================
 
 async function finalizarPartida(gameId, username) {
-  let gameState = activeGames.get(gameId);
-
-  if (!gameState) {
-    gameState = await cargarPartidaEnMemoria(gameId);
-  }
-
+  let gameState = activeGames.get(gameId) || await cargarPartidaEnMemoria(gameId);
   const owner = gameState.players[0]?.id;
 
-  if (owner !== username) {
-    throw new Error('No autorizado para finalizar la partida');
-  }
+  if (owner !== username) throw new Error('No autorizado para finalizar la partida');
 
   gameState.phase = 'finished';
 
   await db.query(
-    `UPDATE notuno.partida
-     SET estado = 'finalizada', game_state = $2
-     WHERE id_partida = $1`,
+    `UPDATE notuno.partida SET estado = 'finalizada', game_state = $2 WHERE id_partida = $1`,
     [gameId, gameState]
   );
 
   activeGames.delete(gameId);
+}
+
+// =========================
+// JUGAR CARTA
+// =========================
+
+async function jugarCarta(gameId, username, cardId) {
+  const client = await db.connect();
+  try {
+    await client.query('BEGIN');
+
+    await client.query(`SELECT 1 FROM notuno.partida WHERE id_partida = $1 FOR UPDATE`, [gameId]);
+
+    let gameState = activeGames.get(gameId) || await cargarPartidaEnMemoria(gameId);
+
+    const GameLogic = require('../../core/game-engine/game.logic');
+    const logic = new GameLogic(gameState);
+
+    resolveTimeoutIfNeeded(logic);
+
+    if (gameState.phase !== 'playing') throw new Error('La partida no está en juego');
+
+    const current = gameState.getCurrentPlayer();
+    if (current.id !== username) throw new Error('No es tu turno');
+
+    const player = gameState.getPlayerById(username);
+    if (!player) throw new Error('Jugador no está en la partida');
+
+    const card = player.hand.find(c => c.id === cardId);
+    if (!card) throw new Error('Carta no pertenece al jugador');
+
+    logic.playCard(username, card);
+
+    await client.query(
+      `UPDATE notuno.partida SET game_state = $2, updated_at = NOW() WHERE id_partida = $1`,
+      [gameId, gameState]
+    );
+
+    await client.query('COMMIT');
+    return { success: true };
+
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+// =========================
+// ROBAR CARTA
+// =========================
+
+async function robarCarta(gameId, username) {
+  const client = await db.connect();
+  try {
+    await client.query('BEGIN');
+
+    await client.query(`SELECT 1 FROM notuno.partida WHERE id_partida = $1 FOR UPDATE`, [gameId]);
+
+    let gameState = activeGames.get(gameId) || await cargarPartidaEnMemoria(gameId);
+
+    const GameLogic = require('../../core/game-engine/game.logic');
+    const logic = new GameLogic(gameState);
+
+    resolveTimeoutIfNeeded(logic);
+
+    if (gameState.phase !== 'playing') throw new Error('La partida no está en juego');
+
+    const current = gameState.getCurrentPlayer();
+    if (current.id !== username) throw new Error('No es tu turno');
+
+    const card = logic.drawCard();
+    gameState.addCardToPlayer(username, card);
+
+    await client.query(
+      `UPDATE notuno.partida SET game_state = $2, updated_at = NOW() WHERE id_partida = $1`,
+      [gameId, gameState]
+    );
+
+    await client.query('COMMIT');
+    return { cardDrawn: card };
+
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
 module.exports = {
@@ -351,5 +390,7 @@ module.exports = {
   cargarPartidaEnMemoria,
   obtenerEstadoPartida,
   obtenerPartida,
-  finalizarPartida
+  finalizarPartida,
+  jugarCarta,
+  robarCarta
 };
