@@ -16,7 +16,7 @@ const errorMiddleware = require('./middlewares/error.middleware');
 
 const { initSocket } = require('./realtime/socket.server');
 
-const { startTurnWorker } = require('./src/core/game-engine/turn.worker');
+const { startTurnWorker } = require('./core/game-engine/turn.worker');
 
 startTurnWorker(); // ✅ arranca el worker global al iniciar el backend
 

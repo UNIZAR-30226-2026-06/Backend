@@ -1,4 +1,4 @@
-const { activeGames } = require('../../modules/game/game.service');
+const { activeGames } = require('../../modules/game/gameService');
 const GameLogic = require('./game.logic');
 const { resolveTimeoutIfNeeded } = require('./game.utils');
 const db = require('../../config/db');

@@ -392,5 +392,6 @@ module.exports = {
   obtenerPartida,
   finalizarPartida,
   jugarCarta,
-  robarCarta
+  robarCarta,
+  activeGames
 };
