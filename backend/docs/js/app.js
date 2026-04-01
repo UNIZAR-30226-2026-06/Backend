@@ -9,7 +9,7 @@
   "defaultContentType": "application/json",
   "servers": {
     "dev": {
-      "host": "ws://localhost:3100",
+      "host": "ws://localhost:3000",
       "protocol": "ws"
     }
   },
