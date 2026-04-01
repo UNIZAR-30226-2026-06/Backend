@@ -99,5 +99,6 @@ app.use(`${API_PREFIX}/friends`, friendsRoutes);
 app.use(`${API_PREFIX}/chat`, chatRoutes);
 app.use(`${API_PREFIX}/partidas`, gameRoutes);
 
+app.use('/docs', express.static('docs'));
 
 module.exports = app;

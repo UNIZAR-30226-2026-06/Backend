@@ -24,7 +24,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(errorMiddleware);
 
-app.use('/docs', express.static('docs'));
+
 
 //se crea un websocket que el usuario cliente usara para unirse a rooms para cada partida
 const server = http.createServer(app);
