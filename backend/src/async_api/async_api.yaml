@@ -1,7 +1,13 @@
-asyncapi: 2.6.0
+asyncapi: 3.1.0
+id: 'com.notuno.websocket'
+defaultContentType: application/json
 info:
   title: Notuno web events socket 
   version: 1.0.0
+tags:
+  - name: chat
+  - name: friends
+  - name: game
 
 servers:
   dev:
@@ -11,9 +17,10 @@ servers:
 channels:
   nuevoMensajeChat:
     publish:
+      operationId: publish_nuevoMensajeChat
       summary: Emite el mensaje filtrado a todos los usuarios de la sala donde se encuentra el emisor del mensaje
       message:
-        schemaFormat: application/json
+        messageId: msg_nuevoMensajeChat
         payload:
           type: object
           properties:
@@ -23,9 +30,10 @@ channels:
 
   newMessage:
     subscribe:
+      operationId: subscribe_newMessage
       summary: Recibir mensaje de un usuario, lo envia al chat de la sala (backend lo procesa y reenvia)
       message:
-        schemaFormat: application/json        
+        messageId: msg_newMessage        
         payload:
           type: object
           properties:
@@ -36,16 +44,20 @@ channels:
 
   pendingFriendRequests:
     subscribe:
+      operationId: subscribe_pendingFriendRequests
       summary: Recibir peticion de que se le envie las peticiones de solicitud de amistad pendientes
       message:
-        schemaFormat: application/json
+        messageId: msg_pendingFriendRequests
+        payload:
+          type: null
         
 
   res_pendingFriendRequests:
     publish:
+      operationId: publish_res_pendingFriendRequests
       summary: Emite respuesta al usuario que envia el evento "pendingFriendRequests" con la lista de solicitudes de amistad pendientes de contestar
       message:
-        schemaFormat: application/json
+        messageId: msg_res_pendingFriendRequests
         payload:
           type: array
           items:
@@ -60,99 +72,105 @@ channels:
             
   newFriendRequest:
     subscribe:
+      operationId: subscribe_newFriendRequest
       summary: Recibir notificacion de que se ha enviado una solicitud de amistad a "id"
       message:
-        schemaFormat: application/json
+        messageId: msg_newFriendRequest
         payload:
-          id:
-            type: string
+          type: string  #id
+        
           
         
 
   mostrarFriendRequest:
     publish:
+      operationId: publish_mostrarFriendRequest
       summary: Emite notificacion al cliente a tiempo real de que se le ha enviado una solicitud de amistaad
       message:
-        schemaFormat: application/json
+        messageId: msg_mostrarFriendRequest
         payload:
-          username:
-            type: string
+          type: string
 
 
   newFriendRequestAccepted:
     subscribe:
+      operationId: subscribe_newFriendRequestAccepted
       summary: Recibir notificacion de que se ha aceptado una solicitud de amistad a "id"
       message:
-        schemaFormat: application/json
+        messageId: msg_newFriendRequestAccepted
         payload:
-          id:
-            type: string
+          type: string
           
         
 
   mostrarAceptadaFriendRequest:
     publish:
+      operationId: publish_mostrarAceptadaFriendRequest
       summary: Emite notificacion al cliente a tiempo real de que se "username" ha aceptado la solicitud de amistad que fue enviada por el cliente
       message:
-        schemaFormat: application/json
+        messageId: msg_mostrarAceptadaFriendRequest
         payload:
-          username:
-            type: string
+          type: string
 
   newFriendRequestReject:
     subscribe:
+      operationId: subscribe_newFriendRequestReject
       summary: Recibe notificacion de que se ha enviado una solicitud de amistad a "id"
       message:
-        schemaFormat: application/json
+        messageId: msg_newFriendRequestReject
         payload:
-          id:
-            type: string
+          type: string
           
         
 
   mostrarRechazadaFriendRequest:
     publish:
+      operationId: publish_mostrarRechazadaFriendRequest
       summary: Emite notificacion al cliente a tiempo real de que se "username" ha rechazado la solicitud de amistad que fue enviada por el cliente
       message:
-        schemaFormat: application/json
+        messageId: msg_mostrarRechazadaFriendRequest
         payload:
-          username:
-            type: string
+          type: string
+
+
 
   avisarAmigosConectados_UserOnline:
     subscribe:
+      operationId: subscribe_avisarAmigosConectados_UserOnline
       summary: Recibe notificacion de que se "username" se ha conectado
       message:
-        schemaFormat: application/json
-
-
+        messageId: msg_avisarAmigosConectados_UserOnline
+        payload:
+          type: null
 
   amigoConectado:
     publish:
+      operationId: publish_amigoConectado
       summary: Emite notificacion al cliente de que "username" (que es amigo de cliente) se ha conectado
       message:
-        schemaFormat: application/json
+        messageId: msg_amigoConectado
         payload:
-          username:
-            type: string
+          type: string
 
   avisarAmigosConectados_UserDisconnect:
     subscribe:
+      operationId: subscribe_avisarAmigosConectados_UserDisconnect
       summary: Recibe notificacion de que se "username" se ha desconectado
       message:
-        schemaFormat: application/json
-
-        
-          
+        messageId: msg_avisarAmigosConectados_UserDisconnect
+        payload:
+          type: null
         
 
   amigoDesconectado:
     publish:
+      operationId: publish_amigoDesconectado
       summary: Emite notificacion al cliente de que "username" (que es amigo de cliente) se ha desconectado
       message:
-        schemaFormat: application/json
+        messageId: msg_amigoDesconectado
         payload:
-          username:
-            type: string
+          type: string
+
+          
           
             
