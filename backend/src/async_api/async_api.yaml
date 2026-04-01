@@ -1,4 +1,4 @@
-asyncapi: 3.1.0
+asyncapi: 2.6.0
 id: 'com.notuno.websocket'
 defaultContentType: application/json
 info:
@@ -11,8 +11,9 @@ tags:
 
 servers:
   dev:
-    url: ws://localhost:3100
     protocol: ws
+    host: localhost
+    port: 3100
 
 channels:
   nuevoMensajeChat:
@@ -171,6 +172,6 @@ channels:
         payload:
           type: string
 
-          
+
           
             
