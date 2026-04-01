@@ -13,6 +13,7 @@ channels:
     publish:
       summary: Emite el mensaje filtrado a todos los usuarios de la sala donde se encuentra el emisor del mensaje
       message:
+        schemaFormat: application/json
         payload:
           type: object
           properties:
@@ -24,6 +25,7 @@ channels:
     subscribe:
       summary: Recibir mensaje de un usuario, lo envia al chat de la sala (backend lo procesa y reenvia)
       message:
+        schemaFormat: application/json        
         payload:
           type: object
           properties:
@@ -36,12 +38,14 @@ channels:
     subscribe:
       summary: Recibir peticion de que se le envie las peticiones de solicitud de amistad pendientes
       message:
+        schemaFormat: application/json
         
 
   res_pendingFriendRequests:
     publish:
       summary: Emite respuesta al usuario que envia el evento "pendingFriendRequests" con la lista de solicitudes de amistad pendientes de contestar
       message:
+        schemaFormat: application/json
         payload:
           type: array
           items:
@@ -58,6 +62,7 @@ channels:
     subscribe:
       summary: Recibir notificacion de que se ha enviado una solicitud de amistad a "id"
       message:
+        schemaFormat: application/json
         payload:
           id:
             type: string
@@ -68,6 +73,7 @@ channels:
     publish:
       summary: Emite notificacion al cliente a tiempo real de que se le ha enviado una solicitud de amistaad
       message:
+        schemaFormat: application/json
         payload:
           username:
             type: string
@@ -77,6 +83,7 @@ channels:
     subscribe:
       summary: Recibir notificacion de que se ha aceptado una solicitud de amistad a "id"
       message:
+        schemaFormat: application/json
         payload:
           id:
             type: string
@@ -87,6 +94,7 @@ channels:
     publish:
       summary: Emite notificacion al cliente a tiempo real de que se "username" ha aceptado la solicitud de amistad que fue enviada por el cliente
       message:
+        schemaFormat: application/json
         payload:
           username:
             type: string
@@ -95,6 +103,7 @@ channels:
     subscribe:
       summary: Recibe notificacion de que se ha enviado una solicitud de amistad a "id"
       message:
+        schemaFormat: application/json
         payload:
           id:
             type: string
@@ -105,6 +114,7 @@ channels:
     publish:
       summary: Emite notificacion al cliente a tiempo real de que se "username" ha rechazado la solicitud de amistad que fue enviada por el cliente
       message:
+        schemaFormat: application/json
         payload:
           username:
             type: string
@@ -113,14 +123,15 @@ channels:
     subscribe:
       summary: Recibe notificacion de que se "username" se ha conectado
       message:
-        
-          
-        
+        schemaFormat: application/json
+
+
 
   amigoConectado:
     publish:
       summary: Emite notificacion al cliente de que "username" (que es amigo de cliente) se ha conectado
       message:
+        schemaFormat: application/json
         payload:
           username:
             type: string
@@ -129,6 +140,8 @@ channels:
     subscribe:
       summary: Recibe notificacion de que se "username" se ha desconectado
       message:
+        schemaFormat: application/json
+
         
           
         
@@ -137,6 +150,7 @@ channels:
     publish:
       summary: Emite notificacion al cliente de que "username" (que es amigo de cliente) se ha desconectado
       message:
+        schemaFormat: application/json
         payload:
           username:
             type: string
