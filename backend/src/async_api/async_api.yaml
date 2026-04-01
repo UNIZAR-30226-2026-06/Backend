@@ -1,0 +1,144 @@
+asyncapi: 2.6.0
+info:
+  title: Notuno web events socket 
+  version: 1.0.0
+
+servers:
+  dev:
+    url: ws://localhost:3100
+    protocol: ws
+
+channels:
+  nuevoMensajeChat:
+    publish:
+      summary: Emite el mensaje filtrado a todos los usuarios de la sala donde se encuentra el emisor del mensaje
+      message:
+        payload:
+          type: object
+          properties:
+            mensaje:
+              type: string
+            
+
+  newMessage:
+    subscribe:
+      summary: Recibir mensaje de un usuario, lo envia al chat de la sala (backend lo procesa y reenvia)
+      message:
+        payload:
+          type: object
+          properties:
+            mensaje:
+              type: string
+            partidaID:
+              type: string
+
+  pendingFriendRequests:
+    subscribe:
+      summary: Recibir peticion de que se le envie las peticiones de solicitud de amistad pendientes
+      message:
+        
+
+  res_pendingFriendRequests:
+    publish:
+      summary: Emite respuesta al usuario que envia el evento "pendingFriendRequests" con la lista de solicitudes de amistad pendientes de contestar
+      message:
+        payload:
+          type: array
+          items:
+            type: object
+            properties:
+              id_usuario_origen:
+                type: string
+              id_usuario_destino:
+                type: string
+              estado:
+                type: string
+            
+  newFriendRequest:
+    subscribe:
+      summary: Recibir notificacion de que se ha enviado una solicitud de amistad a "id"
+      message:
+        payload:
+          id:
+            type: string
+          
+        
+
+  mostrarFriendRequest:
+    publish:
+      summary: Emite notificacion al cliente a tiempo real de que se le ha enviado una solicitud de amistaad
+      message:
+        payload:
+          username:
+            type: string
+
+
+  newFriendRequestAccepted:
+    subscribe:
+      summary: Recibir notificacion de que se ha aceptado una solicitud de amistad a "id"
+      message:
+        payload:
+          id:
+            type: string
+          
+        
+
+  mostrarAceptadaFriendRequest:
+    publish:
+      summary: Emite notificacion al cliente a tiempo real de que se "username" ha aceptado la solicitud de amistad que fue enviada por el cliente
+      message:
+        payload:
+          username:
+            type: string
+
+  newFriendRequestReject:
+    subscribe:
+      summary: Recibe notificacion de que se ha enviado una solicitud de amistad a "id"
+      message:
+        payload:
+          id:
+            type: string
+          
+        
+
+  mostrarRechazadaFriendRequest:
+    publish:
+      summary: Emite notificacion al cliente a tiempo real de que se "username" ha rechazado la solicitud de amistad que fue enviada por el cliente
+      message:
+        payload:
+          username:
+            type: string
+
+  avisarAmigosConectados_UserOnline:
+    subscribe:
+      summary: Recibe notificacion de que se "username" se ha conectado
+      message:
+        
+          
+        
+
+  amigoConectado:
+    publish:
+      summary: Emite notificacion al cliente de que "username" (que es amigo de cliente) se ha conectado
+      message:
+        payload:
+          username:
+            type: string
+
+  avisarAmigosConectados_UserDisconnect:
+    subscribe:
+      summary: Recibe notificacion de que se "username" se ha desconectado
+      message:
+        
+          
+        
+
+  amigoDesconectado:
+    publish:
+      summary: Emite notificacion al cliente de que "username" (que es amigo de cliente) se ha desconectado
+      message:
+        payload:
+          username:
+            type: string
+          
+            
