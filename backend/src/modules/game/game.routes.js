@@ -226,6 +226,36 @@ router.get('/:gameId', authMiddleware, gameController.obtenerPartida);
  */
 router.get('/:gameId/state', authMiddleware, gameController.obtenerEstadoPartida);
 
+// ================= START =================
+/**
+ * @swagger
+ * /partidas/{gameId}/start:
+ *   post:
+ *     summary: Iniciar una partida (solo creador)
+ *     tags: [Partidas]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: gameId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la partida
+ *     responses:
+ *       200:
+ *         description: Partida iniciada correctamente
+ *       400:
+ *         description: Error al iniciar la partida
+ *       403:
+ *         description: Solo el creador puede iniciar
+ *       404:
+ *         description: Partida no encontrada
+ *       401:
+ *         description: No autorizado
+ */
+router.post('/:gameId/start', authMiddleware, gameController.iniciarPartida);
+
 // ================= END =================
 /**
  * @swagger
@@ -254,11 +284,11 @@ router.post('/:gameId/end', authMiddleware, gameController.finalizarPartida);
 
 /**
  * @swagger
- * /games/{gameId}/play-card:
+ * /partidas/{gameId}/play-card:
  *   post:
  *     summary: Jugar una carta en la partida
  *     tags:
- *       - Game
+ *       - Partidas
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -293,6 +323,10 @@ router.post('/:gameId/end', authMiddleware, gameController.finalizarPartida);
  *                   example: true
  *       400:
  *         description: Error en los parámetros o turno inválido
+ *       403:
+ *         description: No autorizado para jugar en este turno
+ *       404:
+ *         description: Partida no encontrada
  *       401:
  *         description: No autorizado
  *       500:
@@ -302,11 +336,11 @@ router.post('/:gameId/play-card', authMiddleware, gameController.jugarCarta);
 
 /**
  * @swagger
- * /games/{gameId}/draw-card:
+ * /partidas/{gameId}/draw-card:
  *   post:
  *     summary: Robar una carta durante el turno del jugador
  *     tags:
- *       - Game
+ *       - Partidas
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -329,6 +363,10 @@ router.post('/:gameId/play-card', authMiddleware, gameController.jugarCarta);
  *                   description: Carta que fue robada por el jugador
  *       400:
  *         description: Error en los parámetros o turno inválido
+ *       403:
+ *         description: No autorizado para robar en este turno
+ *       404:
+ *         description: Partida no encontrada
  *       401:
  *         description: No autorizado
  *       500:

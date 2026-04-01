@@ -4,6 +4,12 @@ const { resolveTimeoutIfNeeded } = require('../../core/game-engine/game.utils');
 
 const activeGames = new Map();
 
+function httpError(status, message) {
+  const err = new Error(message);
+  err.status = status;
+  return err;
+}
+
 // =========================
 // UTILS
 // =========================
@@ -90,6 +96,8 @@ async function crearPartida(id_creador, config) {
   let codigo = null;
   if (config.privada) codigo = await generarCodigoUnico();
 
+  const client = await db.connect();
+
   const initialState = new GameState({
     id: null,
     players: [{
@@ -107,35 +115,94 @@ async function crearPartida(id_creador, config) {
     phase: 'waiting'
   });
 
-  const result = await db.query(
-    `INSERT INTO notuno.partida
-     (num_cartas_inicio, modo_cartas_especiales, modo_roles,
-      sonido, musica, vibracion,
-      estado, timeout_turno, max_jugadores,
-      partida_publica, codigo, game_state)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
-     RETURNING id_partida, codigo`,
-    [
-      config.numCartasInicio,
-      config.modoCartasEspeciales,
-      config.modoRoles,
-      config.sonido ?? true,
-      config.musica ?? true,
-      config.vibracion ?? true,
-      'esperando_jugadores',
-      config.timeoutTurno ?? 30,
-      config.maxJugadores,
-      !config.privada,
-      codigo,
-      initialState
-    ]
-  );
+  try {
+    await client.query('BEGIN');
 
-  const partida = result.rows[0];
-  initialState.id = partida.id_partida;
-  activeGames.set(partida.id_partida, initialState);
+    const result = await client.query(
+      `INSERT INTO notuno.partida
+       (num_cartas_inicio, modo_cartas_especiales, modo_roles,
+        sonido, musica, vibracion,
+        estado, timeout_turno, max_jugadores,
+        codigo, game_state)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+       RETURNING id_partida, codigo`,
+      [
+        config.numCartasInicio,
+        config.modoCartasEspeciales,
+        config.modoRoles,
+        config.sonido ?? true,
+        config.musica ?? true,
+        config.vibracion ?? true,
+        'esperando_jugadores',
+        config.timeoutTurno ?? 30,
+        config.maxJugadores,
+        codigo,
+        initialState
+      ]
+    );
 
-  return partida;
+    const partida = result.rows[0];
+
+    await client.query(
+      `INSERT INTO notuno.usuario_en_partida (id_partida, id_usuario) VALUES ($1,$2)`,
+      [partida.id_partida, id_creador]
+    );
+
+    await client.query('COMMIT');
+
+    initialState.id = partida.id_partida;
+    activeGames.set(partida.id_partida, initialState);
+
+    return partida;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+// =========================
+// INICIAR PARTIDA
+// =========================
+
+async function iniciarPartida(gameId, username) {
+  const client = await db.connect();
+  try {
+    await client.query('BEGIN');
+
+    const lock = await client.query(
+      `SELECT estado FROM notuno.partida WHERE id_partida = $1 FOR UPDATE`,
+      [gameId]
+    );
+
+    if (lock.rowCount === 0) throw httpError(404, 'Partida no encontrada');
+
+    let gameState = activeGames.get(gameId) || await cargarPartidaEnMemoria(gameId);
+    const owner = gameState.players[0]?.id;
+
+    if (owner !== username) throw httpError(403, 'Solo el creador puede iniciar la partida');
+    if (gameState.phase !== 'waiting') throw httpError(400, 'La partida ya fue iniciada');
+
+    const GameLogic = require('../../core/game-engine/game.logic');
+    const logic = new GameLogic(gameState);
+    logic.startGame();
+
+    await client.query(
+      `UPDATE notuno.partida
+       SET estado = 'en_curso', game_state = $2, updated_at = NOW()
+       WHERE id_partida = $1`,
+      [gameId, gameState]
+    );
+
+    await client.query('COMMIT');
+    return { started: true };
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
 // =========================
@@ -241,7 +308,7 @@ async function obtenerEstadoPartida(gameId, username) {
   return {
     gameId,
     phase: state.phase,
-    currentTurn: state.currentTurn,
+    currentTurn: state.players?.[state.currentTurn]?.id || null,
     direction: state.direction,
     discardTop: state.discardPile?.at(-1) || null,
     drawCount: state.drawPile?.length || 0,
@@ -303,7 +370,8 @@ async function jugarCarta(gameId, username, cardId) {
   try {
     await client.query('BEGIN');
 
-    await client.query(`SELECT 1 FROM notuno.partida WHERE id_partida = $1 FOR UPDATE`, [gameId]);
+    const lockResult = await client.query(`SELECT 1 FROM notuno.partida WHERE id_partida = $1 FOR UPDATE`, [gameId]);
+    if (lockResult.rowCount === 0) throw httpError(404, 'Partida no encontrada');
 
     let gameState = activeGames.get(gameId) || await cargarPartidaEnMemoria(gameId);
 
@@ -312,16 +380,18 @@ async function jugarCarta(gameId, username, cardId) {
 
     resolveTimeoutIfNeeded(logic);
 
-    if (gameState.phase !== 'playing') throw new Error('La partida no está en juego');
+    if (gameState.phase !== 'playing') throw httpError(400, 'La partida no está en juego');
 
     const current = gameState.getCurrentPlayer();
-    if (current.id !== username) throw new Error('No es tu turno');
+    if (current.id !== username) throw httpError(403, 'No es tu turno');
 
     const player = gameState.getPlayerById(username);
-    if (!player) throw new Error('Jugador no está en la partida');
+    if (!player) throw httpError(403, 'Jugador no está en la partida');
+
+    if (!cardId) throw httpError(400, 'cardId es requerido');
 
     const card = player.hand.find(c => c.id === cardId);
-    if (!card) throw new Error('Carta no pertenece al jugador');
+    if (!card) throw httpError(400, 'Carta no pertenece al jugador');
 
     logic.playCard(username, card);
 
@@ -350,7 +420,8 @@ async function robarCarta(gameId, username) {
   try {
     await client.query('BEGIN');
 
-    await client.query(`SELECT 1 FROM notuno.partida WHERE id_partida = $1 FOR UPDATE`, [gameId]);
+    const lockResult = await client.query(`SELECT 1 FROM notuno.partida WHERE id_partida = $1 FOR UPDATE`, [gameId]);
+    if (lockResult.rowCount === 0) throw httpError(404, 'Partida no encontrada');
 
     let gameState = activeGames.get(gameId) || await cargarPartidaEnMemoria(gameId);
 
@@ -359,13 +430,15 @@ async function robarCarta(gameId, username) {
 
     resolveTimeoutIfNeeded(logic);
 
-    if (gameState.phase !== 'playing') throw new Error('La partida no está en juego');
+    if (gameState.phase !== 'playing') throw httpError(400, 'La partida no está en juego');
 
     const current = gameState.getCurrentPlayer();
-    if (current.id !== username) throw new Error('No es tu turno');
+    if (current.id !== username) throw httpError(403, 'No es tu turno');
 
     const card = logic.drawCard();
     gameState.addCardToPlayer(username, card);
+    logic.turnManager.next();
+    gameState.setNewTurnDeadline(30000);
 
     await client.query(
       `UPDATE notuno.partida SET game_state = $2, updated_at = NOW() WHERE id_partida = $1`,
@@ -385,6 +458,7 @@ async function robarCarta(gameId, username) {
 
 module.exports = {
   crearPartida,
+  iniciarPartida,
   unirsePartida,
   unirsePorCodigo,
   cargarPartidaEnMemoria,

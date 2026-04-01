@@ -71,7 +71,7 @@ class GameLogic {
     }
 
     const initialCard = this.drawCard();
-    this.state.setCurrentCard = initialCard;
+    this.state.setCurrentCard(initialCard);
     this.state.addToDiscardPile(initialCard);
 
     // 🔥 CRÍTICO
@@ -91,7 +91,7 @@ class GameLogic {
       throw new Error('Carta no válida');
 
     this.state.removeCardFromPlayer(playerId, card);
-    this.state.setCurrentCard = card;
+    this.state.setCurrentCard(card);
     this.state.addToDiscardPile(card);
 
     this.cardRules.applyEffect(card, playerId);

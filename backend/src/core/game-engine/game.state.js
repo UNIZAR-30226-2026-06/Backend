@@ -2,6 +2,7 @@ class GameState {
   constructor({ id, players, numCardsIni, specialCardsMode, rolesMode }) {
     this.id = id;
     this.phase = 'waiting';
+    this.currentCard = null;
 
     this.players = players.map((p) => ({
       id: p.userId || p.id,
@@ -83,6 +84,10 @@ class GameState {
     return this.discardPile[this.discardPile.length - 1] || null;
   }
 
+  getCurrentCard() {
+    return this.currentCard;
+  }
+
   // ======================
   // SETTERS
   // ======================
@@ -109,6 +114,10 @@ class GameState {
 
   setDiscardPile(pile) {
     this.discardPile = pile;
+  }
+
+  setCurrentCard(card) {
+    this.currentCard = card;
   }
 
   clearHands() {

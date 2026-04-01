@@ -88,6 +88,20 @@ async function obtenerEstadoPartida(req, res) {
   }
 }
 
+// ================= START =================
+async function iniciarPartida(req, res) {
+  try {
+    const username = req.user.nombre_usuario;
+    const gameId = req.params.gameId;
+
+    const result = await gameService.iniciarPartida(gameId, username);
+
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+}
+
 // ================= END =================
 async function finalizarPartida(req, res) {
   try {
@@ -134,6 +148,7 @@ module.exports = {
   crearPartida,
   unirsePartida,
   unirsePorCodigo,
+  iniciarPartida,
   obtenerPartida,
   obtenerEstadoPartida,
   finalizarPartida,
