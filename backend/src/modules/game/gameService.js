@@ -456,6 +456,14 @@ async function robarCarta(gameId, username) {
   }
 }
 
+
+
+async function getCarta(idcarta) {
+  //funcion que devuelve la carta a partir de su id, con toda su informacion (color, numero, tipo...)
+  const result = await db.query(`SELECT * FROM notuno.carta WHERE id_carta = $1`, [idcarta]);
+  return result.rows[0];
+}
+
 module.exports = {
   crearPartida,
   iniciarPartida,
@@ -467,5 +475,7 @@ module.exports = {
   finalizarPartida,
   jugarCarta,
   robarCarta,
+  getCarta,
+  siguienteTurno,
   activeGames
 };

@@ -5,6 +5,7 @@ const {authService} = require('../modules/auth/auth.controller');
 const {chatController} = require('../modules/chat/chat.controller');
 const {friendsService}=require('../modules/friends/friendsService');
 const { Socket } = require('socket.io');
+const {gameService}=require('../modules/game/gameService')
 
 
 async function getPendingFriendRequests(username) {
@@ -18,7 +19,7 @@ async function getPendingFriendRequests(username) {
   return result.rows;
 }
 
-async function crear_room(io, partidaID) {
+async function unirse_room_partida(io, partidaID) {
     io.join(partidaID)
 
 }
@@ -100,13 +101,44 @@ function registerSocketHandlers(io) {
 
     
 
-    socket.on('start_game', (data) => {
+    socket.on('start_game', async (data) => {
       //tareas a realizar para implementar una partida
+      //me llega cuando estan todos los jugadores preparados para iniciar la partida, entonces creo la partida y asigno a cada jugador su mano inicial, y les envio un mensaje a cada uno con su mano inicial y el id de la partida a la que se han unido
+      
+      
+      partida=await gameService.crearPartida(username, data.configuracion)
+      const i=0;
+      for (const jugador of data.jugadores) {
+        if (connectedUsers.has(jugador)) {
+          //envio a cada jugador su mano inicial y el id de la partida a la que se han unido
+          socket.to(connectedUsers.get(jugador)).emit(`partida_iniciada`, {partidaID: partida.id_partida, manoInicial: partida.mano[i]})
+          i++;
+        }
+      }
+      await gameService.iniciarPartida(partida.id_partida, username) //iniciar partida para que se pueda jugar
 
     })
 
-    socket.on('next_turn', (data) => {
-      //comprobar turno valido y enviar mensaje a siguiente jugador de que es su turno
+    socket.on('comprobar_turno', async (data) => {
+      //comprobar turno valido y enviar mensaje indicando si es valido o no (solo al jugador que ha jugado el turno)
+      try{
+        await gameService.jugarCarta(data.partidaID, username, data.cartaId) //comprobar si el turno es valido y jugar la carta, si no es valido se lanza una excepcion que se captura en el controlador y se envia un mensaje de error al jugador
+      } catch (error) {
+        socket.emit('turno_invalido', {message: error.message})
+      }
+      //si llega aqui el turno es valido, se envia un evento indicando el siguiente jugador y si tiene que robar cartas o no
+      
+      io.to(data.partidaID).emit('turno_siguiente', {siguienteJugador: siguiente.jugador, cartasRobar: siguiente.cartasRobar}) //enviar mensaje a todos los jugadores de la partida indicando el siguiente jugador
+      //se le indica tambien si tiene que robar alguna carta, tendra que emitir eventos para robar cartas si es necesario
+
+    })
+
+    
+
+    socket.on('robar_carta', async (data) => {
+      //robar carta y enviar mensaje al jugador que ha robado la carta con la carta robada
+      cartaRobada=await gameService.robarCarta(data.partidaID, username) //robar carta para el jugador que ha robado la carta
+      socket.emit('carta_robada', {carta: cartaRobada}) //enviar mensaje al jugador que ha robado la carta con la carta robada
     })
 
     socket.on('disconnect', () => {
