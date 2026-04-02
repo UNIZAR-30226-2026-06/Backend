@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/server.js",
-    "start": "node src/server.js",
+    "docs": "asyncapi generate fromTemplate src/async_api/async_api.yaml @asyncapi/html-template -o docs",
+    "start": "npm run docs && node src/server.js",
     "db:setup": "node src/init-db.js"
   },
   "keywords": [],

@@ -476,6 +476,5 @@ module.exports = {
   jugarCarta,
   robarCarta,
   getCarta,
-  siguienteTurno,
   activeGames
 };
