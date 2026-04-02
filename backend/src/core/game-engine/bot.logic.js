@@ -1,8 +1,7 @@
 class BotLogic {
-  constructor(state, cardRules, turnManager) {
+  constructor(state, cardRules) {
     this.state = state;
     this.cardRules = cardRules;
-    this.turnManager = turnManager;
   }
 
   decideMove(playerID) {
@@ -10,14 +9,11 @@ class BotLogic {
     if (!player) throw new Error('Jugador no encontrado para el bot');
 
     const hand = player.hand;
-
     let playable = hand.filter(card => this.cardRules.canPlay(card));
 
-    if (playable.length === 0) {
-      return { type: 'draw' };
-    }
+    if (playable.length === 0) return { type: 'draw' };
 
-    const nextPlayer = this.turnManager.getNextPlayer();
+    const nextPlayer = this.getNextPlayer();
     const nextHand = this.state.getPlayerHand(nextPlayer.id);
 
     if (nextHand.length === 1) {

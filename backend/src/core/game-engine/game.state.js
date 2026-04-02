@@ -17,7 +17,6 @@ class GameState {
     this.currentTurn = 0;
     this.direction = 1;
 
-    // 🔥 CRÍTICO
     this.turnDeadline = null;
 
     this.drawPile = [];
@@ -31,10 +30,12 @@ class GameState {
     this.rolesMode = rolesMode;
 
     this.createdAt = Date.now();
+
+    this.filters = {};
   }
 
   // ======================
-  // TURNOS (NUEVO)
+  // TURNOS
   // ======================
 
   setNewTurnDeadline(durationMs) {
@@ -44,10 +45,6 @@ class GameState {
   isTurnExpired() {
     return this.turnDeadline && Date.now() >= this.turnDeadline;
   }
-
-  // ======================
-  // GETTERS
-  // ======================
 
   getCurrentPlayer() {
     return this.players[this.currentTurn];
@@ -89,7 +86,7 @@ class GameState {
   }
 
   // ======================
-  // SETTERS
+  // SETTERS Y TURN LOGIC
   // ======================
 
   setPhase(phase) {
@@ -108,6 +105,38 @@ class GameState {
     this.currentTurn = index;
   }
 
+  advanceTurn() {
+    this.currentTurn = (this.currentTurn + this.direction + this.players.length) % this.players.length;
+  }
+
+  getNextPlayer() {
+    return this.getPlayerByIndex((this.currentTurn + this.direction + this.players.length) % this.players.length);
+  }
+
+  reverseDirection() {
+    this.direction *= -1;
+  }
+
+  skipNextTurn() {
+    this.advanceTurn();
+  }
+
+  stayTurn() {
+    // no cambia currentTurn
+  }
+
+  setFilter(playerId, fn) {
+    this.filters[playerId] = fn;
+  }
+
+  getFilter(playerId) {
+    return this.filters[playerId];
+  }
+
+  // ======================
+  // MANEJO DE CARTAS
+  // ======================
+
   setDrawPile(pile) {
     this.drawPile = pile;
   }
@@ -123,10 +152,6 @@ class GameState {
   clearHands() {
     this.players.forEach(p => p.hand = []);
   }
-
-  // ======================
-  // CARTAS
-  // ======================
 
   addCardToPlayer(playerId, card) {
     const player = this.getPlayerById(playerId);
