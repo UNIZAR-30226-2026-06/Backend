@@ -1,12 +1,5 @@
-<<<<<<< Updated upstream
-const { activeGames } = require('../../modules/game/gameService');
-const GameLogic = require('./game.logic');
-const { resolveTimeoutIfNeeded } = require('./game.utils');
-const db = require('../../config/db');
-=======
 const { activeGames } = require('./game.registry');
 const { runGameCycle } = require('./game.runner');
->>>>>>> Stashed changes
 
 const POLL_INTERVAL = 2000;
 

@@ -76,11 +76,7 @@ class GameLogic {
     }
 
     const initialCard = this.drawCard();
-<<<<<<< Updated upstream
     this.state.setCurrentCard(initialCard);
-=======
-    this.state.currentCard = initialCard;
->>>>>>> Stashed changes
     this.state.addToDiscardPile(initialCard);
 
     this.state.setNewTurnDeadline(TURN_DURATION_MS);
@@ -97,11 +93,7 @@ class GameLogic {
     if (!this.cardRules.canPlay(card)) throw new Error('Carta no válida');
 
     this.state.removeCardFromPlayer(playerId, card);
-<<<<<<< Updated upstream
     this.state.setCurrentCard(card);
-=======
-    this.state.currentCard = card;
->>>>>>> Stashed changes
     this.state.addToDiscardPile(card);
 
     this.cardRules.applyEffect(card, playerId);

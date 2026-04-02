@@ -96,29 +96,10 @@ async function obtenerEstadoPartida(req, res, next) {
   }
 }
 
-<<<<<<< Updated upstream
-// ================= START =================
-async function iniciarPartida(req, res) {
-  try {
-    const username = req.user.nombre_usuario;
-    const gameId = req.params.gameId;
-
-    const result = await gameService.iniciarPartida(gameId, username);
-
-    res.status(200).json(result);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-}
-
-// ================= END =================
-async function finalizarPartida(req, res) {
-=======
 // ==========================
 // FINALIZAR PARTIDA
 // =========================
 async function finalizarPartida(req, res, next) {
->>>>>>> Stashed changes
   try {
     const username = req.user.nombre_usuario;
     const gameId = req.params.gameId;
@@ -133,6 +114,22 @@ async function finalizarPartida(req, res, next) {
     } else {
       next(err);
     }
+  }
+}
+
+// =========================
+// INICIAR PARTIDA
+// =========================
+async function iniciarPartida(req, res, next) {
+  try {
+    const username = req.user.nombre_usuario;
+    const gameId = req.params.gameId;
+
+    const result = await gameService.iniciarPartida(gameId, username);
+
+    res.status(200).json(result);
+  } catch (err) {
+    next(err);
   }
 }
 
