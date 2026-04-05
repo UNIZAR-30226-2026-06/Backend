@@ -53,11 +53,11 @@ function registerSocketHandlers(io) {
     socket.on('pendingFriendRequests', async () =>  {
       try {
         const res=await getPendingFriendRequests(username) 
-        socket.emit(`res_pendingFriendRequests`, res.json())
+        socket.emit(`res_pendingFriendRequests`, res)
 
 
       } catch (err) {
-        next(err)
+        console.error("Error en pendingFriendRequests:", err);
       }
     })
 
