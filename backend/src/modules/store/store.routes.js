@@ -48,7 +48,7 @@ router.get('/avatars', storeController.obtenerAvataresTienda);
  * @swagger
  * /store/estilos/{id}:
  *   get:
- *     summary: Obtiene avatar a partir del id
+ *     summary: Obtener estilo a partir del id
  *     description: Devuelve la informacion relacionada con un estilo a partir del id
  *     tags: [Store]
  *     responses:
@@ -83,7 +83,7 @@ router.get('/estilos/:id', storeController.obtenerEstiloID);
  * @swagger
  * /store/avatars/{id}:
  *   get:
- *     summary: Obtener avatares por id
+ *     summary: Obtener avatar por id
  *     description: Devuelve la informacion relacionada con un avatar a partir del id
  *     tags: [Store]
  *     responses:
