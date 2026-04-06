@@ -28,7 +28,7 @@ function extractTokenFromSocket(socket) {
 }
 
 function initSocket(httpServer) {
-  const io = new Server(httpServer, {
+  io = new Server(httpServer, {
     cors: {
       origin: (origin, callback) => {
         if (!origin || allowedOrigins.includes(origin)) {

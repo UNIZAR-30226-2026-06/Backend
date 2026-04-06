@@ -432,6 +432,57 @@ async function robarCarta(gameId, username) {
 }
 
 
+// =========================
+// AÑADIR BOT A LA PARTIDA
+// =========================
+async function añadirBot(gameId, usernameCreador) {
+  const client = await db.connect();
+  try {
+    await client.query('BEGIN');
+    
+    // Cargar partida
+    let gameState = activeGames.get(gameId) || await cargarPartidaEnMemoria(gameId);
+    
+    // Validar que solo el creador pueda añadir bots y que la partida no haya empezado
+    if (gameState.players[0].id !== usernameCreador) {
+      throw new Error('Solo el creador puede añadir bots');
+    }
+    if (gameState.phase !== 'waiting') {
+      throw new Error('La partida ya ha comenzado');
+    }
+    
+    // Generar un ID único para el bot
+    const botId = `Bot_${Math.floor(Math.random() * 10000)}`;
+    
+    // Añadir al estado del juego
+    gameState.players.push({
+      id: botId,
+      hand: [],
+      rol: null,
+      rolUses: 0,
+      connected: true, // Siempre "conectado"
+      isBot: true,     // Bandera clave
+      saidUno: false
+    });
+    
+    gameState.needsPersistence = true;
+    
+    // Persistir el estado modificado
+    await client.query(
+      `UPDATE notuno.partida SET game_state = $2 WHERE id_partida = $1`,
+      [gameId, JSON.stringify(gameState)]
+    );
+    
+    await client.query('COMMIT');
+    return { success: true, botId };
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
 
 async function getCarta(idcarta) {
   //funcion que devuelve la carta a partir de su id, con toda su informacion (color, numero, tipo...)
@@ -451,5 +502,6 @@ module.exports = {
   jugarCarta,
   robarCarta,
   getCarta,
-  activeGames
+  activeGames,
+  añadirBot
 };

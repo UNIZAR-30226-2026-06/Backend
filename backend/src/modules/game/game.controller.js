@@ -166,6 +166,30 @@ async function robarCarta(req, res, next) {
   }
 }
 
+// ==========================
+// AÑADIR BOT A LA PARTIDA
+// =========================
+async function añadirBot(req, res, next) {
+  try {
+    const username = req.user.nombre_usuario; // El usuario autenticado que hace la petición
+    const { gameId } = req.params;
+
+    // Llamamos al servicio que creamos en el paso anterior
+    const result = await gameService.añadirBot(gameId, username);
+
+    res.status(200).json(result);
+  } catch (err) {
+    // Manejo básico de errores para devolver el código HTTP correcto
+    if (err.message.includes('Solo el creador')) {
+      res.status(403).json({ message: err.message });
+    } else if (err.message.includes('ya ha comenzado')) {
+      res.status(400).json({ message: err.message });
+    } else {
+      next(err);
+    }
+  }
+}
+
 module.exports = {
   crearPartida,
   unirsePartida,
@@ -175,5 +199,6 @@ module.exports = {
   obtenerEstadoPartida,
   finalizarPartida,
   jugarCarta,
-  robarCarta
+  robarCarta,
+  añadirBot
 };

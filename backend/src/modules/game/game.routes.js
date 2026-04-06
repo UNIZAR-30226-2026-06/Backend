@@ -374,4 +374,43 @@ router.post('/:gameId/play-card', authMiddleware, gameController.jugarCarta);
  */
 router.post('/:gameId/draw-card', authMiddleware, gameController.robarCarta);
 
+/**
+ * @swagger
+ * /partidas/{gameId}/add-bot:
+ *   post:
+ *     summary: Añadir un bot a la partida (solo el creador puede hacerlo)
+ *     tags:
+ *       - Partidas
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: gameId
+ *         required: true
+ *         description: ID de la partida
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Bot añadido correctamente a la partida
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 botId:
+ *                   type: string
+ *                   example: Bot_8492
+ *       400:
+ *         description: Error (la partida ya ha comenzado)
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: Error (solo el creador puede añadir bots)
+ */
+router.post('/:gameId/add-bot', authMiddleware, gameController.añadirBot);
+
 module.exports = router;

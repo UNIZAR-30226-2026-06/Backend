@@ -19,10 +19,6 @@ async function getPendingFriendRequests(username) {
   return result.rows;
 }
 
-async function unirse_room_partida(io, partidaID) {
-    io.join(partidaID)
-
-}
 const connectedUsers=new Map();
 
 function registerSocketHandlers(io) {
@@ -37,7 +33,10 @@ function registerSocketHandlers(io) {
     //me guardo el id del socket para enviarle mensajes solo a el
     connectedUsers.set(username, socket.id)
 
-
+    socket.on('unirse_room_partida', (partidaID) => {
+      socket.join(partidaID);
+      console.log(`Usuario ${username} se unió a la room de la partida: ${partidaID}`);
+    });
     
     socket.on(`newMessage`, data => {
       const mensaje_filtrado=processMessage(username, data.mensaje)
