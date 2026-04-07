@@ -490,6 +490,46 @@ async function getCarta(idcarta) {
   return result.rows[0];
 }
 
+// =========================
+// SISTEMA DE PAUSA
+// =========================
+
+async function votarPausa(gameId, username) {
+  return runGameCycle(gameId, async (logic, gameState) => {
+    if (gameState.phase !== 'playing') {
+      throw new Error('Solo se puede pausar una partida en juego');
+    }
+
+    // 1 sola persona pausa la partida al instante. 
+    // ¡Ya NO llamamos a addPauseVote!
+    gameState.setPaused();
+    gameState.needsPersistence = true;
+    
+    return { action: 'pausada', solicitante: username };
+  });
+}
+
+async function reanudarPartida(gameId, username) {
+  return runGameCycle(gameId, async (logic, gameState) => {
+    if (gameState.phase !== 'paused') {
+      throw new Error('La partida no está pausada');
+    }
+
+    // Registramos el voto de esta persona para reanudar
+    gameState.addResumeVote(username);
+
+    // Comprobamos si con este voto se alcanza la MAYORÍA
+    if (gameState.hasMajorityResumeVotes()) {
+      gameState.setResumed(30000);
+      gameState.needsPersistence = true;
+      return { action: 'reanudada' };
+    } else {
+      gameState.needsPersistence = true;
+      return { action: 'voto_reanudar_registrado', votosActuales: gameState.resumeVotes.length };
+    }
+  });
+}
+
 module.exports = {
   crearPartida,
   iniciarPartida,
@@ -503,5 +543,7 @@ module.exports = {
   robarCarta,
   getCarta,
   activeGames,
-  añadirBot
+  añadirBot,
+  votarPausa,
+  reanudarPartida
 };

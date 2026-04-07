@@ -32,6 +32,9 @@ class GameState {
     this.createdAt = Date.now();
 
     this.filters = {};
+
+    this.resumeVotes = []; // Guardará los IDs de los jugadores que han votado
+    this.pausedAt = null; // Guardará el timestamp de cuándo se pausó
   }
 
   // ======================
@@ -202,6 +205,49 @@ class GameState {
     if (!player) throw new Error('Jugador no encontrado');
     player.saidUno = saidUno;
   }
+
+  // ======================
+  // SISTEMA DE PAUSA
+  // ======================
+
+  isPaused() {
+    return this.phase === 'paused';
+  }
+
+  // 1 sola persona pausa instantáneamente, así que no hay addPauseVote
+  setPaused() {
+    this.phase = 'paused';
+    this.pausedAt = Date.now();
+    this.clearResumeVotes(); // Limpiamos los votos de reanudar por si acaso
+  }
+
+  // Añadimos voto para reanudar
+  addResumeVote(playerId) {
+    if (!this.resumeVotes.includes(playerId)) {
+      this.resumeVotes.push(playerId);
+    }
+  }
+
+  // Comprobamos mayoría absoluta (> 50% de humanos)
+  hasMajorityResumeVotes() {
+    const humanPlayers = this.players.filter(p => !p.isBot);
+    // Fórmula matemática para mayoría: Mitad hacia abajo + 1
+    // (Ej: 2 jug -> 2 votos | 3 jug -> 2 votos | 4 jug -> 3 votos)
+    const requiredVotes = Math.floor(humanPlayers.length / 2) + 1;
+    return this.resumeVotes.length >= requiredVotes;
+  }
+
+  clearResumeVotes() {
+    this.resumeVotes = [];
+  }
+
+  setResumed(turnDurationMs = 30000) {
+    this.phase = 'playing';
+    this.pausedAt = null;
+    this.clearResumeVotes();
+    this.setNewTurnDeadline(turnDurationMs);
+  }
+  
 }
 
 module.exports = GameState;

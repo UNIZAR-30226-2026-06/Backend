@@ -190,6 +190,29 @@ async function añadirBot(req, res, next) {
   }
 }
 
+// ==========================
+// PAUSAR / REANUDAR
+// =========================
+async function solicitarPausa(req, res, next) {
+  try {
+    const username = req.user.nombre_usuario;
+    const result = await gameService.votarPausa(req.params.gameId, username);
+    res.status(200).json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function reanudarPartida(req, res, next) {
+  try {
+    const username = req.user.nombre_usuario;
+    const result = await gameService.reanudarPartida(req.params.gameId, username);
+    res.status(200).json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   crearPartida,
   unirsePartida,
@@ -200,5 +223,7 @@ module.exports = {
   finalizarPartida,
   jugarCarta,
   robarCarta,
-  añadirBot
+  añadirBot,
+  solicitarPausa,
+  reanudarPartida
 };

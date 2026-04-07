@@ -21,10 +21,18 @@ async function runGameCycle(gameId, actionFn = null) {
       gameState = await cargarPartidaEnMemoria(gameId);
     }
 
+    // Si la partida está pausada y no hay una acción explícita (como votar o reanudar), 
+    // detenemos el ciclo aquí para que el tiempo y los bots se congelen.
+    if (gameState.phase === 'paused' && !actionFn) {
+      return gameState;
+    }
+
     const logic = new GameLogic(gameState);
 
-    // Resolver timeout de turno si corresponde
-    logic.resolveTimeoutIfNeeded();
+    // Solo resolvemos timeouts si la partida NO está pausada
+    if (gameState.phase !== 'paused') {
+      logic.resolveTimeoutIfNeeded();
+    }
 
     // Ejecutar acción externa si se pasó
     if (actionFn) {
@@ -72,9 +80,55 @@ async function runGameCycle(gameId, actionFn = null) {
       }
     }
 
+    //comprobamos si hay un gandor, y si lo hay le sumamos 50 monedas
+
+    if (gameState.phase === 'playing') {
+      const ganador = gameState.players.find(p => p.hand.length === 0);
+      
+      if (ganador) {
+        gameState.phase = 'finished';
+        gameState.needsPersistence = true;
+
+        try {
+          const { getIO } = require('../../realtime/socket.server');
+          const io = getIO();
+          let nuevasMonedas = null;
+
+          // Si el ganador es humano, le sumamos 50 monedas en la base de datos
+          if (!ganador.isBot) {
+            const result = await db.query(
+              `UPDATE notuno.usuario 
+               SET monedas = monedas + 50 
+               WHERE nombre_usuario = $1 
+               RETURNING monedas`,
+              [ganador.id]
+            );
+            
+            if (result.rowCount > 0) {
+              nuevasMonedas = result.rows[0].monedas;
+            }
+          }
+
+          // Emitimos a toda la sala que la partida ha terminado
+          io.to(gameId).emit('game_finished', { 
+            winner: ganador.id,
+            isBot: ganador.isBot,
+            recompensa: nuevasMonedas ? 50 : 0,
+            monedasTotales: nuevasMonedas 
+          });
+
+        } catch (err) {
+          console.error(`[Fin Partida] Error al procesar victoria en ${gameId}:`, err.message);
+        }
+      }
+    }
 
     // Persistencia opcional
     if (gameState.needsPersistence) {
+      // Actualizamos también la columna 'estado' para que la base de datos sepa si está pausada, en curso o finalizada.
+      let estadoDB = 'en_curso';
+      if (gameState.phase === 'paused') estadoDB = 'pausada';
+      if (gameState.phase === 'finished') estadoDB = 'finalizada';
       await db.query(
         `UPDATE notuno.partida SET game_state=$2, updated_at=NOW() WHERE id_partida=$1`,
         [gameId, JSON.stringify(gameState)]
