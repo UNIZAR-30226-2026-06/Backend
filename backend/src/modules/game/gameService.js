@@ -277,6 +277,80 @@ async function unirsePartida(gameId, username) {
   }
 }
 
+async function unirsePrimeraPartidaPublica(username) {
+  const client = await db.connect();
+  let gameId;
+
+  try {
+    await client.query('BEGIN');
+
+    const candidata = await client.query(
+      `SELECT p.id_partida
+       FROM notuno.partida p
+       WHERE p.partida_publica = TRUE
+         AND p.estado = 'esperando_jugadores'
+         AND (
+           SELECT COUNT(*)
+           FROM notuno.usuario_en_partida up
+           WHERE up.id_partida = p.id_partida
+         ) < p.max_jugadores
+       ORDER BY p.id_partida ASC
+       FOR UPDATE SKIP LOCKED
+       LIMIT 1`
+    );
+
+    if (candidata.rowCount === 0) {
+      throw httpError(404, 'No hay partidas publicas disponibles');
+    }
+
+    gameId = candidata.rows[0].id_partida;
+
+    const exists = await client.query(
+      `SELECT 1 FROM notuno.usuario_en_partida WHERE id_partida = $1 AND id_usuario = $2`,
+      [gameId, username]
+    );
+
+    if (exists.rowCount === 0) {
+      await client.query(
+        `INSERT INTO notuno.usuario_en_partida (id_partida, id_usuario) VALUES ($1,$2)`,
+        [gameId, username]
+      );
+    }
+
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+
+  const gameState = activeGames.get(gameId) || await cargarPartidaEnMemoria(gameId);
+
+  if (!gameState.players.find((p) => p.id === username)) {
+    gameState.players.push({
+      id: username,
+      hand: [],
+      rol: null,
+      rolUses: 0,
+      connected: true,
+      isBot: false,
+      saidUno: false
+    });
+    gameState.needsPersistence = true;
+  }
+
+  if (gameState.needsPersistence) {
+    await db.query(
+      `UPDATE notuno.partida SET game_state = $2 WHERE id_partida = $1`,
+      [gameId, JSON.stringify(gameState)]
+    );
+    gameState.needsPersistence = false;
+  }
+
+  return { gameId };
+}
+
 // =========================
 // UNIRSE POR CÓDIGO
 // =========================
@@ -534,6 +608,7 @@ module.exports = {
   crearPartida,
   iniciarPartida,
   unirsePartida,
+  unirsePrimeraPartidaPublica,
   unirsePorCodigo,
   cargarPartidaEnMemoria,
   obtenerEstadoPartida,

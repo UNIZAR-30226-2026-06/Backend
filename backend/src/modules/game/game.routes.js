@@ -69,28 +69,34 @@ router.post('/', authMiddleware, gameController.crearPartida);
 // ================= JOIN =================
 /**
  * @swagger
- * /partidas/{gameId}/join:
+ * /partidas/join:
  *   post:
- *     summary: Unirse a una partida pública
+ *     summary: Unirse automáticamente a la primera partida pública disponible
  *     tags: [Partidas]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: gameId
- *         required: true
- *         schema:
- *           type: string
- *         description: ID de la partida
  *     responses:
  *       200:
  *         description: Usuario unido correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Unido correctamente
+ *                 gameId:
+ *                   type: string
+ *                   description: ID de la partida pública a la que se unió
  *       400:
  *         description: Error (partida llena o no válida)
+ *       404:
+ *         description: No hay partidas públicas disponibles
  *       401:
  *         description: No autorizado
  */
-router.post('/:gameId/join', authMiddleware, gameController.unirsePartida);
+router.post('/join', authMiddleware, gameController.unirsePartidaPublica);
 
 // ================= JOIN PRIVADA =================
 /**
