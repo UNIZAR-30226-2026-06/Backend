@@ -21,7 +21,7 @@ async function withGameLock(gameId, fn) {
     if (locks.get(gameId) === next) {
       locks.delete(gameId);
     }
-  }
+  } 
 }
 
 module.exports = { withGameLock };

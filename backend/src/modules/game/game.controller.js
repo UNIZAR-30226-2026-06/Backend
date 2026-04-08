@@ -49,6 +49,17 @@ async function unirsePartida(req, res, next) {
   }
 }
 
+async function unirsePartidaPublica(req, res, next) {
+  try {
+    const username = req.user.nombre_usuario;
+    const result = await gameService.unirsePrimeraPartidaPublica(username);
+
+    res.status(200).json({ message: 'Unido correctamente', gameId: result.gameId });
+  } catch (err) {
+    next(err);
+  }
+}
+
 // ==========================
 // UNIRSE POR CÓDIGO
 // =========================
@@ -216,6 +227,7 @@ async function reanudarPartida(req, res, next) {
 module.exports = {
   crearPartida,
   unirsePartida,
+  unirsePartidaPublica,
   unirsePorCodigo,
   iniciarPartida,
   obtenerPartida,
