@@ -10,6 +10,10 @@ function httpError(status, message) {
   return err;
 }
 
+function getGameOwner(gameState) {
+  return gameState.ownerId || gameState.createdBy || gameState.players?.[0]?.id || null;
+}
+
 // =========================
 // UTILS
 // =========================
@@ -105,6 +109,7 @@ async function crearPartida(id_creador, config) {
     rolesMode: config.modoRoles,
     phase: 'waiting'
   });
+  initialState.ownerId = id_creador;
 
   try {
     await client.query('BEGIN');
@@ -173,9 +178,12 @@ async function iniciarPartida(gameId, username) {
     );
 
     if (lock.rowCount === 0) throw httpError(404, 'Partida no encontrada');
+    if (lock.rows[0].estado !== 'esperando_jugadores') {
+      throw httpError(400, 'La partida no está en estado lobby');
+    }
 
     let gameState = activeGames.get(gameId) || await cargarPartidaEnMemoria(gameId);
-    const owner = gameState.players[0]?.id;
+    const owner = getGameOwner(gameState);
 
     if (owner !== username) throw httpError(403, 'Solo el creador puede iniciar la partida');
     if (gameState.phase !== 'waiting') throw httpError(400, 'La partida ya fue iniciada');
@@ -188,7 +196,7 @@ async function iniciarPartida(gameId, username) {
       `UPDATE notuno.partida
        SET estado = 'en_curso', game_state = $2, updated_at = NOW()
        WHERE id_partida = $1`,
-      [gameId, gameState]
+      [gameId, JSON.stringify(gameState)]
     );
 
     await client.query('COMMIT');

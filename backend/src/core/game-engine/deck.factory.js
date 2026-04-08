@@ -2,7 +2,22 @@ class DeckFactory {
 
   static COLORS = ["blue", "red", "green", "yellow"];
   static NUMBERS = ["0","1","2","3","4","5","6","7","8","9"];
-  static SPECIALS = ["+2", "reverse", "+2R", "skip", "extraTurn", "playOdd", "playEven"];
+  static WILD_COLOR = "black";
+  static SPECIALS = [
+    { value: "+2", colors: [this.WILD_COLOR] },
+    { value: "reverse", colors: this.COLORS },
+    { value: "+2R", colors: [this.WILD_COLOR] },
+    { value: "+4", colors: [this.WILD_COLOR] },
+    { value: "+1", colors: [this.WILD_COLOR] },
+    { value: "skip", colors: this.COLORS },
+    { value: "extraTurn", colors: this.COLORS },
+    { value: "playOdd", colors: this.COLORS },
+    { value: "playEven", colors: this.COLORS },
+    { value: "swapHands", colors: [this.WILD_COLOR] },
+    { value: "discardHandRedraw", colors: [this.WILD_COLOR] },
+    { value: "restartGame", colors: [this.WILD_COLOR] },
+    { value: "specialOnly", colors: [this.WILD_COLOR] }
+  ];
   static NUM_CARTAS_CADA_TIPO = 4;
 
   static createDeck(config) {
@@ -44,12 +59,12 @@ class DeckFactory {
   static createSpecialCards() {
     const deck = [];
 
-    this.COLORS.forEach(color => {
-      this.SPECIALS.forEach(special => {
+    this.SPECIALS.forEach(special => {
+      special.colors.forEach(color => {
         for (let i = 0; i < this.NUM_CARTAS_CADA_TIPO; i++) {
           deck.push({
-            id: `${color}-${special}-${i}`, // ID único
-            value: special,
+            id: `${color}-${special.value}-${i}`, // ID único
+            value: special.value,
             color,
             type: "special"
           });

@@ -12,6 +12,41 @@ class GameLogic {
     this.botLogic = new BotLogic(this.state, this.cardRules);
   }
 
+  initializeNewGame() {
+    const deck = this.shuffle(
+      DeckFactory.createDeck({
+        specialCardsMode: this.state.specialCardsMode,
+        rolesMode: this.state.rolesMode
+      })
+    );
+
+    this.state.setDrawPile(deck);
+    this.state.setDiscardPile([]);
+    this.state.setCurrentCard(null);
+    this.state.setPhase('playing');
+    this.state.resetTurn();
+    this.state.setDirection(1);
+    this.state.clearHands();
+    this.state.clearFilters();
+    this.state.pendingDraw = 0;
+    this.state.skipNext = false;
+    this.state.turnDeadline = null;
+    this.state.pausedAt = null;
+    this.state.resumeVotes = [];
+
+    for (let i = 0; i < this.state.numCardsIni; i++) {
+      for (const player of this.state.players) {
+        const card = this.drawCard();
+        this.state.addCardToPlayer(player.id, card);
+      }
+    }
+
+    const initialCard = this.drawCard();
+    this.state.setCurrentCard(initialCard);
+    this.state.addToDiscardPile(initialCard);
+    this.state.setNewTurnDeadline(TURN_DURATION_MS);
+  }
+
   // ======================
   // BARAJAR
   // ======================
@@ -52,34 +87,38 @@ class GameLogic {
   startGame() {
     if (this.state.phase !== 'waiting') throw new Error('La partida ya ha comenzado');
     if (this.state.getPlayersCount() < 2) throw new Error('Se necesitan al menos 2 jugadores');
+    this.initializeNewGame();
+  }
 
-    const deck = this.shuffle(
-      DeckFactory.createDeck({
-        specialCardsMode: this.state.specialCardsMode,
-        rolesMode: this.state.rolesMode
-      })
-    );
+  restartGame() {
+    this.initializeNewGame();
+  }
 
-    this.state.setDrawPile(deck);
-    this.state.setDiscardPile([]);
-    this.state.setPhase('playing');
-    this.state.resetTurn();
-    this.state.setDirection(1);
-    this.state.clearHands();
+  swapHands() {
+    this.state.rotateHands(this.state.direction);
+  }
 
-    // repartir cartas a jugadores
-    for (let i = 0; i < this.state.numCardsIni; i++) {
-      for (const player of this.state.players) {
+  discardHandAndRedraw(playerId) {
+    const player = this.state.getPlayerById(playerId);
+    if (!player) throw new Error('Jugador no encontrado');
+
+    const cardsToDiscard = [...player.hand];
+    player.hand = [];
+    cardsToDiscard.forEach(card => this.state.addToDiscardPile(card));
+
+    for (let i = 0; i < cardsToDiscard.length; i++) {
+      const card = this.drawCard();
+      this.state.addCardToPlayer(playerId, card);
+    }
+  }
+
+  drawCardsForAllPlayers(count) {
+    for (const player of this.state.players) {
+      for (let i = 0; i < count; i++) {
         const card = this.drawCard();
         this.state.addCardToPlayer(player.id, card);
       }
     }
-
-    const initialCard = this.drawCard();
-    this.state.setCurrentCard(initialCard);
-    this.state.addToDiscardPile(initialCard);
-
-    this.state.setNewTurnDeadline(TURN_DURATION_MS);
   }
 
   // ======================
@@ -92,11 +131,24 @@ class GameLogic {
     if (currentPlayer.id !== playerId) throw new Error('No es el turno');
     if (!this.cardRules.canPlay(card)) throw new Error('Carta no válida');
 
-    this.state.removeCardFromPlayer(playerId, card);
-    this.state.setCurrentCard(card);
-    this.state.addToDiscardPile(card);
+    const playerHand = this.state.getPlayerHand(playerId);
+    const remainingHand = playerHand.filter(c => c.id !== card.id);
+    const resolvedCard = { ...card };
 
-    this.cardRules.applyEffect(card, playerId);
+    if (resolvedCard.color === 'black') {
+      const fallbackColor = this.botLogic.chooseColor(remainingHand.length > 0 ? remainingHand : playerHand) || 'red';
+      resolvedCard.chosenColor = resolvedCard.chosenColor || resolvedCard.selectedColor || resolvedCard.effectiveColor || fallbackColor;
+    }
+
+    this.state.removeCardFromPlayer(playerId, card);
+    this.state.setCurrentCard(resolvedCard);
+    this.state.addToDiscardPile(resolvedCard);
+
+    const shouldAdvanceTurn = this.cardRules.applyEffect(resolvedCard, playerId);
+
+    if (shouldAdvanceTurn === false) {
+      return;
+    }
 
     this.state.advanceTurn();
     this.state.setNewTurnDeadline(TURN_DURATION_MS);

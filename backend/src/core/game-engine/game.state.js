@@ -18,6 +18,7 @@ class GameState {
     this.direction = 1;
 
     this.turnDeadline = null;
+    this.turnNumber = 0;
 
     this.drawPile = [];
     this.discardPile = [];
@@ -88,6 +89,11 @@ class GameState {
     return this.currentCard;
   }
 
+  getCardColor(card) {
+    if (!card) return null;
+    return card.chosenColor || card.selectedColor || card.effectiveColor || card.wildColor || card.color;
+  }
+
   // ======================
   // SETTERS Y TURN LOGIC
   // ======================
@@ -102,6 +108,7 @@ class GameState {
 
   resetTurn() {
     this.currentTurn = 0;
+    this.turnNumber = 0;
   }
 
   setCurrentTurnIndex(index) {
@@ -109,6 +116,7 @@ class GameState {
   }
 
   advanceTurn() {
+    this.turnNumber += 1;
     this.currentTurn = (this.currentTurn + this.direction + this.players.length) % this.players.length;
   }
 
@@ -128,12 +136,31 @@ class GameState {
     // no cambia currentTurn
   }
 
-  setFilter(playerId, fn) {
-    this.filters[playerId] = fn;
+  setFilter(playerId, fn, durationTurns = 1) {
+    this.filters[playerId] = {
+      fn,
+      expiresAtTurn: this.turnNumber + durationTurns
+    };
   }
 
   getFilter(playerId) {
-    return this.filters[playerId];
+    const entry = this.filters[playerId];
+    if (!entry) return null;
+
+    if (typeof entry === 'function') {
+      return entry;
+    }
+
+    if (this.turnNumber > entry.expiresAtTurn) {
+      delete this.filters[playerId];
+      return null;
+    }
+
+    return entry.fn;
+  }
+
+  clearFilters() {
+    this.filters = {};
   }
 
   // ======================
@@ -154,6 +181,16 @@ class GameState {
 
   clearHands() {
     this.players.forEach(p => p.hand = []);
+  }
+
+  rotateHands(direction = this.direction) {
+    const hands = this.players.map(player => [...player.hand]);
+    const totalPlayers = this.players.length;
+
+    this.players.forEach((player, index) => {
+      const sourceIndex = (index - direction + totalPlayers) % totalPlayers;
+      player.hand = hands[sourceIndex];
+    });
   }
 
   addCardToPlayer(playerId, card) {

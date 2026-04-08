@@ -15,14 +15,15 @@ class BotLogic {
 
     const nextPlayer = this.getNextPlayer();
     const nextHand = this.state.getPlayerHand(nextPlayer.id);
+    const attackValues = ['+4', '+2R', '+2', '+1', 'skip', 'reverse', 'swapHands', 'discardHandRedraw', 'specialOnly'];
 
     if (nextHand.length === 1) {
-      const attackCard = playable.find(c => ['draw2','draw4','skip','reverse'].includes(c.value));
+      const attackCard = playable.find(c => attackValues.includes(c.value));
       if (attackCard) return this.buildPlayDecision(attackCard, hand);
     }
 
     if (hand.length > 4) {
-      const filtered = playable.filter(c => !['draw2','draw4'].includes(c.value));
+      const filtered = playable.filter(c => !['+4', '+2R'].includes(c.value));
       if (filtered.length > 0) playable = filtered;
     }
 
@@ -39,7 +40,7 @@ class BotLogic {
   }
 
   selectBestCard(playable) {
-    const priority = { 'draw4': 4, 'draw2': 3, 'skip': 2, 'reverse': 1 };
+    const priority = { '+4': 5, '+2R': 4, '+2': 3, '+1': 3, 'skip': 2, 'reverse': 1, 'swapHands': 2, 'specialOnly': 1 };
     return playable.sort((a,b) => (priority[b.value]||0) - (priority[a.value]||0))[0];
   }
 
