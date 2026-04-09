@@ -68,9 +68,9 @@ async function unirsePorCodigo(req, res, next) {
     const username = req.user.nombre_usuario;
     const { codigo } = req.body;
 
-    await gameService.unirsePorCodigo(codigo, username);
+    const result = await gameService.unirsePorCodigo(codigo, username);
 
-    res.status(200).json({ message: 'Unido por código' });
+    res.status(200).json({ message: 'Unido por código', gameId: result.gameId });
   } catch (err) {
     next(err);
   }

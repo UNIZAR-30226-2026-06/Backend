@@ -370,7 +370,9 @@ async function unirsePorCodigo(codigo, username) {
   );
   if (result.rowCount === 0) throw new Error('Código inválido');
 
-  return await unirsePartida(result.rows[0].id_partida, username);
+  const gameId = result.rows[0].id_partida;
+  await unirsePartida(gameId, username);
+  return { gameId };
 }
 
 // =========================

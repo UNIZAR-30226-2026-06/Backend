@@ -120,6 +120,17 @@ router.post('/join', authMiddleware, gameController.unirsePartidaPublica);
  *     responses:
  *       200:
  *         description: Usuario unido correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Unido por código
+ *                 gameId:
+ *                   type: string
+ *                   description: ID de la partida privada a la que se unió
  *       400:
  *         description: Código inválido o partida no disponible
  *       401:
