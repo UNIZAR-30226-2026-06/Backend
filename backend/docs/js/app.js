@@ -533,6 +533,46 @@
       },
       "x-parser-unique-object-id": "carta_robada"
     },
+    "unirse_partida": {
+      "address": "game.unirse_partida",
+      "parameters": {},
+      "messages": {
+        "unirse_partida": {
+          "name": "unirse_partida",
+          "title": "Unirse partida",
+          "summary": "El jugador que quiere unirse a una partida emite este evento para unirse a la partida",
+          "payload": {
+            "type": "object",
+            "properties": {
+              "partidaID": {
+                "type": "string",
+                "x-parser-schema-id": "<anonymous-schema-57>"
+              }
+            },
+            "x-parser-schema-id": "<anonymous-schema-56>"
+          },
+          "x-parser-unique-object-id": "unirse_partida"
+        }
+      },
+      "x-parser-unique-object-id": "unirse_partida"
+    },
+    "nuevo_jugador": {
+      "address": "game.nuevo_jugador",
+      "parameters": {},
+      "messages": {
+        "nuevo_jugador": {
+          "name": "nuevo_jugador",
+          "title": "Nuevo Jugador",
+          "summary": "Se le indica a todos los jugadores de la partida que un nuevo jugador se ha unido a la partida",
+          "payload": {
+            "type": "string",
+            "x-parser-schema-id": "<anonymous-schema-58>"
+          },
+          "x-parser-unique-object-id": "nuevo_jugador"
+        }
+      },
+      "x-parser-unique-object-id": "nuevo_jugador"
+    },
     "disconnect": {
       "address": "disconnect",
       "parameters": {},
@@ -648,6 +688,16 @@
       "channel": "$ref:$.channels.robar_carta",
       "x-parser-unique-object-id": "robar_carta"
     },
+    "unirse_partida": {
+      "action": "send",
+      "channel": "$ref:$.channels.unirse_partida",
+      "x-parser-unique-object-id": "unirse_partida"
+    },
+    "nuevo_jugador": {
+      "action": "receive",
+      "channel": "$ref:$.channels.nuevo_jugador",
+      "x-parser-unique-object-id": "nuevo_jugador"
+    },
     "carta_robada": {
       "action": "send",
       "channel": "$ref:$.channels.carta_robada",
@@ -682,6 +732,8 @@
       "turno_siguiente": "$ref:$.channels.turno_siguiente.messages.turno_siguiente",
       "robar_carta": "$ref:$.channels.robar_carta.messages.robar_carta",
       "carta_robada": "$ref:$.channels.carta_robada.messages.carta_robada",
+      "unirse_partida": "$ref:$.channels.unirse_partida.messages.unirse_partida",
+      "nuevo_jugador": "$ref:$.channels.nuevo_jugador.messages.nuevo_jugador",
       "disconnect": "$ref:$.channels.disconnect.messages.disconnect"
     }
   },
