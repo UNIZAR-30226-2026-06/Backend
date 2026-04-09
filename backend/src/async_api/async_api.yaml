@@ -158,6 +158,20 @@ channels:
     messages:
       carta_robada:
         $ref: '#/components/messages/carta_robada'
+
+  unirse_partida:
+    address: game.unirse_partida
+    parameters: {}
+    messages:
+      unirse_partida:
+        $ref: '#/components/messages/unirse_partida'
+
+  nuevo_jugador:
+    address: game.nuevo_jugador
+    parameters: {}
+    messages:
+      nuevo_jugador:
+        $ref: '#/components/messages/nuevo_jugador'
   
   disconnect:
     address: disconnect
@@ -275,6 +289,16 @@ operations:
     action: receive
     channel:
       $ref: '#/channels/robar_carta'
+
+  unirse_partida:
+    action: send
+    channel:
+      $ref: '#/channels/unirse_partida'
+
+  nuevo_jugador:
+    action: receive
+    channel:
+      $ref: '#/channels/nuevo_jugador'
 
   carta_robada:
     action: send
@@ -521,6 +545,24 @@ components:
                 type: string
               id_estilo:
                 type: integer
+    unirse_partida:
+      name: unirse_partida
+      title: Unirse partida
+      summary: El jugador que quiere unirse a una partida emite este evento para unirse a la partida
+      payload:
+        type: object
+        properties:
+          partidaID:
+            type: string
+          
+
+    nuevo_jugador:
+      name: nuevo_jugador
+      title: Nuevo Jugador
+      summary: Se le indica a todos los jugadores de la partida que un nuevo jugador se ha unido a la partida
+      payload:
+        type: string
+        
 
     disconnect:
       name: disconnect
