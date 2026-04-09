@@ -563,7 +563,7 @@
         "nuevo_jugador": {
           "name": "nuevo_jugador",
           "title": "Nuevo Jugador",
-          "summary": "Se le indica a todos los jugadores de la partida que un nuevo jugador se ha unido a la partida",
+          "summary": "Se le indica a todos los jugadores de la partida que un nuevo jugador se ha unido a la partida (indica el nombre de usuario del jugador que se ha unido)",
           "payload": {
             "type": "string",
             "x-parser-schema-id": "<anonymous-schema-58>"
@@ -688,6 +688,11 @@
       "channel": "$ref:$.channels.robar_carta",
       "x-parser-unique-object-id": "robar_carta"
     },
+    "carta_robada": {
+      "action": "send",
+      "channel": "$ref:$.channels.carta_robada",
+      "x-parser-unique-object-id": "carta_robada"
+    },
     "unirse_partida": {
       "action": "send",
       "channel": "$ref:$.channels.unirse_partida",
@@ -697,11 +702,6 @@
       "action": "receive",
       "channel": "$ref:$.channels.nuevo_jugador",
       "x-parser-unique-object-id": "nuevo_jugador"
-    },
-    "carta_robada": {
-      "action": "send",
-      "channel": "$ref:$.channels.carta_robada",
-      "x-parser-unique-object-id": "carta_robada"
     },
     "disconnect": {
       "action": "receive",
