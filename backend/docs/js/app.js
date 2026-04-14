@@ -292,29 +292,9 @@
               "configuracion": {
                 "type": "object",
                 "properties": {
-                  "maxJugadores": {
-                    "type": "integer",
+                  "partidaID": {
+                    "type": "string",
                     "x-parser-schema-id": "<anonymous-schema-22>"
-                  },
-                  "numCartasInicio": {
-                    "type": "integer",
-                    "x-parser-schema-id": "<anonymous-schema-23>"
-                  },
-                  "timeoutTurno": {
-                    "type": "integer",
-                    "x-parser-schema-id": "<anonymous-schema-24>"
-                  },
-                  "privada": {
-                    "type": "boolean",
-                    "x-parser-schema-id": "<anonymous-schema-25>"
-                  },
-                  "modoCartasEspeciales": {
-                    "type": "boolean",
-                    "x-parser-schema-id": "<anonymous-schema-26>"
-                  },
-                  "modoRoles": {
-                    "type": "boolean",
-                    "x-parser-schema-id": "<anonymous-schema-27>"
                   }
                 },
                 "x-parser-schema-id": "<anonymous-schema-21>"
@@ -340,44 +320,48 @@
             "properties": {
               "partidaID": {
                 "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-29>"
+                "x-parser-schema-id": "<anonymous-schema-24>"
               },
-              "mazoInicial": {
+              "modoJuego": {
+                "type": "string",
+                "x-parser-schema-id": "<anonymous-schema-25>"
+              },
+              "manoInicial": {
                 "type": "array",
                 "items": {
                   "type": "object",
                   "properties": {
                     "id_carta": {
                       "type": "integer",
-                      "x-parser-schema-id": "<anonymous-schema-32>"
+                      "x-parser-schema-id": "<anonymous-schema-28>"
                     },
                     "tipo_carta": {
                       "type": "string",
-                      "x-parser-schema-id": "<anonymous-schema-33>"
+                      "x-parser-schema-id": "<anonymous-schema-29>"
                     },
                     "color": {
                       "type": "string",
-                      "x-parser-schema-id": "<anonymous-schema-34>"
+                      "x-parser-schema-id": "<anonymous-schema-30>"
                     },
                     "numero": {
                       "type": "integer",
-                      "x-parser-schema-id": "<anonymous-schema-35>"
+                      "x-parser-schema-id": "<anonymous-schema-31>"
                     },
                     "codigo": {
                       "type": "string",
-                      "x-parser-schema-id": "<anonymous-schema-36>"
+                      "x-parser-schema-id": "<anonymous-schema-32>"
                     },
                     "id_estilo": {
                       "type": "integer",
-                      "x-parser-schema-id": "<anonymous-schema-37>"
+                      "x-parser-schema-id": "<anonymous-schema-33>"
                     }
                   },
-                  "x-parser-schema-id": "<anonymous-schema-31>"
+                  "x-parser-schema-id": "<anonymous-schema-27>"
                 },
-                "x-parser-schema-id": "<anonymous-schema-30>"
+                "x-parser-schema-id": "<anonymous-schema-26>"
               }
             },
-            "x-parser-schema-id": "<anonymous-schema-28>"
+            "x-parser-schema-id": "<anonymous-schema-23>"
           },
           "x-parser-unique-object-id": "partida_iniciada"
         }
@@ -397,14 +381,14 @@
             "properties": {
               "partidaID": {
                 "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-39>"
+                "x-parser-schema-id": "<anonymous-schema-35>"
               },
               "cartaId": {
                 "type": "integer",
-                "x-parser-schema-id": "<anonymous-schema-40>"
+                "x-parser-schema-id": "<anonymous-schema-36>"
               }
             },
-            "x-parser-schema-id": "<anonymous-schema-38>"
+            "x-parser-schema-id": "<anonymous-schema-34>"
           },
           "x-parser-unique-object-id": "comprobar_turno"
         }
@@ -424,10 +408,10 @@
             "properties": {
               "message": {
                 "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-42>"
+                "x-parser-schema-id": "<anonymous-schema-38>"
               }
             },
-            "x-parser-schema-id": "<anonymous-schema-41>"
+            "x-parser-schema-id": "<anonymous-schema-37>"
           },
           "x-parser-unique-object-id": "turno_invalido"
         }
@@ -447,14 +431,14 @@
             "properties": {
               "siguienteJugador": {
                 "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-44>"
+                "x-parser-schema-id": "<anonymous-schema-40>"
               },
               "cartasRobar": {
                 "type": "integer",
-                "x-parser-schema-id": "<anonymous-schema-45>"
+                "x-parser-schema-id": "<anonymous-schema-41>"
               }
             },
-            "x-parser-schema-id": "<anonymous-schema-43>"
+            "x-parser-schema-id": "<anonymous-schema-39>"
           },
           "x-parser-unique-object-id": "turno_siguiente"
         }
@@ -474,10 +458,10 @@
             "properties": {
               "partidaID": {
                 "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-47>"
+                "x-parser-schema-id": "<anonymous-schema-43>"
               }
             },
-            "x-parser-schema-id": "<anonymous-schema-46>"
+            "x-parser-schema-id": "<anonymous-schema-42>"
           },
           "x-parser-unique-object-id": "robar_carta"
         }
@@ -500,33 +484,33 @@
                 "properties": {
                   "id_carta": {
                     "type": "integer",
-                    "x-parser-schema-id": "<anonymous-schema-50>"
+                    "x-parser-schema-id": "<anonymous-schema-46>"
                   },
                   "tipo_carta": {
                     "type": "string",
-                    "x-parser-schema-id": "<anonymous-schema-51>"
+                    "x-parser-schema-id": "<anonymous-schema-47>"
                   },
                   "color": {
                     "type": "string",
-                    "x-parser-schema-id": "<anonymous-schema-52>"
+                    "x-parser-schema-id": "<anonymous-schema-48>"
                   },
                   "numero": {
                     "type": "integer",
-                    "x-parser-schema-id": "<anonymous-schema-53>"
+                    "x-parser-schema-id": "<anonymous-schema-49>"
                   },
                   "codigo": {
                     "type": "string",
-                    "x-parser-schema-id": "<anonymous-schema-54>"
+                    "x-parser-schema-id": "<anonymous-schema-50>"
                   },
                   "id_estilo": {
                     "type": "integer",
-                    "x-parser-schema-id": "<anonymous-schema-55>"
+                    "x-parser-schema-id": "<anonymous-schema-51>"
                   }
                 },
-                "x-parser-schema-id": "<anonymous-schema-49>"
+                "x-parser-schema-id": "<anonymous-schema-45>"
               }
             },
-            "x-parser-schema-id": "<anonymous-schema-48>"
+            "x-parser-schema-id": "<anonymous-schema-44>"
           },
           "x-parser-unique-object-id": "carta_robada"
         }
@@ -546,10 +530,10 @@
             "properties": {
               "partidaID": {
                 "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-57>"
+                "x-parser-schema-id": "<anonymous-schema-53>"
               }
             },
-            "x-parser-schema-id": "<anonymous-schema-56>"
+            "x-parser-schema-id": "<anonymous-schema-52>"
           },
           "x-parser-unique-object-id": "unirse_partida"
         }
@@ -566,7 +550,7 @@
           "summary": "Se le indica a todos los jugadores de la partida que un nuevo jugador se ha unido a la partida (indica el nombre de usuario del jugador que se ha unido)",
           "payload": {
             "type": "string",
-            "x-parser-schema-id": "<anonymous-schema-58>"
+            "x-parser-schema-id": "<anonymous-schema-54>"
           },
           "x-parser-unique-object-id": "nuevo_jugador"
         }
