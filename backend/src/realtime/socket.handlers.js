@@ -6,6 +6,8 @@ const {chatController} = require('../modules/chat/chat.controller');
 const {friendsService}=require('../modules/friends/friendsService');
 const { Socket } = require('socket.io');
 const {gameService}=require('../modules/game/gameService')
+const { activeGames } = require('../core/game-engine/game.registry');
+
 
 
 async function getPendingFriendRequests(username) {
@@ -81,16 +83,16 @@ function registerSocketHandlers(io) {
       }
     })
 
-    socket.on('avisarAmigosConectados_UserOnline',() => {
-      const amigos=friendsService.obtenerAmigos(username)
+    socket.on('avisarAmigosConectados_UserOnline',async () => {
+      const amigos=await friendsService.obtenerAmigos(username)
       for (const i in amigos) {
         if (connectedUsers.has(i)) {
           socket.to(connectedUsers.get(id)).emit(`amigoConectado`, username)
         }
       }
     })
-    socket.on('avisarAmigosConectados_UserDisconnect',() => {
-      const amigos=friendsService.obtenerAmigos(username)
+    socket.on('avisarAmigosConectados_UserDisconnect',async () => {
+      const amigos=await friendsService.obtenerAmigos(username)
       for (const i in amigos) {
         if (connectedUsers.has(i)) {
           socket.to(connectedUsers.get(id)).emit(`amigoDesconectado`, username)
@@ -102,20 +104,24 @@ function registerSocketHandlers(io) {
 
     socket.on('start_game', async (data) => {
       //tareas a realizar para implementar una partida
-      //me llega cuando estan todos los jugadores preparados para iniciar la partida, entonces creo la partida y asigno a cada jugador su mano inicial, y les envio un mensaje a cada uno con su mano inicial y el id de la partida a la que se han unido
+      //me llega cuando estan todos los jugadores preparados para iniciar la partida,la partida ya esta creada, tiene id y asigno a cada jugador su mano inicial, y les envio un mensaje a cada uno con su mano inicial y el id de la partida a la que se han unido
+      
+      partidaID=data.partidaID
       
       
-      partida=await gameService.crearPartida(username, data.configuracion)
-      const i=0;
-      for (const jugador of data.jugadores) {
+      await gameService.iniciarPartida(partidaID, username) //iniciar partida para que se pueda jugar
+      //obtener el estado de la partida despues de iniciarla
+      const gameState = activeGames.get(partidaID);
+      if (!gameState) throw new Error("No se ha podido recuperar el estado del juego");
+
+      //envio a cada jugador su mano inicial y el id de la partida a la que se han unido y el modo de juego
+      gameState.players.forEach(jugador => {
         if (connectedUsers.has(jugador)) {
           //envio a cada jugador su mano inicial y el id de la partida a la que se han unido
-          socket.to(connectedUsers.get(jugador)).emit(`partida_iniciada`, {partidaID: partida.id_partida, manoInicial: partida.mano[i]})
-          i++;
+          io.to(connectedUsers.get(jugador)).emit(`partida_iniciada`, {partidaID: partidaID, manoInicial: player.hand, modoJuego: gameState.rolesMode ? 'roles' : (gameState.specialCardsMode ? 'cards' : 'normal')}) //enviar mensaje a cada jugador con su mano inicial y el id de la partida a la que se han unido
+          
         }
-      }
-      await gameService.iniciarPartida(partida.id_partida, username) //iniciar partida para que se pueda jugar
-
+      });
     })
 
     socket.on('comprobar_turno', async (data) => {
@@ -142,7 +148,9 @@ function registerSocketHandlers(io) {
 
     socket.on('unirse_partida',async (data) => {
       //unirse a la partida y enviar mensaje a los jugadores de la partida indicando que se ha unido un nuevo jugador
-      gameService.unirsePartida(data.partidaID, username);
+      await gameService.unirsePartida(data.partidaID, username);
+      //al unirse a la partida se une a la room de la partida para recibir los mensajes de la partida
+      socket.join(data.partidaID);
       socket.to(data.partidaID).emit('nuevo_jugador', {jugador: username}) //enviar mensaje a todos los jugadores de la partida indicando que se ha unido un nuevo jugador
     });
 

@@ -438,18 +438,9 @@ components:
           configuracion:
             type: object
             properties:
-              maxJugadores:
-                type: integer
-              numCartasInicio:
-                type: integer
-              timeoutTurno:
-                type: integer
-              privada:
-                type: boolean
-              modoCartasEspeciales:
-                type: boolean
-              modoRoles:
-                type: boolean
+              partidaID:
+                type: string
+              
 
 
     partida_iniciada:
@@ -461,7 +452,9 @@ components:
         properties:
           partidaID:
             type: string
-          mazoInicial:
+          modoJuego:
+            type: string
+          manoInicial:
             type: array
             items:
               type: object
