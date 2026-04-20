@@ -194,6 +194,19 @@ router.delete('/:id', friendsController.eliminarAmigo);
  *     responses:
  *       200:
  *         description: Resultados de búsqueda
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   nombre_usuario:
+ *                     type: string
+ *                   monedas:
+ *                     type: integer
+ *                   avatar:
+ *                     type: integer
  */
 router.get('/search/:query', friendsController.buscarUsuarios);
 

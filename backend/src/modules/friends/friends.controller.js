@@ -119,7 +119,7 @@ exports.eliminarAmigo = async (req, res, next) => {
 
 exports.buscarUsuarios = async (req, res, next) => {
     try {
-        const query = req.params.query;
+        const query = req.params.query || '';
         const usuarioActual = req.user.nombre_usuario;
         const usuarios = await friendsService.buscarUsuarios(query, usuarioActual);
         res.json(usuarios);

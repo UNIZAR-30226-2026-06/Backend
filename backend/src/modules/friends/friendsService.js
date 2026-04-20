@@ -140,12 +140,19 @@ class FriendsService {
     return result.rowCount > 0;
   }
 
-  async buscarUsuarios(searchString) {
+  async buscarUsuarios(searchString, usuarioActual) {
     const result = await db.query(
-      'SELECT nombre_usuario FROM notuno.USUARIO WHERE nombre_usuario ILIKE $1',
-      [`%${searchString}%`]
+      `SELECT
+         nombre_usuario,
+         monedas,
+         id_avatar_seleccionado AS avatar
+       FROM notuno.USUARIO
+       WHERE nombre_usuario ILIKE $1
+         AND nombre_usuario <> $2
+       ORDER BY nombre_usuario ASC`,
+      [`%${searchString}%`, usuarioActual]
     );
-    return result.rows.map(r => r.nombre_usuario);
+    return result.rows;
   }
 
 }

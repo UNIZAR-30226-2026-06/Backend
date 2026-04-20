@@ -146,19 +146,21 @@ function registerSocketHandlers(io) {
       socket.emit('carta_robada', {carta: cartaRobada}) //enviar mensaje al jugador que ha robado la carta con la carta robada
     })
 
-    socket.on('unirse_partida',async (data) => {
+    socket.on('unirse_partida', async (data) => {
       try {
-        //unirse a la partida y enviar mensaje a los jugadores de la partida indicando que se ha unido un nuevo jugador
-        await gameService.unirsePartida(data.partidaID, username);
-        //al unirse a la partida se une a la room de la partida para recibir los mensajes de la partida
-        socket.join(data.partidaID);
-        socket.to(data.partidaID).emit('nuevo_jugador', {jugador: username}) //enviar mensaje a todos los jugadores de la partida indicando que se ha unido un nuevo jugador
+        const { partidaID } = data;
+        const usernameSocket = socket.user?.nombre_usuario;
+
+        // Unirse primero a la room para que el cliente reciba eventos de la partida.
+        socket.join(partidaID);
+        console.log(`Usuario ${usernameSocket} se unió a la room: ${partidaID}`);
+
+        await gameService.unirsePartida(partidaID, usernameSocket);
+
+        // Avisar al resto de jugadores que entró un nuevo usuario.
+        socket.to(partidaID).emit('nuevo_jugador', { jugador: usernameSocket });
       } catch (error) {
-        socket.emit('error_unirse_partida', {
-          partidaID: data.partidaID,
-          message: error.message,
-          status: error.status || 500
-        });
+        socket.emit('error_partida', { message: error.message });
       }
     });
 
