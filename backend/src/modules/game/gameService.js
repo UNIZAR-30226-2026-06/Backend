@@ -210,7 +210,7 @@ async function iniciarPartida(gameId, username) {
 }
 
 // =========================
-// UNIRSE POR ID
+// UNIRSE POR ID (VERSIÓN DEFINITIVA)
 // =========================
 
 async function unirsePartida(gameId, username) {
@@ -218,6 +218,7 @@ async function unirsePartida(gameId, username) {
   try {
     await client.query('BEGIN');
 
+    // 1. BLOQUEO Y VALIDACIÓN DE LA PARTIDA
     const partidaResult = await client.query(
       `SELECT max_jugadores, estado
        FROM notuno.partida
@@ -226,37 +227,57 @@ async function unirsePartida(gameId, username) {
       [gameId]
     );
 
-    if (partidaResult.rowCount === 0) throw new Error('Partida no encontrada');
-
-    const { max_jugadores, estado } = partidaResult.rows[0];
-    if (estado !== 'esperando_jugadores') throw new Error('La partida no admite jugadores');
-
-    const jugadoresResult = await client.query(
-      `SELECT COUNT(*) FROM notuno.usuario_en_partida WHERE id_partida = $1`,
-      [gameId]
-    );
-
-    if (parseInt(jugadoresResult.rows[0].count) >= max_jugadores) {
-      throw new Error('Partida llena');
+    if (partidaResult.rowCount === 0) {
+      throw httpError(404, 'Partida no encontrada');
     }
 
+    const { max_jugadores, estado } = partidaResult.rows[0];
+
+    // Validar que la partida acepte jugadores
+    if (estado !== 'esperando_jugadores') {
+      throw httpError(400, 'La partida no admite jugadores');
+    }
+
+    // 2. VERIFICAR SI EL USUARIO YA ESTÁ INSCRITO
     const exists = await client.query(
       `SELECT 1 FROM notuno.usuario_en_partida WHERE id_partida = $1 AND id_usuario = $2`,
       [gameId, username]
     );
 
-    if (exists.rowCount === 0) {
+    const yaEstabaEnDB = exists.rowCount > 0;
+
+    if (!yaEstabaEnDB) {
+      // Solo contar capacidad si el usuario es NUEVO
+      const jugadoresResult = await client.query(
+        `SELECT COUNT(*) FROM notuno.usuario_en_partida WHERE id_partida = $1`,
+        [gameId]
+      );
+      const numJugadores = parseInt(jugadoresResult.rows[0].count);
+
+      if (numJugadores >= max_jugadores) {
+        throw httpError(400, 'Partida llena');
+      }
+
+      // Registrar usuario en DB
       await client.query(
         `INSERT INTO notuno.usuario_en_partida (id_partida, id_usuario) VALUES ($1,$2)`,
         [gameId, username]
       );
+      console.log(`✅ DB: Usuario ${username} registrado en partida ${gameId}`);
+    } else {
+      console.log(`ℹ️ DB: Usuario ${username} ya constaba como inscrito.`);
     }
 
     await client.query('COMMIT');
 
+    // 3. SINCRONIZACIÓN CON MEMORIA (activeGames)
     let gameState = activeGames.get(gameId) || await cargarPartidaEnMemoria(gameId);
 
-    if (!gameState.players.find(p => p.id === username)) {
+    const playerInMem = gameState.players.find(p => p.id === username);
+
+    if (!playerInMem) {
+      // Usuario nuevo en memoria: agregarlo
+      console.log(`🧠 MEMORIA: Añadiendo a ${username} al gameState.`);
       gameState.players.push({
         id: username,
         hand: [],
@@ -267,8 +288,14 @@ async function unirsePartida(gameId, username) {
         saidUno: false
       });
       gameState.needsPersistence = true;
+    } else {
+      // Usuario ya existe: marcar como conectado
+      playerInMem.connected = true;
+      console.log(`🧠 MEMORIA: Usuario ${username} reconectado.`);
+      gameState.needsPersistence = true;
     }
 
+    // 4. PERSISTENCIA DEL ESTADO
     if (gameState.needsPersistence) {
       await db.query(
         `UPDATE notuno.partida SET game_state = $2 WHERE id_partida = $1`,
@@ -277,8 +304,14 @@ async function unirsePartida(gameId, username) {
       gameState.needsPersistence = false;
     }
 
+    activeGames.set(gameId, gameState);
+    console.log(`🚀 ÉXITO: ${username} listo para recibir eventos.`);
+
+    return { gameId };
+
   } catch (error) {
     await client.query('ROLLBACK');
+    console.error(`❌ ERROR unirsePartida [${gameId}/${username}]:`, error.message);
     throw error;
   } finally {
     client.release();
@@ -482,6 +515,20 @@ async function jugarCarta(gameId, username, cardId) {
       gameState.needsPersistence = false;
     }
 
+    // --- EMISIÓN DE SOCKETS TRAS JUGAR CARTA ---
+    try {
+      const { getIO } = require('../../realtime/socket.server');
+      const io = getIO();
+      // Notificamos a todos en la sala que el estado ha cambiado
+      io.to(gameId).emit('game_state_updated', { 
+        lastAction: 'play', 
+        player: username,
+        cardId: cardId 
+      });
+    } catch (err) {
+      console.error(`[Sockets] Error emitiendo jugada en partida ${gameId}:`, err.message);
+    }
+
     return { success: true };
   });
 }
@@ -509,6 +556,19 @@ async function robarCarta(gameId, username) {
         [gameId, JSON.stringify(gameState)]
       );
       gameState.needsPersistence = false;
+    }
+
+    // --- EMISIÓN DE SOCKETS TRAS ROBAR CARTA ---
+    try {
+      const { getIO } = require('../../realtime/socket.server');
+      const io = getIO();
+      // Notificamos a todos en la sala que alguien ha robado
+      io.to(gameId).emit('game_state_updated', { 
+        lastAction: 'draw', 
+        player: username 
+      });
+    } catch (err) {
+      console.error(`[Sockets] Error emitiendo robo en partida ${gameId}:`, err.message);
     }
 
     return { cardDrawn: card };

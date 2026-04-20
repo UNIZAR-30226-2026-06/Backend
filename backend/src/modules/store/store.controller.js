@@ -20,7 +20,8 @@ exports.obtenerEstilosTienda = async (req, res, next) => {
 
 exports.obtenerAvatarID = async (req, res, next) => {
   try {
-    const avatar = await storeService.obtenerAvatarporId(req.body.id);
+    const avatarID = req.body.id;
+    const avatar = await storeService.obtenerAvatarporId(avatarID);
     res.json(avatar);
   } catch (err) {
     next(err);
@@ -29,7 +30,8 @@ exports.obtenerAvatarID = async (req, res, next) => {
 
 exports.obtenerEstiloID = async (req, res, next) => {
   try {
-    const estilo = await storeService.obtenerEstiloporId(req.body.id);
+    const estiloID = req.body.id;
+    const estilo = await storeService.obtenerEstiloporId(estiloID);
     res.json(estilo);
   } catch (err) {
     next(err);
