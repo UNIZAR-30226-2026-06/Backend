@@ -154,6 +154,68 @@ function registerSocketHandlers(io) {
       socket.to(data.partidaID).emit('nuevo_jugador', {jugador: username}) //enviar mensaje a todos los jugadores de la partida indicando que se ha unido un nuevo jugador
     });
 
+    socket.on("jugador_voto_pausa", async(data) => {
+      //un jugador vota para pausar la partida, se envia un mensaje a todos los jugadores de la partida (excepto el que ha votado) indicando que un jugador ha votado para pausar la partida para preguntar si solicita pausarla
+      
+      const estado=await gameService.votarPausa(data.partidaID, username, false)  //registra el voto del jugador para pausar la partida
+      
+      if(estado==="pausada") {
+        io.to(data.partidaID).emit('partida_pausada', {partidaID: data.partidaID})   //envia un mensaje al resto de usuarios de la partida para indicar que la partida se ha pausado
+      }
+    })
+
+    socket.on("jugador_solicita_pausa", async(data) => {
+      //un jugador solicita  pausar la partida, se envia un mensaje a todos los jugadores de la partida (excepto el, que ya cuenta que ha votado) indicando que un jugador ha votado para pausar la partida para preguntar si solicita pausarla
+      
+      const estado=await gameService.votarPausa(data.partidaID, username, true)  //registra el voto del jugador para pausar la partida
+      
+      socket.to(data.partidaID).emit('voto_pausa', {jugador: username, partidaID: data.partidaID})   //envia un mensaje al resto de usuarios de la partida para preguntar si quieren pausar la partida
+      
+      if(estado==="pausada") {
+        io.to(data.partidaID).emit('partida_pausada', {partidaID: data.partidaID})   //envia un mensaje al resto de usuarios de la partida para indicar que la partida se ha pausado
+      }
+
+    })
+
+
+    socket.on("jugador_solicita_reanudar", async(data) => {
+      //un jugador inicializa votacion para solicitar reanudar la partida, se envia un mensaje a todos los jugadores de la partida (excepto el, que ya cuenta que ha votado) para que voten
+      const estado=await gameService.reanudarPartida(data.partidaID, username)  //registra el voto del jugador para reanudar la partida
+      
+      socket.to(data.partidaID).emit('voto_reanudar', {jugador: username})   //envia un mensaje al resto de usuarios de la partida para preguntar si quieren reanudar la partida
+      if(estado==="reanudada") {
+        io.to(data.partidaID).emit('partida_reanudada', {partidaID: data.partidaID})   //envia un mensaje al resto de usuarios de la partida para indicar que la partida se ha reanudado
+      }
+
+    })
+
+    socket.on("jugador_voto_reanudar", async(data) => {
+      //un jugador vota para reanudar la partida, en una votacion ya iniciada por otro jugador
+      const estado=await gameService.reanudarPartida(data.partidaID, username)  //registra el voto del jugador para reanudar la partida
+      if(estado==="reanudada") {
+        io.to(data.partidaID).emit('partida_reanudada', {partidaID: data.partidaID})   //envia un mensaje al resto de usuarios de la partida para indicar que la partida se ha reanudado
+      }
+    })
+
+    socket.on("unir_bot", async(data) => {
+      //añadir un bot a la partida, solo el creador de la partida puede añadir bots, y solo se pueden añadir bots antes de iniciar la partida
+      try {
+        await gameService.añadirBot(data.partidaID, username) //añadir un bot a la partida
+        io.to(data.partidaID).emit('bot_unido', {partidaID: data.partidaID, mensaje: `Se ha unido un bot a la partida por el usuario ${username}`})   //envia un mensaje a todos los jugadores de la partida para indicar que se ha unido un bot
+      
+      } catch (error) {
+        socket.emit('error_unir_bot', {partidaID: data.partidaID, message: error.message}) //enviar mensaje al jugador que ha intentado añadir el bot con el error
+        return;
+      }
+    })
+      
+
+      
+          
+
+      
+
+
     socket.on('disconnect', () => {
       if(username) {
         connectedUsers.delete(username)

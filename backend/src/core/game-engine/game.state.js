@@ -34,6 +34,7 @@ class GameState {
 
     this.filters = {};
 
+    this.pauseVotes = []; // Guardará los IDs de los jugadores que han votado para pausar
     this.resumeVotes = []; // Guardará los IDs de los jugadores que han votado
     this.pausedAt = null; // Guardará el timestamp de cuándo se pausó
   }
@@ -249,6 +250,26 @@ class GameState {
 
   isPaused() {
     return this.phase === 'paused';
+  }
+
+  // Añadimos voto para pausar
+  addPauseVote(playerId) {
+    if (!this.pauseVotes.includes(playerId)) {
+      this.pauseVotes.push(playerId);
+    }
+  }
+
+  // Comprobamos mayoría absoluta (> 50% de humanos)
+  hasMajorityPauseVotes() {
+    const humanPlayers = this.players.filter(p => !p.isBot);
+    // Fórmula matemática para mayoría: Mitad hacia abajo + 1
+    // (Ej: 2 jug -> 2 votos | 3 jug -> 2 votos | 4 jug -> 3 votos)
+    const requiredVotes = Math.floor(humanPlayers.length / 2) + 1;
+    return this.pauseVotes.length >= requiredVotes;
+  }
+
+  clearPauseVotes() {
+    this.pauseVotes = [];
   }
 
   // 1 sola persona pausa instantáneamente, así que no hay addPauseVote

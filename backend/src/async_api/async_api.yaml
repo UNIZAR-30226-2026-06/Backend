@@ -172,13 +172,95 @@ channels:
     messages:
       nuevo_jugador:
         $ref: '#/components/messages/nuevo_jugador'
+
+  jugador_voto_pausa:
+    address: game.jugador_voto_pausa
+    parameters: {}
+    messages:
+      jugador_voto_pausa:
+        $ref: '#/components/messages/jugador_voto_pausa'
+
+  partida_pausada:
+    address: game.partida_pausada
+    parameters: {}
+    messages:
+      partida_pausada:
+        $ref: '#/components/messages/partida_pausada'
+
+  jugador_solicita_pausa:
+    address: game.jugador_solicita_pausa
+    parameters: {}
+    messages:
+      jugador_solicita_pausa:
+        $ref: '#/components/messages/jugador_solicita_pausa'
+
+  voto_pausa:
+    address: game.voto_pausa
+    parameters: {}
+    messages:
+      voto_pausa:
+        $ref: '#/components/messages/voto_pausa'
+
+  jugador_solicita_reanudar:
+    address: game.jugador_solicita_reanudar
+    parameters: {}
+    messages:
+      jugador_solicita_reanudar:
+        $ref: '#/components/messages/jugador_solicita_reanudar'
+
+  voto_reanudar:
+    address: game.voto_reanudar
+    parameters: {}
+    messages: 
+      voto_reanudar:
+        $ref: '#/components/messages/voto_reanudar'
   
+  partida_reanudada:
+    address: game.partida_reanudada
+    parameters: {}
+    messages:
+      partida_reanudada:
+        $ref: '#/components/messages/partida_reanudada'
+
+  jugador_voto_reanudar:
+    address: game.jugador_voto_reanudar
+    parameters: {}
+    messages:
+      jugador_voto_reanudar:
+        $ref: '#/components/messages/jugador_voto_reanudar'
+
+  unir_bot:
+    address: game.unir_bot
+    parameters: {}
+    messages:
+      unir_bot:
+        $ref: '#/components/messages/unir_bot'
+
+
+  bot_unido:
+    address: game.bot_unido
+    parameters: {}
+    messages:
+      bot_unido:
+        $ref: '#/components/messages/bot_unido'
+  
+  error_unir_bot:
+    address: game.error_unir_bot
+    parameters: {}
+    messages:
+      error_unir_bot:
+        $ref: '#/components/messages/error_unir_bot'
+
+
+
   disconnect:
     address: disconnect
     parameters: {}
     messages:
       disconnect:
         $ref: '#/components/messages/disconnect'
+
+  
   
 
 
@@ -296,7 +378,7 @@ operations:
       $ref: '#/channels/carta_robada'
 
   unirse_partida:
-    action: send
+    action: receive
     channel:
       $ref: '#/channels/unirse_partida'
 
@@ -304,6 +386,63 @@ operations:
     action: receive
     channel:
       $ref: '#/channels/nuevo_jugador'
+  
+  jugador_voto_pausa:
+    action: receive
+    channel:
+      $ref: '#/channels/jugador_voto_pausa'
+
+  partida_pausada:
+    action: send
+    channel:
+      $ref: '#/channels/partida_pausada'
+
+  jugador_solicita_pausa:
+    action: receive
+    channel:
+      $ref: '#/channels/jugador_solicita_pausa'
+
+  voto_pausa:
+    action: send
+    channel:
+      $ref: '#/channels/voto_pausa'
+
+  jugador_solicita_reanudar:
+    action: receive
+    channel:
+      $ref: '#/channels/jugador_solicita_reanudar'
+
+  voto_reanudar:
+    action: send
+    channel:
+      $ref: '#/channels/voto_reanudar'
+  
+  partida_reanudada:
+    action: send
+    channel:
+      $ref: '#/channels/partida_reanudada'
+
+  jugador_voto_reanudar:
+    action: receive
+    channel:
+      $ref: '#/channels/jugador_voto_reanudar'
+
+  unir_bot:
+    action: receive
+    channel:
+      $ref: '#/channels/unir_bot'
+
+
+  bot_unido:
+    action: send
+    channel:
+      $ref: '#/channels/bot_unido'
+
+  error_unir_bot:
+    action: send
+    channel:
+      $ref: '#/channels/error_unir_bot'
+        
 
 
   disconnect:
@@ -556,7 +695,126 @@ components:
       summary: Se le indica a todos los jugadores de la partida que un nuevo jugador se ha unido a la partida (indica el nombre de usuario del jugador que se ha unido)
       payload:
         type: string
-        
+    
+    jugador_voto_pausa:
+      name: jugador_voto_pausa
+      title: Jugador Voto Pausa
+      summary: Un jugador vota para pausar la partida, en una votacion ya iniciada por otro jugador
+      payload:
+        type: object
+        properties:
+          partidaID:
+            type: string
+
+    partida_pausada:
+      name: partida_pausada
+      title: Partida Pausada
+      summary: Se le indica a todos los jugadores de la partida que la partida se ha pausado
+      payload:
+        type: object
+        properties:
+          partidaID:
+            type: string
+
+    jugador_solicita_pausa:
+      name: jugador_solicita_pausa
+      title: Jugador Solicita Pausa
+      summary: Un jugador solicita pausar la partida, se le envia a los demas jugadores de la partida para preguntar si quieren pausar la partida
+      payload:
+        type: object
+        properties:
+          partidaID:
+            type: string
+
+    voto_pausa:
+      name: voto_pausa
+      title: Voto Pausa
+      summary: Se solicita a los jugadores de la partida (excepto el que inició la votación) que voten para pausar la partida debido a que un jugador ha iniciado la votación
+      payload:
+        type: object
+        properties:
+          partidaID:
+            type: string
+          jugador:
+            type: string
+
+
+    jugador_solicita_reanudar:
+      name: jugador_solicita_reanudar
+      title: Jugador Solicita Reanudar
+      summary: Un jugador solicita reanudar la partida, se le envia a los demas jugadores de la partida para preguntar si quieren reanudar la partida
+      payload:
+        type: object
+        properties:
+          partidaID:
+            type: string
+
+    voto_reanudar:
+      name: voto_reanudar
+      title: Voto Reanudar
+      summary: Se solicita a los jugadores de la partida (excepto el que inició la votación) que voten para reanudar la partida debido a que un jugador ha iniciado la votación
+      payload:
+        type: object
+        properties:
+          partidaID:
+            type: string
+          jugador:
+            type: string
+    
+    partida_reanudada:
+      name: partida_reanudada
+      title: Partida Reanudada
+      summary: Se le indica a todos los jugadores de la partida que la partida se ha reanudado
+      payload:
+        type: object
+        properties:
+          partidaID:
+            type: string
+
+    jugador_voto_reanudar:
+      name: jugador_voto_reanudar
+      title: Jugador Voto Reanudar
+      summary: Un jugador vota para reanudar la partida, en una votacion ya iniciada por otro jugador
+      payload:
+        type: object
+        properties:
+          partidaID:
+            type: string
+
+    unir_bot:
+      name: unir_bot
+      title: Unir Bot
+      summary: Un jugador añade un bot a la partida, solo el creador de la partida puede añadir bots, y solo se pueden añadir bots antes de iniciar la partida
+      payload:
+        type: object
+        properties:
+          partidaID:
+            type: string
+
+
+    bot_unido:
+      name: bot_unido
+      title: Bot Unido
+      summary: Se le indica a todos los jugadores de la partida que un bot se ha unido a la partida
+      payload:
+        type: object
+        properties:
+          partidaID:
+            type: string
+          mensaje:
+            type: string
+
+    error_unir_bot:
+      name: error_unir_bot
+      title: Error Unir Bot
+      summary: Se le indica a un jugador que ha ocurrido un error al intentar unir un bot a la partida
+      payload:
+        type: object
+        properties:
+          partidaID:
+            type: string
+          mensaje:
+            type: string  
 
     disconnect:
       name: disconnect

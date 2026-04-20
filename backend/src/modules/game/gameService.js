@@ -578,18 +578,32 @@ async function getCarta(idcarta) {
 // SISTEMA DE PAUSA
 // =========================
 
-async function votarPausa(gameId, username) {
+
+
+async function votarPausa(gameId, username, isFirstVote) {
   return runGameCycle(gameId, async (logic, gameState) => {
     if (gameState.phase !== 'playing') {
       throw new Error('Solo se puede pausar una partida en juego');
     }
 
-    // 1 sola persona pausa la partida al instante. 
-    // ¡Ya NO llamamos a addPauseVote!
-    gameState.setPaused();
-    gameState.needsPersistence = true;
+    if (isFirstVote) {
+      // Si es la primera persona que vota, se reinicia el contador de votos
+      gameState.clearPauseVotes();
+    }
+
+    gameState.addPauseVote(username);
+
+    // Comprobamos si con este voto se alcanza la MAYORÍA
+    if (gameState.hasMajorityPauseVotes()) {
+      gameState.setPaused();
+      gameState.needsPersistence = true;
+      return { action: 'pausada' };
+    } else {
+      gameState.needsPersistence = true;
+      return { action: 'voto_pausa_registrado', votosActuales: gameState.pauseVotes.length };
+    }
+
     
-    return { action: 'pausada', solicitante: username };
   });
 }
 
