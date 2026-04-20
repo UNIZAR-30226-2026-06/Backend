@@ -557,6 +557,275 @@
       },
       "x-parser-unique-object-id": "nuevo_jugador"
     },
+    "jugador_voto_pausa": {
+      "address": "game.jugador_voto_pausa",
+      "parameters": {},
+      "messages": {
+        "jugador_voto_pausa": {
+          "name": "jugador_voto_pausa",
+          "title": "Jugador Voto Pausa",
+          "summary": "Un jugador vota para pausar la partida, en una votacion ya iniciada por otro jugador",
+          "payload": {
+            "type": "object",
+            "properties": {
+              "partidaID": {
+                "type": "string",
+                "x-parser-schema-id": "<anonymous-schema-56>"
+              }
+            },
+            "x-parser-schema-id": "<anonymous-schema-55>"
+          },
+          "x-parser-unique-object-id": "jugador_voto_pausa"
+        }
+      },
+      "x-parser-unique-object-id": "jugador_voto_pausa"
+    },
+    "partida_pausada": {
+      "address": "game.partida_pausada",
+      "parameters": {},
+      "messages": {
+        "partida_pausada": {
+          "name": "partida_pausada",
+          "title": "Partida Pausada",
+          "summary": "Se le indica a todos los jugadores de la partida que la partida se ha pausado",
+          "payload": {
+            "type": "object",
+            "properties": {
+              "partidaID": {
+                "type": "string",
+                "x-parser-schema-id": "<anonymous-schema-58>"
+              }
+            },
+            "x-parser-schema-id": "<anonymous-schema-57>"
+          },
+          "x-parser-unique-object-id": "partida_pausada"
+        }
+      },
+      "x-parser-unique-object-id": "partida_pausada"
+    },
+    "jugador_solicita_pausa": {
+      "address": "game.jugador_solicita_pausa",
+      "parameters": {},
+      "messages": {
+        "jugador_solicita_pausa": {
+          "name": "jugador_solicita_pausa",
+          "title": "Jugador Solicita Pausa",
+          "summary": "Un jugador solicita pausar la partida, se le envia a los demas jugadores de la partida para preguntar si quieren pausar la partida",
+          "payload": {
+            "type": "object",
+            "properties": {
+              "partidaID": {
+                "type": "string",
+                "x-parser-schema-id": "<anonymous-schema-60>"
+              }
+            },
+            "x-parser-schema-id": "<anonymous-schema-59>"
+          },
+          "x-parser-unique-object-id": "jugador_solicita_pausa"
+        }
+      },
+      "x-parser-unique-object-id": "jugador_solicita_pausa"
+    },
+    "voto_pausa": {
+      "address": "game.voto_pausa",
+      "parameters": {},
+      "messages": {
+        "voto_pausa": {
+          "name": "voto_pausa",
+          "title": "Voto Pausa",
+          "summary": "Se solicita a los jugadores de la partida (excepto el que inició la votación) que voten para pausar la partida debido a que un jugador ha iniciado la votación",
+          "payload": {
+            "type": "object",
+            "properties": {
+              "partidaID": {
+                "type": "string",
+                "x-parser-schema-id": "<anonymous-schema-62>"
+              },
+              "jugador": {
+                "type": "string",
+                "x-parser-schema-id": "<anonymous-schema-63>"
+              }
+            },
+            "x-parser-schema-id": "<anonymous-schema-61>"
+          },
+          "x-parser-unique-object-id": "voto_pausa"
+        }
+      },
+      "x-parser-unique-object-id": "voto_pausa"
+    },
+    "jugador_solicita_reanudar": {
+      "address": "game.jugador_solicita_reanudar",
+      "parameters": {},
+      "messages": {
+        "jugador_solicita_reanudar": {
+          "name": "jugador_solicita_reanudar",
+          "title": "Jugador Solicita Reanudar",
+          "summary": "Un jugador solicita reanudar la partida, se le envia a los demas jugadores de la partida para preguntar si quieren reanudar la partida",
+          "payload": {
+            "type": "object",
+            "properties": {
+              "partidaID": {
+                "type": "string",
+                "x-parser-schema-id": "<anonymous-schema-65>"
+              }
+            },
+            "x-parser-schema-id": "<anonymous-schema-64>"
+          },
+          "x-parser-unique-object-id": "jugador_solicita_reanudar"
+        }
+      },
+      "x-parser-unique-object-id": "jugador_solicita_reanudar"
+    },
+    "voto_reanudar": {
+      "address": "game.voto_reanudar",
+      "parameters": {},
+      "messages": {
+        "voto_reanudar": {
+          "name": "voto_reanudar",
+          "title": "Voto Reanudar",
+          "summary": "Se solicita a los jugadores de la partida (excepto el que inició la votación) que voten para reanudar la partida debido a que un jugador ha iniciado la votación",
+          "payload": {
+            "type": "object",
+            "properties": {
+              "partidaID": {
+                "type": "string",
+                "x-parser-schema-id": "<anonymous-schema-67>"
+              },
+              "jugador": {
+                "type": "string",
+                "x-parser-schema-id": "<anonymous-schema-68>"
+              }
+            },
+            "x-parser-schema-id": "<anonymous-schema-66>"
+          },
+          "x-parser-unique-object-id": "voto_reanudar"
+        }
+      },
+      "x-parser-unique-object-id": "voto_reanudar"
+    },
+    "partida_reanudada": {
+      "address": "game.partida_reanudada",
+      "parameters": {},
+      "messages": {
+        "partida_reanudada": {
+          "name": "partida_reanudada",
+          "title": "Partida Reanudada",
+          "summary": "Se le indica a todos los jugadores de la partida que la partida se ha reanudado",
+          "payload": {
+            "type": "object",
+            "properties": {
+              "partidaID": {
+                "type": "string",
+                "x-parser-schema-id": "<anonymous-schema-70>"
+              }
+            },
+            "x-parser-schema-id": "<anonymous-schema-69>"
+          },
+          "x-parser-unique-object-id": "partida_reanudada"
+        }
+      },
+      "x-parser-unique-object-id": "partida_reanudada"
+    },
+    "jugador_voto_reanudar": {
+      "address": "game.jugador_voto_reanudar",
+      "parameters": {},
+      "messages": {
+        "jugador_voto_reanudar": {
+          "name": "jugador_voto_reanudar",
+          "title": "Jugador Voto Reanudar",
+          "summary": "Un jugador vota para reanudar la partida, en una votacion ya iniciada por otro jugador",
+          "payload": {
+            "type": "object",
+            "properties": {
+              "partidaID": {
+                "type": "string",
+                "x-parser-schema-id": "<anonymous-schema-72>"
+              }
+            },
+            "x-parser-schema-id": "<anonymous-schema-71>"
+          },
+          "x-parser-unique-object-id": "jugador_voto_reanudar"
+        }
+      },
+      "x-parser-unique-object-id": "jugador_voto_reanudar"
+    },
+    "unir_bot": {
+      "address": "game.unir_bot",
+      "parameters": {},
+      "messages": {
+        "unir_bot": {
+          "name": "unir_bot",
+          "title": "Unir Bot",
+          "summary": "Un jugador añade un bot a la partida, solo el creador de la partida puede añadir bots, y solo se pueden añadir bots antes de iniciar la partida",
+          "payload": {
+            "type": "object",
+            "properties": {
+              "partidaID": {
+                "type": "string",
+                "x-parser-schema-id": "<anonymous-schema-74>"
+              }
+            },
+            "x-parser-schema-id": "<anonymous-schema-73>"
+          },
+          "x-parser-unique-object-id": "unir_bot"
+        }
+      },
+      "x-parser-unique-object-id": "unir_bot"
+    },
+    "bot_unido": {
+      "address": "game.bot_unido",
+      "parameters": {},
+      "messages": {
+        "bot_unido": {
+          "name": "bot_unido",
+          "title": "Bot Unido",
+          "summary": "Se le indica a todos los jugadores de la partida que un bot se ha unido a la partida",
+          "payload": {
+            "type": "object",
+            "properties": {
+              "partidaID": {
+                "type": "string",
+                "x-parser-schema-id": "<anonymous-schema-76>"
+              },
+              "mensaje": {
+                "type": "string",
+                "x-parser-schema-id": "<anonymous-schema-77>"
+              }
+            },
+            "x-parser-schema-id": "<anonymous-schema-75>"
+          },
+          "x-parser-unique-object-id": "bot_unido"
+        }
+      },
+      "x-parser-unique-object-id": "bot_unido"
+    },
+    "error_unir_bot": {
+      "address": "game.error_unir_bot",
+      "parameters": {},
+      "messages": {
+        "error_unir_bot": {
+          "name": "error_unir_bot",
+          "title": "Error Unir Bot",
+          "summary": "Se le indica a un jugador que ha ocurrido un error al intentar unir un bot a la partida",
+          "payload": {
+            "type": "object",
+            "properties": {
+              "partidaID": {
+                "type": "string",
+                "x-parser-schema-id": "<anonymous-schema-79>"
+              },
+              "mensaje": {
+                "type": "string",
+                "x-parser-schema-id": "<anonymous-schema-80>"
+              }
+            },
+            "x-parser-schema-id": "<anonymous-schema-78>"
+          },
+          "x-parser-unique-object-id": "error_unir_bot"
+        }
+      },
+      "x-parser-unique-object-id": "error_unir_bot"
+    },
     "disconnect": {
       "address": "disconnect",
       "parameters": {},
@@ -678,7 +947,7 @@
       "x-parser-unique-object-id": "carta_robada"
     },
     "unirse_partida": {
-      "action": "send",
+      "action": "receive",
       "channel": "$ref:$.channels.unirse_partida",
       "x-parser-unique-object-id": "unirse_partida"
     },
@@ -686,6 +955,61 @@
       "action": "receive",
       "channel": "$ref:$.channels.nuevo_jugador",
       "x-parser-unique-object-id": "nuevo_jugador"
+    },
+    "jugador_voto_pausa": {
+      "action": "receive",
+      "channel": "$ref:$.channels.jugador_voto_pausa",
+      "x-parser-unique-object-id": "jugador_voto_pausa"
+    },
+    "partida_pausada": {
+      "action": "send",
+      "channel": "$ref:$.channels.partida_pausada",
+      "x-parser-unique-object-id": "partida_pausada"
+    },
+    "jugador_solicita_pausa": {
+      "action": "receive",
+      "channel": "$ref:$.channels.jugador_solicita_pausa",
+      "x-parser-unique-object-id": "jugador_solicita_pausa"
+    },
+    "voto_pausa": {
+      "action": "send",
+      "channel": "$ref:$.channels.voto_pausa",
+      "x-parser-unique-object-id": "voto_pausa"
+    },
+    "jugador_solicita_reanudar": {
+      "action": "receive",
+      "channel": "$ref:$.channels.jugador_solicita_reanudar",
+      "x-parser-unique-object-id": "jugador_solicita_reanudar"
+    },
+    "voto_reanudar": {
+      "action": "send",
+      "channel": "$ref:$.channels.voto_reanudar",
+      "x-parser-unique-object-id": "voto_reanudar"
+    },
+    "partida_reanudada": {
+      "action": "send",
+      "channel": "$ref:$.channels.partida_reanudada",
+      "x-parser-unique-object-id": "partida_reanudada"
+    },
+    "jugador_voto_reanudar": {
+      "action": "receive",
+      "channel": "$ref:$.channels.jugador_voto_reanudar",
+      "x-parser-unique-object-id": "jugador_voto_reanudar"
+    },
+    "unir_bot": {
+      "action": "receive",
+      "channel": "$ref:$.channels.unir_bot",
+      "x-parser-unique-object-id": "unir_bot"
+    },
+    "bot_unido": {
+      "action": "send",
+      "channel": "$ref:$.channels.bot_unido",
+      "x-parser-unique-object-id": "bot_unido"
+    },
+    "error_unir_bot": {
+      "action": "send",
+      "channel": "$ref:$.channels.error_unir_bot",
+      "x-parser-unique-object-id": "error_unir_bot"
     },
     "disconnect": {
       "action": "receive",
@@ -718,6 +1042,17 @@
       "carta_robada": "$ref:$.channels.carta_robada.messages.carta_robada",
       "unirse_partida": "$ref:$.channels.unirse_partida.messages.unirse_partida",
       "nuevo_jugador": "$ref:$.channels.nuevo_jugador.messages.nuevo_jugador",
+      "jugador_voto_pausa": "$ref:$.channels.jugador_voto_pausa.messages.jugador_voto_pausa",
+      "partida_pausada": "$ref:$.channels.partida_pausada.messages.partida_pausada",
+      "jugador_solicita_pausa": "$ref:$.channels.jugador_solicita_pausa.messages.jugador_solicita_pausa",
+      "voto_pausa": "$ref:$.channels.voto_pausa.messages.voto_pausa",
+      "jugador_solicita_reanudar": "$ref:$.channels.jugador_solicita_reanudar.messages.jugador_solicita_reanudar",
+      "voto_reanudar": "$ref:$.channels.voto_reanudar.messages.voto_reanudar",
+      "partida_reanudada": "$ref:$.channels.partida_reanudada.messages.partida_reanudada",
+      "jugador_voto_reanudar": "$ref:$.channels.jugador_voto_reanudar.messages.jugador_voto_reanudar",
+      "unir_bot": "$ref:$.channels.unir_bot.messages.unir_bot",
+      "bot_unido": "$ref:$.channels.bot_unido.messages.bot_unido",
+      "error_unir_bot": "$ref:$.channels.error_unir_bot.messages.error_unir_bot",
       "disconnect": "$ref:$.channels.disconnect.messages.disconnect"
     }
   },
