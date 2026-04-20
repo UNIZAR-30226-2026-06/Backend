@@ -147,11 +147,19 @@ function registerSocketHandlers(io) {
     })
 
     socket.on('unirse_partida',async (data) => {
-      //unirse a la partida y enviar mensaje a los jugadores de la partida indicando que se ha unido un nuevo jugador
-      await gameService.unirsePartida(data.partidaID, username);
-      //al unirse a la partida se une a la room de la partida para recibir los mensajes de la partida
-      socket.join(data.partidaID);
-      socket.to(data.partidaID).emit('nuevo_jugador', {jugador: username}) //enviar mensaje a todos los jugadores de la partida indicando que se ha unido un nuevo jugador
+      try {
+        //unirse a la partida y enviar mensaje a los jugadores de la partida indicando que se ha unido un nuevo jugador
+        await gameService.unirsePartida(data.partidaID, username);
+        //al unirse a la partida se une a la room de la partida para recibir los mensajes de la partida
+        socket.join(data.partidaID);
+        socket.to(data.partidaID).emit('nuevo_jugador', {jugador: username}) //enviar mensaje a todos los jugadores de la partida indicando que se ha unido un nuevo jugador
+      } catch (error) {
+        socket.emit('error_unirse_partida', {
+          partidaID: data.partidaID,
+          message: error.message,
+          status: error.status || 500
+        });
+      }
     });
 
     socket.on("jugador_voto_pausa", async(data) => {

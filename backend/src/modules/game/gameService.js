@@ -233,11 +233,6 @@ async function unirsePartida(gameId, username) {
 
     const { max_jugadores, estado } = partidaResult.rows[0];
 
-    // Validar que la partida acepte jugadores
-    if (estado !== 'esperando_jugadores') {
-      throw httpError(400, 'La partida no admite jugadores');
-    }
-
     // 2. VERIFICAR SI EL USUARIO YA ESTÁ INSCRITO
     const exists = await client.query(
       `SELECT 1 FROM notuno.usuario_en_partida WHERE id_partida = $1 AND id_usuario = $2`,
@@ -245,6 +240,11 @@ async function unirsePartida(gameId, username) {
     );
 
     const yaEstabaEnDB = exists.rowCount > 0;
+
+    // Si no está inscrito, solo puede entrar desde lobby.
+    if (!yaEstabaEnDB && estado !== 'esperando_jugadores') {
+      throw httpError(400, 'La partida no admite jugadores');
+    }
 
     if (!yaEstabaEnDB) {
       // Solo contar capacidad si el usuario es NUEVO
