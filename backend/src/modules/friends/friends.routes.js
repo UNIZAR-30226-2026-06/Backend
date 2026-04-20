@@ -207,6 +207,12 @@ router.delete('/:id', friendsController.eliminarAmigo);
  *                     type: integer
  *                   avatar:
  *                     type: integer
+ *                   avatar_nombre:
+ *                     type: string
+ *                     nullable: true
+ *                   avatar_image:
+ *                     type: string
+ *                     nullable: true
  */
 router.get('/search/:query', friendsController.buscarUsuarios);
 
