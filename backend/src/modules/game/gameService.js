@@ -321,6 +321,7 @@ async function unirsePartida(gameId, username) {
 async function unirsePrimeraPartidaPublica(username) {
   const client = await db.connect();
   let gameId;
+  let shouldCreatePublicGame = false;
 
   try {
     await client.query('BEGIN');
@@ -341,29 +342,46 @@ async function unirsePrimeraPartidaPublica(username) {
     );
 
     if (candidata.rowCount === 0) {
-      throw httpError(404, 'No hay partidas publicas disponibles');
-    }
+      shouldCreatePublicGame = true;
+      await client.query('COMMIT');
+    } else {
+      gameId = candidata.rows[0].id_partida;
 
-    gameId = candidata.rows[0].id_partida;
-
-    const exists = await client.query(
-      `SELECT 1 FROM notuno.usuario_en_partida WHERE id_partida = $1 AND id_usuario = $2`,
-      [gameId, username]
-    );
-
-    if (exists.rowCount === 0) {
-      await client.query(
-        `INSERT INTO notuno.usuario_en_partida (id_partida, id_usuario) VALUES ($1,$2)`,
+      const exists = await client.query(
+        `SELECT 1 FROM notuno.usuario_en_partida WHERE id_partida = $1 AND id_usuario = $2`,
         [gameId, username]
       );
-    }
 
-    await client.query('COMMIT');
+      if (exists.rowCount === 0) {
+        await client.query(
+          `INSERT INTO notuno.usuario_en_partida (id_partida, id_usuario) VALUES ($1,$2)`,
+          [gameId, username]
+        );
+      }
+
+      await client.query('COMMIT');
+    }
   } catch (error) {
     await client.query('ROLLBACK');
     throw error;
   } finally {
     client.release();
+  }
+
+  if (shouldCreatePublicGame) {
+    const nuevaPartida = await crearPartida(username, {
+      numCartasInicio: 7,
+      maxJugadores: 4,
+      modoCartasEspeciales: false,
+      modoRoles: false,
+      timeoutTurno: 30,
+      sonido: true,
+      musica: true,
+      vibracion: true,
+      privada: false
+    });
+
+    return { gameId: nuevaPartida.id_partida };
   }
 
   const gameState = activeGames.get(gameId) || await cargarPartidaEnMemoria(gameId);
