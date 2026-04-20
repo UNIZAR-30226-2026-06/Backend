@@ -5,7 +5,7 @@ const {authService} = require('../modules/auth/auth.controller');
 const {chatController} = require('../modules/chat/chat.controller');
 const {friendsService}=require('../modules/friends/friendsService');
 const { Socket } = require('socket.io');
-const {gameService}=require('../modules/game/gameService')
+const gameService = require('../modules/game/gameService');
 const { activeGames } = require('../core/game-engine/game.registry');
 
 
