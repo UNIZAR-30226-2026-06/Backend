@@ -3,6 +3,7 @@ const db = require('../../config/db');
 const GameState = require('../../core/game-engine/game.state');
 const { activeGames } = require('../../core/game-engine/game.registry');
 const { runGameCycle } = require('../../core/game-engine/game.runner');
+const rolService = require('../rol/rolService');
 
 function httpError(status, message) {
   const err = new Error(message);
@@ -100,6 +101,7 @@ async function crearPartida(id_creador, config) {
       hand: [],
       rol: null,
       rolUses: 0,
+      rolLastUsedTurn: null,
       connected: true,
       isBot: false,
       saidUno: false
@@ -192,6 +194,8 @@ async function iniciarPartida(gameId, username) {
     const logic = new GameLogic(gameState);
     logic.startGame();
 
+    await rolService.asignarRolesIniciales(gameId, gameState, client);
+
     await client.query(
       `UPDATE notuno.partida
        SET estado = 'en_curso', game_state = $2, updated_at = NOW()
@@ -283,6 +287,7 @@ async function unirsePartida(gameId, username) {
         hand: [],
         rol: null,
         rolUses: 0,
+        rolLastUsedTurn: null,
         connected: true,
         isBot: false,
         saidUno: false
@@ -622,6 +627,7 @@ async function añadirBot(gameId, usernameCreador) {
       hand: [],
       rol: null,
       rolUses: 0,
+      rolLastUsedTurn: null,
       connected: true, // Siempre "conectado"
       isBot: true,     // Bandera clave
       saidUno: false

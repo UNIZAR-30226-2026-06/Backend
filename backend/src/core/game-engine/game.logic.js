@@ -33,6 +33,7 @@ class GameLogic {
     this.state.turnDeadline = null;
     this.state.pausedAt = null;
     this.state.resumeVotes = [];
+    this.state.roleBlock = null;
 
     for (let i = 0; i < this.state.numCardsIni; i++) {
       for (const player of this.state.players) {

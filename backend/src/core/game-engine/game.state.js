@@ -7,8 +7,9 @@ class GameState {
     this.players = players.map((p) => ({
       id: p.userId || p.id,
       hand: [],
-      rol: p.rol || null,
-      rolUses: p.rolUses || 0,
+      rol: p.rol ?? null,
+      rolUses: p.rolUses ?? 0,
+      rolLastUsedTurn: p.rolLastUsedTurn ?? null,
       connected: p.connected ?? true,
       isBot: p.isBot ?? false,
       saidUno: p.saidUno ?? false
@@ -29,6 +30,7 @@ class GameState {
     this.numCardsIni = numCardsIni;
     this.specialCardsMode = specialCardsMode;
     this.rolesMode = rolesMode;
+    this.roleBlock = null;
 
     this.createdAt = Date.now();
 

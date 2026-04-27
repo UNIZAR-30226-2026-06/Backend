@@ -86,6 +86,7 @@ const walletRoutes = require('./modules/wallet/wallet.routes');
 const friendsRoutes = require('./modules/friends/friends.routes');
 const chatRoutes = require('./modules/chat/chat.routes');
 const gameRoutes = require('./modules/game/game.routes');
+const roleRoutes = require('./modules/rol/rol.routes');
 
 
 // --------------------
@@ -98,6 +99,7 @@ app.use(`${API_PREFIX}/wallet`, walletRoutes);
 app.use(`${API_PREFIX}/friends`, friendsRoutes);
 app.use(`${API_PREFIX}/chat`, chatRoutes);
 app.use(`${API_PREFIX}/partidas`, gameRoutes);
+app.use(`${API_PREFIX}/roles`, roleRoutes);
 
 app.use('/docs', express.static('docs'));
 
