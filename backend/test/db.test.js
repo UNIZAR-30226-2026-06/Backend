@@ -5,11 +5,17 @@ describe('Database integration tests', () => {
 
   beforeAll(async () => {
     client = await db.connect();
+  });
+
+  beforeEach(async () => {
     await client.query('BEGIN');
   });
 
-  afterAll(async () => {
+  afterEach(async () => {
     await client.query('ROLLBACK');
+  });
+
+  afterAll(async () => {
     client.release();
   });
 
@@ -42,5 +48,46 @@ describe('Database integration tests', () => {
 
     expect(updateRes.rows.length).toBe(1);
     expect(updateRes.rows[0].correo).toBe(nuevoCorreo);
+  });
+
+  test('should reject inserting a user with a null primary key', async () => {
+    await expect(
+      client.query(
+        'INSERT INTO notuno.USUARIO (nombre_usuario, contrasena, correo) VALUES ($1, $2, $3)',
+        [null, 'password', 'null-user@example.com']
+      )
+    ).rejects.toMatchObject({ code: '23502' });
+  });
+
+  test('should reject inserting a duplicate user primary key', async () => {
+    const nombre_usuario = `test_user_dup_${Date.now()}`;
+    const correo = `${nombre_usuario}@example.com`;
+
+    await client.query(
+      'INSERT INTO notuno.USUARIO (nombre_usuario, contrasena, correo) VALUES ($1, $2, $3)',
+      [nombre_usuario, 'password', correo]
+    );
+
+    await expect(
+      client.query(
+        'INSERT INTO notuno.USUARIO (nombre_usuario, contrasena, correo) VALUES ($1, $2, $3)',
+        [nombre_usuario, 'password2', `${nombre_usuario}+2@example.com`]
+      )
+    ).rejects.toMatchObject({ code: '23505' });
+  });
+
+  test('should reject inserting a CARTA without required fields for tipo especial', async () => {
+    const styleRes = await client.query(
+      'INSERT INTO notuno.ESTILO (image, precio_estilo, nombre) VALUES ($1, $2, $3) RETURNING id_estilo',
+      ['tmp.png', 0, 'tmp-estilo']
+    );
+    const idEstilo = styleRes.rows[0].id_estilo;
+
+    await expect(
+      client.query(
+        'INSERT INTO notuno.CARTA (tipo, color, numero, codigo, id_estilo) VALUES ($1, $2, $3, $4, $5)',
+        ['especial', null, null, null, idEstilo]
+      )
+    ).rejects.toMatchObject({ code: '23514' });
   });
 });
