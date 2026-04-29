@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --runInBand",
     "dev": "nodemon src/server.js",
     "docs": "asyncapi generate fromTemplate src/async_api/async_api.yaml @asyncapi/html-template -o docs",
     "start": "node src/server.js",
@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "@asyncapi/cli": "^6.0.0",
+    "jest": "^29.7.0",
     "nodemon": "^3.1.11"
   }
 }

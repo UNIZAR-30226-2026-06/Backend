@@ -4,9 +4,9 @@ class DeckFactory {
   static NUMBERS = ["0","1","2","3","4","5","6","7","8","9"];
   static WILD_COLOR = "black";
   static SPECIALS = [
-    { value: "+2", colors: [this.WILD_COLOR] },
+    { value: "+2", colors: this.COLORS },
     { value: "reverse", colors: this.COLORS },
-    { value: "+2R", colors: [this.WILD_COLOR] },
+    { value: "+2R", colors: this.COLORS },
     { value: "+4", colors: [this.WILD_COLOR] },
     { value: "+1", colors: [this.WILD_COLOR] },
     { value: "skip", colors: this.COLORS },
