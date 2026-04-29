@@ -1,0 +1,47 @@
+Instrucciones para lanzar el servidor Backend
+=============================================
+
+1) Instalar dependencias
+------------------------
+Abre una terminal en la carpeta `backend/` y ejecuta:
+
+  npm install
+
+2) Configurar variables de entorno
+----------------------------------
+Crea (o revisa) el archivo `backend/.env` con al menos estas variables:
+
+  JWT_SECRET=AlgoSuperSecreto123!
+  PORT=3000
+  DATABASE_URL=postgresql://usuario:password@host:puerto/base
+
+Asegúrate de usar la URL correcta de tu base de datos PostgreSQL.
+
+3) Inicializar la base de datos
+-------------------------------
+Si necesitas crear el esquema y semillas, ejecuta:
+
+  cd backend
+  node src/init-db.js
+
+4) Ejecutar el servidor
+-----------------------
+Desde `backend/` ejecuta:
+
+  npm run dev
+
+Esto levantará el servidor en `http://localhost:3000` u otro puerto configurado en `.env`.
+
+5) Probar la API
+----------------
+- Salud: `GET http://localhost:3000/api/v1/health`
+- Login: `POST http://localhost:3000/api/v1/auth/login`
+
+6) Notas adicionales
+--------------------
+- Si usas sockets, el servidor también inicializa Socket.IO.
+- Para ejecutar tests automatizados, primero instala `jest` y luego usa:
+
+  npm test
+
+Si la base de datos está en Neon o en la nube, revisa que la conexión SSL sea aceptada en `src/config/db.js`.

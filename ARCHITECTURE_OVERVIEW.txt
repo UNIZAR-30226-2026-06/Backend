@@ -1,0 +1,63 @@
+Resumen de arquitectura del backend
+===================================
+
+Este archivo describe la arquitectura actual del backend y las responsabilidades de cada capa.
+
+1) Entrada de la aplicación
+---------------------------
+- `src/app.js`: configura Express, CORS, middleware y rutas.
+- `src/server.js`: crea el servidor HTTP, arranca Socket.IO y ejecuta el worker de turnos.
+
+2) Rutas y módulos HTTP
+------------------------
+Cada módulo HTTP sigue el patrón:
+- `*.routes.js`: define las rutas de Express.
+- `*.controller.js`: valida y transforma la petición/respuesta.
+- `*.service.js`: contiene la lógica de negocio y acceso a datos.
+
+Módulos principales:
+- `auth`: login, registro y datos del usuario.
+- `user`: perfil y operaciones de usuario.
+- `friends`: solicitudes y lista de amigos.
+- `wallet`: monedas, compras y balance.
+- `store`: compra de avatar y estilo.
+- `chat`: mensajes entre usuarios y partidas.
+- `game`: lógica de partidas multijugador.
+- `rol`: lógica y administración de roles dentro de partida.
+
+3) Motor de juego
+-----------------
+- `src/core/game-engine/`: núcleo del juego.
+  - `game.state.js`: estado de partida y reglas de turno.
+  - `game.logic.js`: ejecución de jugadas y efectos.
+  - `card.rules.js`: validación y aplicación de efectos de cartas.
+  - `deck.factory.js`: generación de mazo y cartas especiales.
+  - `bot.logic.js`: IA de bots.
+  - `game.loader.js`, `game.registry.js`, `game.runner.js`: carga, registro y ciclo de partidas.
+  - `lock.manager.js`: sincronización de accesos concurrentes.
+  - `role.logic.js`: reglas de roles.
+  - `turn.worker.js`: gestión de tiempo por turno.
+
+4) Realtime
+-----------
+- `src/realtime/socket.server.js`: inicializa Socket.IO.
+- `src/realtime/socket.handlers.js`: maneja eventos y mensajes.
+- `src/realtime/rooms.manager.js`: administra salas de usuarios.
+
+5) Base de datos
+----------------
+- `src/config/db.js`: conexión PostgreSQL.
+- `src/database/01_schema.sql`: esquema de tablas y restricciones.
+- `src/database/02_seed.sql`: datos semilla.
+- `init-db.js`: script de inicialización de la base de datos.
+
+6) Tests y documentación
+------------------------
+- `test/`: mezcla de tests Jest y scripts de integración.
+- `docs/`: documentación generada.
+- `mermaid.md`: diagrama de flujo/arquitectura en Mermaid.
+
+7) Estado de la documentación
+------------------------------
+- `estructura proyecto +-.txt` y `diagrama_modulos.txt` reflejan la estructura actual del código.
+- Este archivo actúa como guía rápida para entender las capas y dependencias.

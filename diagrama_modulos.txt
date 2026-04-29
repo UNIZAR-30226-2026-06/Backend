@@ -1,45 +1,63 @@
-backend/
-│
-├── src/
-│   ├── core/                      
-│   │   ├── game-engine/
-│   │   │   ├── game.state.js        # Estado real de la partida
-│   │   │   ├── turn.manager.js      # Controla turnos, timeout, locks
-│   │   │   ├── rule.engine.js       # Lógica de cartas y efectos
-│   │   │   ├── bot.manager.js       # IA de bots integrada con turnos
-│   │   │   ├── deck.factory.js      # Crea y reparte mazos
-│   │   │   └── card.validator.js    # Valida jugadas enviadas por clientes
-│   │   └── …
-│   │
-│   ├── modules/
-│   │   ├── game/
-│   │   │   ├── game.controller.js
-│   │   │   ├── game.service.js
-│   │   │   └── game.routes.js
-│   │   ├── user/
-│   │   │   ├── user.controller.js
-│   │   │   ├── user.service.js
-│   │   │   └── user.routes.js
-│   │   ├── auth/ …
-│   │   ├── friends/ …
-│   │   ├── wallet/ …
-│   │   └── chat/ …
-│   │
-│   ├── realtime/
-│   │   ├── socket.server.js
-│   │   ├── rooms.manager.js         # Maneja estados, locks, reconexiones
-│   │   └── event.queue.js           # Serializa acciones para consistencia
-│   │
-│   ├── repositories/
-│   │   ├── users.repo.js
-│   │   ├── partidas.repo.js
-│   │   └── jugadas.repo.js
-│   │
-│   ├── shared/ …
-│   ├── config/ …
-│   ├── database/ …
-│   └── middlewares/ …
-│
-├── init-db.js
-├── .env
-└── package.json
+﻿Backend architecture overview
+===========================
+
+1) Capa HTTP / API
+------------------
+- `src/app.js` monta Express, CORS, middleware y rutas.
+- `src/server.js` arranca el servidor HTTP, carga sockets y el worker de turnos.
+- `src/modules/*` contiene controladores, servicios y rutas por dominio.
+  - `auth` → autenticación JWT, login/register/me
+  - `user` → perfil y operaciones de usuario
+  - `friends` → gestión de amigos y solicitudes
+  - `wallet` → monedas y compras
+  - `store` → compra de avatar y estilo
+  - `chat` → mensajería de partida
+  - `game` → crear/entrar/jugar/iniciar/estado de partidas
+  - `rol` → gestión de roles en partida
+
+2) Capa de juego central
+------------------------
+- `src/core/game-engine/` contiene el motor de juego principal:
+  - `game.state.js` controla estado de partida, turnos, mano, descarte, filtros
+  - `game.logic.js` ejecuta jugadas, robos, reinicios, manos y efectos
+  - `card.rules.js` valida si una carta puede jugarse y aplica efectos
+  - `deck.factory.js` crea el mazo y genera cartas normales/especiales
+  - `bot.logic.js` toma decisiones de IA para bots
+  - `game.loader.js`, `game.registry.js`, `game.runner.js` gestionan carga, registro y ejecución de partidas activas
+  - `game.utils.js` contiene utilidades de juego compartidas
+  - `lock.manager.js` ayuda con sincronización y exclusión de turnos
+  - `role.logic.js` maneja lógica de roles especiales en partida
+  - `turn.worker.js` ejecuta timeouts y turnos automáticos en segundo plano
+- `src/core/start-game/` contiene coordinación de creación y arranque de partidas.
+
+3) Capa de realtime
+-------------------
+- `src/realtime/socket.server.js` inicializa Socket.IO y maneja autenticación de sockets.
+- `src/realtime/socket.handlers.js` registra eventos de socket y notificaciones.
+- `src/realtime/rooms.manager.js` administra salas y rutas de mensajería.
+
+4) Capa de persistencia / configuración
+--------------------------------------
+- `src/config/db.js` conexión PostgreSQL (Neon/Cloud) con SSL.
+- `src/database/01_schema.sql` define esquema del dominio.
+- `src/database/02_seed.sql` carga datos iniciales.
+- `init-db.js` arranca la base de datos a partir del esquema.
+
+5) Pruebas
+----------
+- `test/` combina tests automatizados (`*.test.js`) y scripts manuales de API.
+- Actualmente hay pruebas de servicio de auth y de integridad SQL entre otras.
+
+6) Flujo general
+----------------
+- Cliente -> API REST 
+- API REST -> módulo específico -> servicio -> core / base de datos
+- Partida en curso -> `gameService` / `GameLogic` 
+- WebSockets notifican eventos en partidas activas
+- `turn.worker.js` controla expiración de turnos y acciones automáticas
+
+7) Estado actual importante
+---------------------------
+- El motor de cartas ya incluye cartas especiales y múltiples efectos.
+- El `game` module gestiona estado persistente en `PARTIDA` y fases de lobby/inicio.
+- `auth`, `user`, `wallet`, `friends`, `store`, `chat`, `game` y `rol` están presentes como dominios separados.

@@ -1,76 +1,100 @@
 backend/
 │
 ├── src/
-│   │
-│   ├── core/                      # Lógica central del juego (NO HTTP)
+│   ├── app.js
+│   ├── server.js
+│   ├── init-db.js
+│   ├── async_api/
+│   ├── config/
+│   │   ├── db.js
+│   │   └── env.js
+│   ├── database/
+│   │   ├── 01_schema.sql
+│   │   └── 02_seed.sql
+│   ├── middlewares/
+│   │   ├── auth.middleware.js
+│   │   └── error.middleware.js
+│   ├── core/
 │   │   ├── game-engine/
-│   │   │   ├── game.state.js          # Medio Hecho
-│   │   │   ├── game.logic.js          # Medio Hecho
-│   │   │   ├── turn.manager.js        # Medio Hecho
-│   │   │   ├── card.rules.js          # Medio Hecho
-│   │   │   ├── deck.factory.js        # Medio Hecho
-│   │   │   └── bot.logic.js           # Medio Hecho 
-│   │   │
-│   │   └── validators/
-│   │
+│   │   │   ├── bot.logic.js
+│   │   │   ├── card.rules.js
+│   │   │   ├── deck.factory.js
+│   │   │   ├── game.loader.js
+│   │   │   ├── game.logic.js
+│   │   │   ├── game.registry.js
+│   │   │   ├── game.runner.js
+│   │   │   ├── game.state.js
+│   │   │   ├── game.utils.js
+│   │   │   ├── lock.manager.js
+│   │   │   ├── role.logic.js
+│   │   │   ├── testPartida.js
+│   │   │   └── turn.worker.js
+│   │   └── start-game/
+│   │       ├── partida.js
+│   │       └── partida.manager.js
 │   ├── modules/
-│   │   ├── game/
-│   │   │   ├── game.routes.js         # Medio Hecho
-│   │   │   ├── game.controller.js     # Medio Hecho
-│   │   │   └── game.service.js        # Medio Hecho (Faltan las funciones de la lógica)
-│   │   │
-│   │   ├── store/
-│   │   │   ├── store.routes.js        # Hecho
-│   │   │   ├── store.controller.js    # Hecho
-│   │   │   └── store.service.js       # Hecho
-│   │   │
-│   │   ├── user/
-│   │   │   ├── user.routes.js         # Hecho
-│   │   │   ├── user.controller.js     # Hecho
-│   │   │   └── user.service.js        # Hecho
 │   │   ├── auth/
-│   │   │   ├── auth.routes.js         # Hecho
-│   │   │   ├── auth.controller.js     # Hecho
-│   │   │   └── auth.service.js        # Hecho
+│   │   │   ├── auth.routes.js
+│   │   │   ├── auth.controller.js
+│   │   │   └── auth.service.js
+│   │   ├── user/
+│   │   │   ├── user.routes.js
+│   │   │   ├── user.controller.js
+│   │   │   └── user.service.js
 │   │   ├── friends/
-│   │   │   ├── friends.routes.js      # Hecho
-│   │   │   ├── friends.controller.js  # Hecho
-│   │   │   └── friends.service.js     # Hecho
-│   │   ├── wallet/                
-│   │   │   ├── wallet.routes.js       # Hecho
-│   │   │   ├── wallet.controller.js   # Hecho
-│   │   │   └── wallet.service.js      # Hecho
-│   │   └── chat/
-│   │       ├── chat.routes.js         # Hecho
-│   │       ├── chat.controller.js     # Hecho
-│   │       └── chat.service.js        # Hecho
-│   │
-│   ├── realtime/                  # WebSockets
+│   │   │   ├── friends.routes.js
+│   │   │   ├── friends.controller.js
+│   │   │   └── friends.service.js
+│   │   ├── wallet/
+│   │   │   ├── wallet.routes.js
+│   │   │   ├── wallet.controller.js
+│   │   │   └── wallet.service.js
+│   │   ├── store/
+│   │   │   ├── store.routes.js
+│   │   │   ├── store.controller.js
+│   │   │   └── store.service.js
+│   │   ├── chat/
+│   │   │   ├── chat.routes.js
+│   │   │   ├── chat.controller.js
+│   │   │   └── chat.service.js
+│   │   ├── game/
+│   │   │   ├── game.routes.js
+│   │   │   ├── game.controller.js
+│   │   │   └── gameService.js
+│   │   └── rol/
+│   │       ├── rol.routes.js
+│   │       ├── rol.controller.js
+│   │       └── rolService.js
+│   ├── realtime/
 │   │   ├── socket.server.js
 │   │   ├── socket.handlers.js
 │   │   └── rooms.manager.js
-│   │
-│   ├── shared/
-│   │   ├── middleware/
-│   │   ├── errors/
-│   │   └── utils/
-│   │
-│   ├── config/
-│   │   ├── db.js       # Hecho
-│   │   └── env.js      # Hecho
-│   │
-│   ├── database/
-│   │   ├── 01_schema.js # crear
-│   │   └── 02_seed.js # poblar
-│   │    
-│   ├── middlewares/
-│   │   ├── auth.middleware      # Hecho
-│   │   └── error.middleware     # Hecho
-|   |
-│   ├── app.js                   # Hecho
-│   └── server.js                # Hecho
-|
 │
-├── init-db.js
+├── docs/
+├── mermaid.md
+├── test/
+│   ├── authService.test.js
+│   ├── db.test.js
+│   ├── oddEven.test.js
+│   ├── testAuth.js
+│   ├── testBotFlow.js
+│   ├── testChat.js
+│   ├── testComprarAvatar.js
+│   ├── testComprarEstilo.js
+│   ├── testCrearPartida.js
+│   ├── testFlujoPartida.js
+│   ├── testFriends.js
+│   ├── testGameEndpoints.js
+│   ├── testGamePlayFlow.js
+│   ├── testModules.js
+│   ├── testPausas.js
+│   ├── testPlayRealCard.js
+│   ├── testRoles.js
+│   ├── testSocket.js
+│   ├── testUser.js
+│   └── testWallet.js
+│
 ├── .env
-└── package.json
+├── package.json
+├── package-lock.json
+└── test.ps1
