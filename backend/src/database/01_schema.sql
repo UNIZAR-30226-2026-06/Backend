@@ -32,7 +32,7 @@ CREATE TABLE USUARIO (
     nombre_usuario TEXT PRIMARY KEY,
     contrasena VARCHAR(255) NOT NULL,
     correo VARCHAR(255) NOT NULL UNIQUE,
-    monedas INTEGER NOT NULL DEFAULT 0 CHECK (monedas >= 0),
+    monedas INTEGER NOT NULL DEFAULT 500 CHECK (monedas >= 0),
     total_ganadas INTEGER NOT NULL DEFAULT 0 CHECK (total_ganadas >= 0),
     total_partidas INTEGER NOT NULL DEFAULT 0 CHECK (total_partidas >= 0),
     id_avatar_seleccionado INTEGER,

@@ -13,6 +13,7 @@ class User {
     }
 }
 
+
 // ================= CREAR USUARIO =================
 async function createUser(nombre_usuario, contrasena, correo) {
     const result = await db.query(
@@ -21,6 +22,7 @@ async function createUser(nombre_usuario, contrasena, correo) {
     );
     return result.rowCount === 1;
 }
+
 
 // ================= OBTENER USUARIO =================
 async function getUserByUsername(nombre_usuario) {
