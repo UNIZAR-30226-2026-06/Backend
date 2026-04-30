@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node test/runAllTests.js",
     "dev": "nodemon src/server.js",
     "docs": "asyncapi generate fromTemplate src/async_api/async_api.yaml @asyncapi/html-template -o docs",
     "start": "node src/server.js",

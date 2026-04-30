@@ -162,98 +162,98 @@ INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (47, 'azul', 'sk
 
 -- extra turno
 INSERT INTO CARTA (id_carta, id_estilo) VALUES (48, 1);
-INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (48, 'amarillo', 'extra_turn');
+INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (48, 'amarillo', 'extraTurn');
 
 INSERT INTO CARTA (id_carta, id_estilo) VALUES (49, 1);
-INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (49, 'verde', 'extra_turn');
+INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (49, 'verde', 'extraTurn');
 
 INSERT INTO CARTA (id_carta, id_estilo) VALUES (50, 1);
-INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (50, 'rojo', 'extra_turn');
+INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (50, 'rojo', 'extraTurn');
 
 INSERT INTO CARTA (id_carta, id_estilo) VALUES (51, 1);
-INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (51, 'azul', 'extra_turn');
+INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (51, 'azul', 'extraTurn');
 
 -- juegan impares
 INSERT INTO CARTA (id_carta, id_estilo) VALUES (52, 1);
-INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (52, 'amarillo', 'play_odd');
+INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (52, 'amarillo', 'playOdd');
 
 INSERT INTO CARTA (id_carta, id_estilo) VALUES (53, 1);
-INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (53, 'verde', 'play_odd');
+INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (53, 'verde', 'playOdd');
 
 INSERT INTO CARTA (id_carta, id_estilo) VALUES (54, 1);
-INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (54, 'rojo', 'play_odd');
+INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (54, 'rojo', 'playOdd');
 
 INSERT INTO CARTA (id_carta, id_estilo) VALUES (55, 1);
-INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (55, 'azul', 'play_odd');
+INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (55, 'azul', 'playOdd');
 
 -- juegan pares
 INSERT INTO CARTA (id_carta, id_estilo) VALUES (56, 1);
-INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (56, 'amarillo', 'play_even');
+INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (56, 'amarillo', 'playEven');
 
 INSERT INTO CARTA (id_carta, id_estilo) VALUES (57, 1);
-INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (57, 'verde', 'play_even');
+INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (57, 'verde', 'playEven');
 
 INSERT INTO CARTA (id_carta, id_estilo) VALUES (58, 1);
-INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (58, 'rojo', 'play_even');
+INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (58, 'rojo', 'playEven');
 
 INSERT INTO CARTA (id_carta, id_estilo) VALUES (59, 1);
-INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (59, 'azul', 'play_even');
+INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (59, 'azul', 'playEven');
 
 -- reversa
 INSERT INTO CARTA (id_carta, id_estilo) VALUES (60, 1);
-INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (60, 'amarillo', 'reversa');
+INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (60, 'amarillo', 'reverse');
 
 INSERT INTO CARTA (id_carta, id_estilo) VALUES (61, 1);
-INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (61, 'verde', 'reversa');
+INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (61, 'verde', 'reverse');
 
 INSERT INTO CARTA (id_carta, id_estilo) VALUES (62, 1);
-INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (62, 'rojo', 'reversa');
+INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (62, 'rojo', 'reverse');
 
 INSERT INTO CARTA (id_carta, id_estilo) VALUES (63, 1);
-INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (63, 'azul', 'reversa');
+INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (63, 'azul', 'reverse');
 
---reversa con castigo de robar cartas +2
+-- reversa con castigo de robar cartas +2
 INSERT INTO CARTA (id_carta, id_estilo) VALUES (64, 1);
-INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (64, 'amarillo', 'reversa_castigo');
+INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (64, 'amarillo', '+2R');
 
 INSERT INTO CARTA (id_carta, id_estilo) VALUES (65, 1);
-INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (65, 'verde', 'reversa_castigo');
+INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (65, 'verde', '+2R');
 
 INSERT INTO CARTA (id_carta, id_estilo) VALUES (66, 1);
-INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (66, 'rojo', 'reversa_castigo');
+INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (66, 'rojo', '+2R');
 
 INSERT INTO CARTA (id_carta, id_estilo) VALUES (67, 1);
-INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (67, 'azul', 'reversa_castigo');
+INSERT INTO CARTA_ESPECIAL_COLOR (id_carta, color, tipo) VALUES (67, 'azul', '+2R');
 
 -- cartas especiales
 -- comodin +4
 INSERT INTO CARTA (id_carta, id_estilo) VALUES (68, 1);
 INSERT INTO CARTA_ESPECIAL (id_carta) VALUES (68);
 
--- comodin (cambia de color)
+-- comodin color libre (wild card)
 INSERT INTO CARTA (id_carta, id_estilo) VALUES (69, 1);
 INSERT INTO CARTA_ESPECIAL (id_carta) VALUES (69);
 
--- todos roban
+-- todos roban -> +1
 INSERT INTO CARTA (id_carta, id_estilo) VALUES (70, 1);
 INSERT INTO CARTA_ESPECIAL (id_carta) VALUES (70);
 
--- cambiar mazo
+-- swapHands (intercambiar manos)
 INSERT INTO CARTA (id_carta, id_estilo) VALUES (71, 1);
 INSERT INTO CARTA_ESPECIAL (id_carta) VALUES (71);
 
--- reiniciar mazo
+-- discardHandRedraw (descartar mano y robar de nuevo)
 INSERT INTO CARTA (id_carta, id_estilo) VALUES (72, 1);
 INSERT INTO CARTA_ESPECIAL (id_carta) VALUES (72);
 
--- reiniciar partida
+-- reiniciar partida -> restartGame
 INSERT INTO CARTA (id_carta, id_estilo) VALUES (73, 1);
 INSERT INTO CARTA_ESPECIAL (id_carta) VALUES (73);
 
--- solo usar cartas especiales
+-- solo usar cartas especiales -> specialOnly
 INSERT INTO CARTA (id_carta, id_estilo) VALUES (74, 1);
 INSERT INTO CARTA_ESPECIAL (id_carta) VALUES (74);
 
--- prohibir color
+-- prohibir color (pendiente de soporte en el motor)
 INSERT INTO CARTA (id_carta, id_estilo) VALUES (75, 1);
 INSERT INTO CARTA_ESPECIAL (id_carta) VALUES (75);
