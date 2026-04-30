@@ -35,8 +35,9 @@ async function runGameCycle(gameId, actionFn = null) {
     }
 
     // Ejecutar acción externa si se pasó
+    let actionResult;
     if (actionFn) {
-      await actionFn(logic, gameState);
+      actionResult = await actionFn(logic, gameState);
     }
 
     else if (gameState.phase === 'playing') {
@@ -136,7 +137,7 @@ async function runGameCycle(gameId, actionFn = null) {
       gameState.needsPersistence = false; // resetear flag
     }
 
-    return gameState;
+    return actionFn ? actionResult : gameState;
   });
 }
 
