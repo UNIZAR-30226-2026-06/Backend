@@ -15,6 +15,10 @@ function getGameOwner(gameState) {
   return gameState.ownerId || gameState.createdBy || gameState.players?.[0]?.id || null;
 }
 
+function isLobbyState(estado) {
+  return estado === 'esperando_jugadores' || estado === 'esperando jugadores';
+}
+
 // =========================
 // UTILS
 // =========================
@@ -180,8 +184,8 @@ async function iniciarPartida(gameId, username) {
     );
 
     if (lock.rowCount === 0) throw httpError(404, 'Partida no encontrada');
-    if (lock.rows[0].estado !== 'esperando_jugadores') {
-      throw httpError(400, 'La partida no está en estado lobby');
+    if (!isLobbyState(lock.rows[0].estado)) {
+      throw httpError(400, `La partida no está en estado lobby (estado actual: ${lock.rows[0].estado})`);
     }
 
     let gameState = activeGames.get(gameId) || await cargarPartidaEnMemoria(gameId);
@@ -246,7 +250,7 @@ async function unirsePartida(gameId, username) {
     const yaEstabaEnDB = exists.rowCount > 0;
 
     // Si no está inscrito, solo puede entrar desde lobby.
-    if (!yaEstabaEnDB && estado !== 'esperando_jugadores') {
+    if (!yaEstabaEnDB && !isLobbyState(estado)) {
       throw httpError(400, 'La partida no admite jugadores');
     }
 

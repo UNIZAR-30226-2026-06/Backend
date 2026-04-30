@@ -1,10 +1,6 @@
-const { joinUserRoom } = require('./rooms.manager');
 const db = require('../config/db');
 const { processMessage } = require('../modules/chat/chatService');
-const {authService} = require('../modules/auth/auth.controller');
-const {chatController} = require('../modules/chat/chat.controller');
-const {friendsService}=require('../modules/friends/friendsService');
-const { Socket } = require('socket.io');
+const friendsService = require('../modules/friends/friendsService');
 const gameService = require('../modules/game/gameService');
 const { activeGames } = require('../core/game-engine/game.registry');
 
@@ -24,7 +20,7 @@ async function getPendingFriendRequests(username) {
 const connectedUsers=new Map();
 
 function registerSocketHandlers(io) {
-  io.on('connection', (socket) => {
+  io.on('connection', async (socket) => {
     const username = socket.user?.nombre_usuario;
     if (!username) {
       socket.disconnect(true);
@@ -84,67 +80,82 @@ function registerSocketHandlers(io) {
     })
 
     socket.on('avisarAmigosConectados_UserOnline',async () => {
-      const amigos=await friendsService.obtenerAmigos(username)
-      for (const i in amigos) {
-        if (connectedUsers.has(i)) {
-          socket.to(connectedUsers.get(id)).emit(`amigoConectado`, username)
+      const amigos = await friendsService.obtenerAmigos(username);
+      if (!Array.isArray(amigos)) return;
+
+      for (const amigo of amigos) {
+        const nombreAmigo = typeof amigo === 'object' ? (amigo.nombre_usuario || amigo.name) : amigo;
+        if (connectedUsers.has(nombreAmigo)) {
+          io.to(connectedUsers.get(nombreAmigo)).emit('amigoConectado', username);
         }
       }
-    })
-    socket.on('avisarAmigosConectados_UserDisconnect',async () => {
-      const amigos=await friendsService.obtenerAmigos(username)
-      for (const i in amigos) {
-        if (connectedUsers.has(i)) {
-          socket.to(connectedUsers.get(id)).emit(`amigoDesconectado`, username)
+    });
+
+    socket.on('avisarAmigosConectados_UserDisconnect', async () => {
+      const amigos = await friendsService.obtenerAmigos(username);
+      if (!Array.isArray(amigos)) return;
+
+      for (const amigo of amigos) {
+        const nombreAmigo = typeof amigo === 'object' ? (amigo.nombre_usuario || amigo.name) : amigo;
+        if (connectedUsers.has(nombreAmigo)) {
+          io.to(connectedUsers.get(nombreAmigo)).emit('amigoDesconectado', username);
         }
       }
-    })
+    });
 
     
 
     socket.on('start_game', async (data) => {
-      //tareas a realizar para implementar una partida
-      //me llega cuando estan todos los jugadores preparados para iniciar la partida,la partida ya esta creada, tiene id y asigno a cada jugador su mano inicial, y les envio un mensaje a cada uno con su mano inicial y el id de la partida a la que se han unido
-      
-      partidaID=data.partidaID
-      
-      
-      await gameService.iniciarPartida(partidaID, username) //iniciar partida para que se pueda jugar
-      //obtener el estado de la partida despues de iniciarla
-      const gameState = activeGames.get(partidaID);
-      if (!gameState) throw new Error("No se ha podido recuperar el estado del juego");
+      try {
+        const { partidaID } = data;
+        await gameService.iniciarPartida(partidaID, username);
 
-      //envio a cada jugador su mano inicial y el id de la partida a la que se han unido y el modo de juego
-      gameState.players.forEach(jugador => {
-        if (connectedUsers.has(jugador)) {
-          //envio a cada jugador su mano inicial y el id de la partida a la que se han unido
-          io.to(connectedUsers.get(jugador)).emit(`partida_iniciada`, {partidaID: partidaID, manoInicial: player.hand, modoJuego: gameState.rolesMode ? 'roles' : (gameState.specialCardsMode ? 'cards' : 'normal')}) //enviar mensaje a cada jugador con su mano inicial y el id de la partida a la que se han unido
-          
-        }
-      });
-    })
+        const gameState = activeGames.get(partidaID);
+        if (!gameState) throw new Error('No se ha podido recuperar el estado del juego');
+
+        gameState.players.forEach((player) => {
+          if (!player || !player.id) return;
+          const targetSocketId = connectedUsers.get(player.id);
+          if (targetSocketId) {
+            io.to(targetSocketId).emit('partida_iniciada', {
+              gameId: partidaID,
+              manoInicial: player.hand,
+              mode: gameState.rolesMode ? 'roles' : (gameState.specialCardsMode ? 'cards' : 'normal')
+            });
+          }
+        });
+      } catch (error) {
+        console.error('Error en start_game:', error.message);
+        socket.emit('error_partida', { message: error.message });
+      }
+    });
 
     socket.on('comprobar_turno', async (data) => {
-      //comprobar turno valido y enviar mensaje indicando si es valido o no (solo al jugador que ha jugado el turno)
-      try{
-        await gameService.jugarCarta(data.partidaID, username, data.cartaId) //comprobar si el turno es valido y jugar la carta, si no es valido se lanza una excepcion que se captura en el controlador y se envia un mensaje de error al jugador
+      try {
+        await gameService.jugarCarta(data.partidaID, username, data.cartaId);
+
+        const gameState = activeGames.get(data.partidaID);
+        const nextPlayer = gameState ? gameState.getCurrentPlayer() : null;
+
+        if (nextPlayer) {
+          io.to(data.partidaID).emit('turno_siguiente', {
+            siguienteJugador: nextPlayer.id,
+            cartasRobar: 0
+          });
+        }
       } catch (error) {
-        socket.emit('turno_invalido', {message: error.message})
+        socket.emit('turno_invalido', { message: error.message });
       }
-      //si llega aqui el turno es valido, se envia un evento indicando el siguiente jugador y si tiene que robar cartas o no
-      
-      io.to(data.partidaID).emit('turno_siguiente', {siguienteJugador: siguiente.jugador, cartasRobar: siguiente.cartasRobar}) //enviar mensaje a todos los jugadores de la partida indicando el siguiente jugador
-      //se le indica tambien si tiene que robar alguna carta, tendra que emitir eventos para robar cartas si es necesario
-
-    })
-
-    
+    });
 
     socket.on('robar_carta', async (data) => {
-      //robar carta y enviar mensaje al jugador que ha robado la carta con la carta robada
-      cartaRobada=await gameService.robarCarta(data.partidaID, username) //robar carta para el jugador que ha robado la carta
-      socket.emit('carta_robada', {carta: cartaRobada}) //enviar mensaje al jugador que ha robado la carta con la carta robada
-    })
+      try {
+        const cartaRobada = await gameService.robarCarta(data.partidaID, username);
+        socket.emit('carta_robada', { carta: cartaRobada });
+      } catch (error) {
+        socket.emit('error_partida', { message: error.message });
+      }
+    });
 
     socket.on('unirse_partida', async (data) => {
       try {
