@@ -80,7 +80,7 @@ CREATE TABLE ROL(
 -- =========================
 -- PARTIDA
 -- =========================
-CREATE TYPE estado_partida_new AS ENUM (
+CREATE TYPE estado_partida AS ENUM (
   'esperando_jugadores',
   'en_curso',
   'pausada',
@@ -95,13 +95,15 @@ CREATE TABLE PARTIDA(
     sonido BOOLEAN NOT NULL,
     musica BOOLEAN NOT NULL,
     vibracion BOOLEAN NOT NULL,
-    estado estado_partida NOT NULL,
+    estado estado_partida NOT NULL DEFAULT 'esperando_jugadores',
     timeout_turno INT NOT NULL CHECK (timeout_turno > 0),
     game_state JSONB,
     version INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     max_jugadores INTEGER NOT NULL DEFAULT 4 CHECK (max_jugadores BETWEEN 2 AND 4),
-    partida_publica BOOLEAN NOT NULL DEFAULT TRUE
+    partida_publica BOOLEAN NOT NULL DEFAULT TRUE,
+    codigo VARCHAR(6) UNIQUE
 );
 
 CREATE INDEX idx_partida_estado ON PARTIDA(estado);
@@ -169,6 +171,32 @@ CREATE TABLE AVATARES_COMPRADOS(
     FOREIGN KEY (nombre_usuario) REFERENCES USUARIO(nombre_usuario) ON DELETE CASCADE,
     FOREIGN KEY (id_avatar) REFERENCES AVATAR(id_avatar) ON DELETE CASCADE
 );
+
+-- =========================
+-- CARTAS_USUARIO (mano del jugador en una partida)
+-- =========================
+CREATE TABLE CARTAS_USUARIO(
+    id_partida_usuario UUID NOT NULL,
+    id_carta INT NOT NULL,
+    PRIMARY KEY (id_partida_usuario, id_carta),
+    FOREIGN KEY (id_partida_usuario) REFERENCES USUARIO_EN_PARTIDA(id_partida_usuario) ON DELETE CASCADE,
+    FOREIGN KEY (id_carta) REFERENCES CARTA(id_carta) ON DELETE CASCADE
+);
+
+-- =========================
+-- MENSAJES (chat persistente)
+-- =========================
+CREATE TABLE MENSAJES(
+    id_mensaje SERIAL PRIMARY KEY,
+    id_partida UUID NOT NULL,
+    nombre_usuario TEXT NOT NULL,
+    contenido TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    FOREIGN KEY (id_partida) REFERENCES PARTIDA(id_partida) ON DELETE CASCADE,
+    FOREIGN KEY (nombre_usuario) REFERENCES USUARIO(nombre_usuario) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_mensajes_partida ON MENSAJES(id_partida, created_at DESC);
 
 -- =========================
 -- ESTILOS COMPRADOS

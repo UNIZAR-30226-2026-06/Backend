@@ -36,11 +36,22 @@ function registerSocketHandlers(io) {
       console.log(`Usuario ${username} se unió a la room de la partida: ${partidaID}`);
     });
     
-    socket.on(`newMessage`, data => {
-      const mensaje_filtrado=processMessage(username, data.mensaje)
-      socket.emit('mensajeMostrar', mensaje_filtrado) //respondo al que me envia el mensaje con el mensaje correcto
-      socket.to(data.partidaID).emit('nuevoMensajeChat',mensaje_filtrado)   //respondo a todo el grupo excepto a que me envia (ya se lo he mandado antes)
-    })
+    socket.on('newMessage', data => {
+      try {
+        const partidaID = data?.partidaID || data?.partidaId;
+        if (!partidaID || !data?.mensaje) {
+          socket.emit('chat_error', { message: 'partidaID y mensaje son requeridos' });
+          return;
+        }
+
+        const mensaje_filtrado = processMessage(username, data.mensaje, { partidaId: partidaID });
+        socket.emit('mensajeMostrar', mensaje_filtrado); // respondo al que envía el mensaje con el mensaje correcto
+        socket.to(partidaID).emit('nuevoMensajeChat', mensaje_filtrado); // respondo al grupo excepto al emisor
+      } catch (err) {
+        console.error('Error en newMessage:', err.message);
+        socket.emit('chat_error', { message: err.message });
+      }
+    });
 
     socket.on(`prueba_recibida`, data => {
       console.log("he recibido mensaje: ", data.mensaje, "\n le contesto: te estoy contestando")

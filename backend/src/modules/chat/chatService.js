@@ -1,7 +1,7 @@
 // ================= CHAT SERVICE =================
 class ChatService {
 
-  processMessage(nombre_usuario, mensaje) {
+  processMessage(nombre_usuario, mensaje, options = {}) {
     if (!mensaje || mensaje.trim() === '') {
       throw new Error('Mensaje vacío');
     }
@@ -19,7 +19,8 @@ class ChatService {
     return {
       remitente: nombre_usuario,
       texto,
-      hora: new Date().toISOString()
+      hora: new Date().toISOString(),
+      partidaId: options.partidaId || null
     };
   }
 
