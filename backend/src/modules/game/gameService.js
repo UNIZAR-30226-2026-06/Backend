@@ -716,6 +716,34 @@ async function reanudarPartida(gameId, username) {
   });
 }
 
+// =========================
+// BORRAR PARTIDA ESPECÍFICA
+// =========================
+
+async function borrarPartida(gameId) {
+  try {
+    // Al borrar la partida, el "ON DELETE CASCADE" de la base de datos 
+    // automáticamente limpia la tabla usuario_en_partida asociada a este gameId.
+    const result = await db.query(
+      `DELETE FROM notuno.partida WHERE id_partida = $1 RETURNING id_partida`,
+      [gameId]
+    );
+
+    if (result.rowCount === 0) {
+      throw new Error('La partida no existe o ya fue borrada de la base de datos');
+    }
+
+    // Asegurarnos de limpiar la memoria si estuviera cargada
+    activeGames.delete(gameId);
+
+    console.log(`DB: Partida ${gameId} borrada correctamente.`);
+    return { success: true, message: 'Partida eliminada' };
+  } catch (error) {
+    console.error(`error borrarPartida [${gameId}]:`, error.message);
+    throw error;
+  }
+}
+
 module.exports = {
   crearPartida,
   iniciarPartida,
@@ -732,5 +760,6 @@ module.exports = {
   activeGames,
   añadirBot,
   votarPausa,
-  reanudarPartida
+  reanudarPartida,
+  borrarPartida
 };

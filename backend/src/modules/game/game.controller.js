@@ -224,6 +224,21 @@ async function reanudarPartida(req, res, next) {
   }
 }
 
+// ==========================
+// BORRAR PARTIDA 
+// =========================
+async function borrarPartida(req, res, next) {
+  try {
+    const { gameId } = req.params;
+
+    const result = await gameService.borrarPartida(gameId);
+
+    res.status(200).json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   crearPartida,
   unirsePartida,
@@ -237,5 +252,6 @@ module.exports = {
   robarCarta,
   añadirBot,
   solicitarPausa,
-  reanudarPartida
+  reanudarPartida,
+  borrarPartida,
 };

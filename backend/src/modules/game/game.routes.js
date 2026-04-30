@@ -514,4 +514,47 @@ router.post('/:gameId/pause', authMiddleware, gameController.solicitarPausa);
  */
 router.post('/:gameId/resume', authMiddleware, gameController.reanudarPartida);
 
+// ================= BORRAR =================
+/**
+ * @swagger
+ * /partidas/{gameId}:
+ *   delete:
+ *     summary: Borrar una partida específica
+ *     description: Elimina por completo una partida de la base de datos y de la memoria en tiempo real. 
+ *     tags: [Partidas]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: gameId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la partida que se desea borrar
+ *     responses:
+ *       200:
+ *         description: Partida borrada correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Partida eliminada"
+ *       400:
+ *         description: Error al intentar borrar la partida
+ *       401:
+ *         description: No autorizado (Falta token o es inválido)
+ *       404:
+ *         description: La partida no existe o ya fue borrada de la base de datos
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.delete('/:gameId', authMiddleware, gameController.borrarPartida);
+
+
 module.exports = router;
