@@ -239,6 +239,23 @@ async function borrarPartida(req, res, next) {
   }
 }
 
+// ==========================
+// VER PARTIDAS PAUSADAS
+// =========================
+async function verPartidasPausadas(req, res, next) {
+  try {
+    const username = req.user.nombre_usuario; // Obtenemos el usuario autenticado
+    const partidas = await gameService.obtenerPartidasPausadas(username);
+
+    res.status(200).json({
+      success: true,
+      data: partidas
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   crearPartida,
   unirsePartida,
@@ -254,4 +271,5 @@ module.exports = {
   solicitarPausa,
   reanudarPartida,
   borrarPartida,
+  verPartidasPausadas,
 };

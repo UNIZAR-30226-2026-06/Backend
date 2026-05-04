@@ -22,7 +22,7 @@ async function crearUsuarioAleatorio() {
 }
 
 async function runTests() {
-  console.log('=== TEST DE SISTEMA DE PAUSAS (1 Pausa, Mayoría Reanuda) ===\n');
+  console.log('=== TEST DE SISTEMA DE PAUSAS Y LISTADO ===\n');
 
   try {
     console.log('🔑 Haciendo login de Gonzalo...');
@@ -45,19 +45,18 @@ async function runTests() {
     console.log('   Iniciando partida...');
     await axios.post(`${API_URL}/partidas/${gameId1}/start`, {}, { headers: headersGonzalo });
 
-    console.log('   Gonzalo solicita pausar la partida...');
+    console.log('   Gonzalo solicita pausar la partida (1 humano = 1 voto requerido)...');
     let pauseRes1 = await axios.post(`${API_URL}/partidas/${gameId1}/pause`, {}, { headers: headersGonzalo });
     
     console.log('   Verificando el estado...');
-    // Comprobamos directamente si la fase dentro del estado es 'paused'
-    assert(pauseRes1.data.phase === 'paused', `La fase debería ser 'paused', pero es '${pauseRes1.data.phase}'`);
-    console.log('   ✅ ESCENARIO 1 SUPERADO: La partida se pausó instantáneamente porque 1 voto es suficiente.\n');
+    assert(pauseRes1.data.action === 'pausada', `La accion debería ser 'pausada', pero es '${pauseRes1.data.action}'`);
+    console.log('   ✅ ESCENARIO 1 SUPERADO: La partida se pausó instantáneamente.\n');
 
 
     // ==========================================================
-    // ESCENARIO 2: 2 HUMANOS
+    // ESCENARIO 2: 2 HUMANOS Y VERIFICACIÓN DE LISTADO
     // ==========================================================
-    console.log('🎬 [ESCENARIO 2] 2 Humanos (Gonzalo y Amigo)');
+    console.log('🎬 [ESCENARIO 2] 2 Humanos (Gonzalo y Amigo) + Verificación de Listado');
     
     console.log('   Creando usuario Amigo...');
     const amigoUser = await crearUsuarioAleatorio();
@@ -75,28 +74,57 @@ async function runTests() {
     console.log('   Gonzalo inicia la partida...');
     await axios.post(`${API_URL}/partidas/${gameId2}/start`, {}, { headers: headersGonzalo });
 
-    console.log('   Gonzalo solicita pausar la partida (1 voto)...');
+    console.log('   Gonzalo solicita pausar la partida (1er voto)...');
     let pauseVote1 = await axios.post(`${API_URL}/partidas/${gameId2}/pause`, {}, { headers: headersGonzalo });
     
-    // AHORA SE PAUSA INSTANTÁNEAMENTE CON 1 VOTO
-    assert(pauseVote1.data.phase === 'paused', 'La partida DEBERÍA haberse pausado inmediatamente');
-    console.log('   ✅ Correcto: La partida se ha pausado instantáneamente a petición de Gonzalo.');
+    assert(pauseVote1.data.action === 'voto_pausa_registrado', 'La partida NO debería pausarse con solo 1 voto');
+    console.log('   ✅ Correcto: La partida sigue activa esperando mayoría (1/2 votos).');
 
-    console.log('   Gonzalo solicita reanudar la partida (1 voto para reanudar)...');
+    console.log('   Amigo solicita pausar la partida (2do voto)...');
+    let pauseVote2 = await axios.post(`${API_URL}/partidas/${gameId2}/pause`, {}, { headers: headersAmigo });
+    
+    assert(pauseVote2.data.action === 'pausada', 'La partida DEBERÍA haberse pausado con 2 votos');
+    console.log('   ✅ Correcto: La partida se ha pausado exitosamente por mayoría absoluta.');
+
+    // --- TEST LISTADO MIENTRAS ESTÁ PAUSADA ---
+    console.log('\n🔍 [TEST LISTADO] Verificando que las partidas aparecen como pausadas...');
+    
+    let listadoGonzalo = await axios.get(`${API_URL}/partidas/pausadas`, { headers: headersGonzalo });
+    let idsGonzalo = listadoGonzalo.data.data.map(p => p.id_partida);
+    assert(idsGonzalo.includes(gameId1), 'Gonzalo debería ver la partida 1 en su lista de pausadas');
+    assert(idsGonzalo.includes(gameId2), 'Gonzalo debería ver la partida 2 en su lista de pausadas');
+    console.log('   ✅ Correcto: Gonzalo ve sus dos partidas pausadas.');
+
+    let listadoAmigo = await axios.get(`${API_URL}/partidas/pausadas`, { headers: headersAmigo });
+    let idsAmigo = listadoAmigo.data.data.map(p => p.id_partida);
+    assert(!idsAmigo.includes(gameId1), 'El Amigo NO debería ver la partida 1 (no está en ella)');
+    assert(idsAmigo.includes(gameId2), 'El Amigo debería ver la partida 2 en su lista de pausadas');
+    console.log('   ✅ Correcto: El Amigo ve solo la partida en la que participa.\n');
+    // -----------------------------------------------------------
+
+    console.log('   Gonzalo solicita reanudar la partida (1er voto para reanudar)...');
     let resumeVote1 = await axios.post(`${API_URL}/partidas/${gameId2}/resume`, {}, { headers: headersGonzalo });
     
-    // Como son 2 humanos, la mayoría requiere 2 votos. Así que sigue pausada.
-    assert(resumeVote1.data.phase === 'paused', 'La partida NO debería reanudarse con solo 1 voto');
+    assert(resumeVote1.data.action === 'voto_reanudar_registrado', 'La partida NO debería reanudarse con solo 1 voto');
     console.log('   ✅ Correcto: La partida sigue pausada esperando mayoría (1/2 votos).');
 
-    console.log('   Amigo solicita reanudar la partida (2 votos para reanudar)...');
+    console.log('   Amigo solicita reanudar la partida (2do voto para reanudar)...');
     let resumeVote2 = await axios.post(`${API_URL}/partidas/${gameId2}/resume`, {}, { headers: headersAmigo });
     
-    // Al votar el amigo, se alcanza la mayoría y se reanuda
-    assert(resumeVote2.data.phase === 'playing', 'La partida DEBERÍA estar jugando de nuevo');
+    assert(resumeVote2.data.action === 'reanudada', 'La partida DEBERÍA estar jugando de nuevo');
     console.log('   ✅ Correcto: La partida se ha reanudado exitosamente por mayoría absoluta.');
     
-    console.log('   ✅ ESCENARIO 2 SUPERADO.\n');
+    // --- TEST LISTADO DESPUÉS DE REANUDAR ---
+    console.log('\n🔍 [TEST LISTADO] Verificando que la partida 2 desapareció de la lista de pausadas...');
+    let listadoGonzaloPost = await axios.get(`${API_URL}/partidas/pausadas`, { headers: headersGonzalo });
+    let idsGonzaloPost = listadoGonzaloPost.data.data.map(p => p.id_partida);
+    
+    assert(idsGonzaloPost.includes(gameId1), 'Gonzalo aún debería ver la partida 1 como pausada');
+    assert(!idsGonzaloPost.includes(gameId2), 'Gonzalo ya NO debería ver la partida 2 como pausada');
+    console.log('   ✅ Correcto: La partida 2 ya no le sale a Gonzalo en las pausadas.');
+    // -----------------------------------------------------------
+
+    console.log('\n   ✅ ESCENARIO 2 SUPERADO.\n');
 
     console.log('🎉 ¡TODOS LOS TESTS PASARON CON ÉXITO!');
 

@@ -744,6 +744,24 @@ async function borrarPartida(gameId) {
   }
 }
 
+// ==========================
+// OBTENER PARTIDAS PAUSADAS
+// =========================
+async function obtenerPartidasPausadas(username) {
+  // Hacemos un JOIN entre PARTIDA y USUARIO_EN_PARTIDA para traer solo
+  // las partidas pausadas en las que participa el usuario que hace la petición.
+  const result = await db.query(
+    `SELECT p.id_partida, p.codigo, p.updated_at, p.max_jugadores
+     FROM notuno.partida p
+     JOIN notuno.usuario_en_partida up ON p.id_partida = up.id_partida
+     WHERE p.estado = 'pausada' AND up.id_usuario = $1
+     ORDER BY p.updated_at DESC`,
+    [username]
+  );
+
+  return result.rows;
+}
+
 module.exports = {
   crearPartida,
   iniciarPartida,
@@ -761,5 +779,6 @@ module.exports = {
   añadirBot,
   votarPausa,
   reanudarPartida,
-  borrarPartida
+  borrarPartida,
+  obtenerPartidasPausadas
 };

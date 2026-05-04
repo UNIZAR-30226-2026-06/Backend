@@ -131,8 +131,8 @@ async function runGameCycle(gameId, actionFn = null) {
       if (gameState.phase === 'paused') estadoDB = 'pausada';
       if (gameState.phase === 'finished') estadoDB = 'finalizada';
       await db.query(
-        `UPDATE notuno.partida SET game_state=$2, updated_at=NOW() WHERE id_partida=$1`,
-        [gameId, JSON.stringify(gameState)]
+        `UPDATE notuno.partida SET game_state=$2, estado=$3, updated_at=NOW() WHERE id_partida=$1`,
+        [gameId, JSON.stringify(gameState), estadoDB]
       );
       gameState.needsPersistence = false; // resetear flag
     }

@@ -138,6 +138,149 @@ router.post('/join', authMiddleware, gameController.unirsePartidaPublica);
  */
 router.post('/join-by-code', authMiddleware, gameController.unirsePorCodigo);
 
+
+// ================= PAUSE =================
+/**
+ * @swagger
+ * /partidas/{gameId}/pause:
+ *   post:
+ *     summary: Solicitar pausa de la partida
+ *     description: Permite a un jugador solicitar pausar la partida. Puede requerir consenso según la lógica del juego.
+ *     tags: [Partidas]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: gameId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la partida
+ *     responses:
+ *       200:
+ *         description: Pausa solicitada correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 paused:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Partida en pausa"
+ *       400:
+ *         description: No se puede pausar en el estado actual
+ *       403:
+ *         description: No autorizado para pausar
+ *       404:
+ *         description: Partida no encontrada
+ *       401:
+ *         description: No autorizado
+ */
+router.post('/:gameId/pause', authMiddleware, gameController.solicitarPausa);
+
+// ================= RESUME =================
+/**
+ * @swagger
+ * /partidas/{gameId}/resume:
+ *   post:
+ *     summary: Reanudar la partida pausada
+ *     description: Permite reanudar una partida que está actualmente en pausa.
+ *     tags: [Partidas]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: gameId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la partida
+ *     responses:
+ *       200:
+ *         description: Partida reanudada correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 paused:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Partida reanudada"
+ *       400:
+ *         description: La partida no está en pausa
+ *       403:
+ *         description: No autorizado para reanudar
+ *       404:
+ *         description: Partida no encontrada
+ *       401:
+ *         description: No autorizado
+ */
+router.post('/:gameId/resume', authMiddleware, gameController.reanudarPartida);
+
+// ================= BORRAR =================
+/**
+ * @swagger
+ * /partidas/{gameId}:
+ *   delete:
+ *     summary: Borrar una partida específica
+ *     description: Elimina por completo una partida de la base de datos y de la memoria en tiempo real. 
+ *     tags: [Partidas]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: gameId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la partida que se desea borrar
+ *     responses:
+ *       200:
+ *         description: Partida borrada correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Partida eliminada"
+ *       400:
+ *         description: Error al intentar borrar la partida
+ *       401:
+ *         description: No autorizado (Falta token o es inválido)
+ *       404:
+ *         description: La partida no existe o ya fue borrada de la base de datos
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.delete('/:gameId', authMiddleware, gameController.borrarPartida);
+
+/**
+ * @swagger
+ * /partidas/pausadas:
+ *   get:
+ *     summary: Obtener todas las partidas pausadas del usuario
+ *     tags: [Partidas]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de partidas en pausa
+ *       401:
+ *         description: No autorizado
+ */
+router.get('/pausadas', authMiddleware, gameController.verPartidasPausadas);
+
 // ================= LOBBY =================
 /**
  * @swagger
@@ -429,132 +572,6 @@ router.post('/:gameId/draw-card', authMiddleware, gameController.robarCarta);
  *         description: Error (solo el creador puede añadir bots)
  */
 router.post('/:gameId/add-bot', authMiddleware, gameController.añadirBot);
-
-// ================= PAUSE =================
-/**
- * @swagger
- * /partidas/{gameId}/pause:
- *   post:
- *     summary: Solicitar pausa de la partida
- *     description: Permite a un jugador solicitar pausar la partida. Puede requerir consenso según la lógica del juego.
- *     tags: [Partidas]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: gameId
- *         required: true
- *         schema:
- *           type: string
- *         description: ID de la partida
- *     responses:
- *       200:
- *         description: Pausa solicitada correctamente
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 paused:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: "Partida en pausa"
- *       400:
- *         description: No se puede pausar en el estado actual
- *       403:
- *         description: No autorizado para pausar
- *       404:
- *         description: Partida no encontrada
- *       401:
- *         description: No autorizado
- */
-router.post('/:gameId/pause', authMiddleware, gameController.solicitarPausa);
-
-// ================= RESUME =================
-/**
- * @swagger
- * /partidas/{gameId}/resume:
- *   post:
- *     summary: Reanudar la partida pausada
- *     description: Permite reanudar una partida que está actualmente en pausa.
- *     tags: [Partidas]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: gameId
- *         required: true
- *         schema:
- *           type: string
- *         description: ID de la partida
- *     responses:
- *       200:
- *         description: Partida reanudada correctamente
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 paused:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: "Partida reanudada"
- *       400:
- *         description: La partida no está en pausa
- *       403:
- *         description: No autorizado para reanudar
- *       404:
- *         description: Partida no encontrada
- *       401:
- *         description: No autorizado
- */
-router.post('/:gameId/resume', authMiddleware, gameController.reanudarPartida);
-
-// ================= BORRAR =================
-/**
- * @swagger
- * /partidas/{gameId}:
- *   delete:
- *     summary: Borrar una partida específica
- *     description: Elimina por completo una partida de la base de datos y de la memoria en tiempo real. 
- *     tags: [Partidas]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: gameId
- *         required: true
- *         schema:
- *           type: string
- *         description: ID de la partida que se desea borrar
- *     responses:
- *       200:
- *         description: Partida borrada correctamente
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: "Partida eliminada"
- *       400:
- *         description: Error al intentar borrar la partida
- *       401:
- *         description: No autorizado (Falta token o es inválido)
- *       404:
- *         description: La partida no existe o ya fue borrada de la base de datos
- *       500:
- *         description: Error interno del servidor
- */
-router.delete('/:gameId', authMiddleware, gameController.borrarPartida);
 
 
 module.exports = router;
