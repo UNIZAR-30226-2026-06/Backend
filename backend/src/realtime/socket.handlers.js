@@ -205,7 +205,7 @@ function registerSocketHandlers(io) {
     socket.on("jugador_rechaza_pausa", async(data) => {
       //un jugador vota para no pausar la partida, se envia un mensaje a todos los jugadores de la partida (excepto el que ha votado) indicando que un jugador ha votado para no pausar la partida
       //como tiene que haber mayoria, la votacion se cancela
-      const estado = await gameService.votarNoPausa(data.partidaID, username, false);  //registra el voto del jugador para no pausar la partida
+      const estado = await gameService.rechazarPausa(data.partidaID, username, false);  //registra el voto del jugador para no pausar la partida
       
       if (estado?.action === 'no_pausada') {
         io.to(data.partidaID).emit('pausa_rechazada', { partidaID: data.partidaID, jugador: username })   //envia un mensaje al resto de usuarios de la partida para indicar que la partida se ha pausado
