@@ -880,7 +880,7 @@ components:
           jugador:
             type: string
           votos:
-            type: list
+            type: array
           votosActuales:
             type: integer
 
