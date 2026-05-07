@@ -580,6 +580,56 @@
       },
       "x-parser-unique-object-id": "jugador_voto_pausa"
     },
+    "jugador_rechaza_pausa": {
+      "address": "game.jugador_rechaza_pausa",
+      "parameters": {},
+      "messages": {
+        "jugador_voto_pausa": {
+          "name": "jugador_rechaza_pausa",
+          "title": "Jugador Rechaza Pausa",
+          "summary": "Un jugador rechaza pausar la partida, como tiene que haber mayoria la votacion se cancela",
+          "payload": {
+            "type": "object",
+            "properties": {
+              "partidaID": {
+                "type": "string",
+                "x-parser-schema-id": "<anonymous-schema-58>"
+              }
+            },
+            "x-parser-schema-id": "<anonymous-schema-57>"
+          },
+          "x-parser-unique-object-id": "jugador_voto_pausa"
+        }
+      },
+      "x-parser-unique-object-id": "jugador_rechaza_pausa"
+    },
+    "pausa_rechazada": {
+      "address": "game.pausa_rechazada",
+      "parameters": {},
+      "messages": {
+        "partida_pausada": {
+          "name": "pausa_rechazada",
+          "title": "Pausa rechazada",
+          "summary": "Se le indica a todos los jugadores que la votacion de pausar la partida se cancela, se continua con la partida",
+          "payload": {
+            "type": "object",
+            "properties": {
+              "partidaID": {
+                "type": "string",
+                "x-parser-schema-id": "<anonymous-schema-60>"
+              },
+              "jugador": {
+                "type": "string",
+                "x-parser-schema-id": "<anonymous-schema-61>"
+              }
+            },
+            "x-parser-schema-id": "<anonymous-schema-59>"
+          },
+          "x-parser-unique-object-id": "partida_pausada"
+        }
+      },
+      "x-parser-unique-object-id": "pausa_rechazada"
+    },
     "partida_pausada": {
       "address": "game.partida_pausada",
       "parameters": {},
@@ -593,10 +643,10 @@
             "properties": {
               "partidaID": {
                 "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-58>"
+                "x-parser-schema-id": "<anonymous-schema-63>"
               }
             },
-            "x-parser-schema-id": "<anonymous-schema-57>"
+            "x-parser-schema-id": "<anonymous-schema-62>"
           },
           "x-parser-unique-object-id": "partida_pausada"
         }
@@ -616,10 +666,10 @@
             "properties": {
               "partidaID": {
                 "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-60>"
+                "x-parser-schema-id": "<anonymous-schema-65>"
               }
             },
-            "x-parser-schema-id": "<anonymous-schema-59>"
+            "x-parser-schema-id": "<anonymous-schema-64>"
           },
           "x-parser-unique-object-id": "jugador_solicita_pausa"
         }
@@ -639,14 +689,18 @@
             "properties": {
               "partidaID": {
                 "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-62>"
+                "x-parser-schema-id": "<anonymous-schema-67>"
               },
               "jugador": {
                 "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-63>"
+                "x-parser-schema-id": "<anonymous-schema-68>"
+              },
+              "votosActuales": {
+                "type": "integer",
+                "x-parser-schema-id": "<anonymous-schema-69>"
               }
             },
-            "x-parser-schema-id": "<anonymous-schema-61>"
+            "x-parser-schema-id": "<anonymous-schema-66>"
           },
           "x-parser-unique-object-id": "voto_pausa"
         }
@@ -666,10 +720,10 @@
             "properties": {
               "partidaID": {
                 "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-65>"
+                "x-parser-schema-id": "<anonymous-schema-71>"
               }
             },
-            "x-parser-schema-id": "<anonymous-schema-64>"
+            "x-parser-schema-id": "<anonymous-schema-70>"
           },
           "x-parser-unique-object-id": "jugador_solicita_reanudar"
         }
@@ -689,14 +743,22 @@
             "properties": {
               "partidaID": {
                 "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-67>"
+                "x-parser-schema-id": "<anonymous-schema-73>"
               },
               "jugador": {
                 "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-68>"
+                "x-parser-schema-id": "<anonymous-schema-74>"
+              },
+              "votos": {
+                "type": "array",
+                "x-parser-schema-id": "<anonymous-schema-75>"
+              },
+              "votosActuales": {
+                "type": "integer",
+                "x-parser-schema-id": "<anonymous-schema-76>"
               }
             },
-            "x-parser-schema-id": "<anonymous-schema-66>"
+            "x-parser-schema-id": "<anonymous-schema-72>"
           },
           "x-parser-unique-object-id": "voto_reanudar"
         }
@@ -716,10 +778,10 @@
             "properties": {
               "partidaID": {
                 "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-70>"
+                "x-parser-schema-id": "<anonymous-schema-78>"
               }
             },
-            "x-parser-schema-id": "<anonymous-schema-69>"
+            "x-parser-schema-id": "<anonymous-schema-77>"
           },
           "x-parser-unique-object-id": "partida_reanudada"
         }
@@ -739,15 +801,73 @@
             "properties": {
               "partidaID": {
                 "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-72>"
+                "x-parser-schema-id": "<anonymous-schema-80>"
               }
             },
-            "x-parser-schema-id": "<anonymous-schema-71>"
+            "x-parser-schema-id": "<anonymous-schema-79>"
           },
           "x-parser-unique-object-id": "jugador_voto_reanudar"
         }
       },
       "x-parser-unique-object-id": "jugador_voto_reanudar"
+    },
+    "abandonar_voto_reanudar": {
+      "address": "game.abandonar_voto_reanudar",
+      "parameters": {},
+      "messages": {
+        "jugador_voto_reanudar": {
+          "name": "abandonar_voto_reanudar",
+          "title": "Abandonar Voto Reanudar",
+          "summary": "Un jugador cancela su voto para reanudar la partida",
+          "payload": {
+            "type": "object",
+            "properties": {
+              "partidaID": {
+                "type": "string",
+                "x-parser-schema-id": "<anonymous-schema-82>"
+              }
+            },
+            "x-parser-schema-id": "<anonymous-schema-81>"
+          },
+          "x-parser-unique-object-id": "jugador_voto_reanudar"
+        }
+      },
+      "x-parser-unique-object-id": "abandonar_voto_reanudar"
+    },
+    "voto_reanudar_retirado": {
+      "address": "game.voto_reanudar_retirado",
+      "parameters": {},
+      "messages": {
+        "voto_reanudar": {
+          "name": "voto_reanudar",
+          "title": "Voto Reanudar",
+          "summary": "Se solicita a los jugadores de la partida (excepto el que inició la votación) que voten para reanudar la partida debido a que un jugador ha iniciado la votación",
+          "payload": {
+            "type": "object",
+            "properties": {
+              "partidaID": {
+                "type": "string",
+                "x-parser-schema-id": "<anonymous-schema-84>"
+              },
+              "jugador": {
+                "type": "string",
+                "x-parser-schema-id": "<anonymous-schema-85>"
+              },
+              "votos": {
+                "type": "array",
+                "x-parser-schema-id": "<anonymous-schema-86>"
+              },
+              "votosActuales": {
+                "type": "integer",
+                "x-parser-schema-id": "<anonymous-schema-87>"
+              }
+            },
+            "x-parser-schema-id": "<anonymous-schema-83>"
+          },
+          "x-parser-unique-object-id": "voto_reanudar"
+        }
+      },
+      "x-parser-unique-object-id": "voto_reanudar_retirado"
     },
     "unir_bot": {
       "address": "game.unir_bot",
@@ -762,10 +882,10 @@
             "properties": {
               "partidaID": {
                 "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-74>"
+                "x-parser-schema-id": "<anonymous-schema-89>"
               }
             },
-            "x-parser-schema-id": "<anonymous-schema-73>"
+            "x-parser-schema-id": "<anonymous-schema-88>"
           },
           "x-parser-unique-object-id": "unir_bot"
         }
@@ -785,14 +905,14 @@
             "properties": {
               "partidaID": {
                 "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-76>"
+                "x-parser-schema-id": "<anonymous-schema-91>"
               },
               "mensaje": {
                 "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-77>"
+                "x-parser-schema-id": "<anonymous-schema-92>"
               }
             },
-            "x-parser-schema-id": "<anonymous-schema-75>"
+            "x-parser-schema-id": "<anonymous-schema-90>"
           },
           "x-parser-unique-object-id": "bot_unido"
         }
@@ -812,14 +932,14 @@
             "properties": {
               "partidaID": {
                 "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-79>"
+                "x-parser-schema-id": "<anonymous-schema-94>"
               },
               "mensaje": {
                 "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-80>"
+                "x-parser-schema-id": "<anonymous-schema-95>"
               }
             },
-            "x-parser-schema-id": "<anonymous-schema-78>"
+            "x-parser-schema-id": "<anonymous-schema-93>"
           },
           "x-parser-unique-object-id": "error_unir_bot"
         }
@@ -966,6 +1086,16 @@
       "channel": "$ref:$.channels.partida_pausada",
       "x-parser-unique-object-id": "partida_pausada"
     },
+    "jugador_rechaza_pausa": {
+      "action": "receive",
+      "channel": "$ref:$.channels.jugador_rechaza_pausa",
+      "x-parser-unique-object-id": "jugador_rechaza_pausa"
+    },
+    "pausa_rechazada": {
+      "action": "send",
+      "channel": "$ref:$.channels.pausa_rechazada",
+      "x-parser-unique-object-id": "pausa_rechazada"
+    },
     "jugador_solicita_pausa": {
       "action": "receive",
       "channel": "$ref:$.channels.jugador_solicita_pausa",
@@ -995,6 +1125,16 @@
       "action": "receive",
       "channel": "$ref:$.channels.jugador_voto_reanudar",
       "x-parser-unique-object-id": "jugador_voto_reanudar"
+    },
+    "abandonar_voto_reanudar": {
+      "action": "receive",
+      "channel": "$ref:$.channels.abandonar_voto_reanudar",
+      "x-parser-unique-object-id": "abandonar_voto_reanudar"
+    },
+    "voto_reanudar_retirado": {
+      "action": "send",
+      "channel": "$ref:$.channels.voto_reanudar_retirado",
+      "x-parser-unique-object-id": "voto_reanudar_retirado"
     },
     "unir_bot": {
       "action": "receive",
@@ -1043,13 +1183,17 @@
       "unirse_partida": "$ref:$.channels.unirse_partida.messages.unirse_partida",
       "nuevo_jugador": "$ref:$.channels.nuevo_jugador.messages.nuevo_jugador",
       "jugador_voto_pausa": "$ref:$.channels.jugador_voto_pausa.messages.jugador_voto_pausa",
+      "jugador_rechaza_pausa": "$ref:$.channels.jugador_rechaza_pausa.messages.jugador_voto_pausa",
       "partida_pausada": "$ref:$.channels.partida_pausada.messages.partida_pausada",
+      "pausa_rechazada": "$ref:$.channels.pausa_rechazada.messages.partida_pausada",
       "jugador_solicita_pausa": "$ref:$.channels.jugador_solicita_pausa.messages.jugador_solicita_pausa",
       "voto_pausa": "$ref:$.channels.voto_pausa.messages.voto_pausa",
       "jugador_solicita_reanudar": "$ref:$.channels.jugador_solicita_reanudar.messages.jugador_solicita_reanudar",
       "voto_reanudar": "$ref:$.channels.voto_reanudar.messages.voto_reanudar",
       "partida_reanudada": "$ref:$.channels.partida_reanudada.messages.partida_reanudada",
       "jugador_voto_reanudar": "$ref:$.channels.jugador_voto_reanudar.messages.jugador_voto_reanudar",
+      "abandonar_voto_reanudar": "$ref:$.channels.abandonar_voto_reanudar.messages.jugador_voto_reanudar",
+      "voto_reanudar_retirado": "$ref:$.channels.voto_reanudar_retirado.messages.voto_reanudar",
       "unir_bot": "$ref:$.channels.unir_bot.messages.unir_bot",
       "bot_unido": "$ref:$.channels.bot_unido.messages.bot_unido",
       "error_unir_bot": "$ref:$.channels.error_unir_bot.messages.error_unir_bot",
