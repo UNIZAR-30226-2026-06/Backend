@@ -276,6 +276,7 @@ class GameState {
   setPaused() {
     this.phase = 'paused';
     this.pausedAt = Date.now();
+    this.clearPauseVotes();  // Limpiamos votos de pausa tras ejecutarla
     this.clearResumeVotes(); // Limpiamos los votos de reanudar por si acaso
   }
 
@@ -301,6 +302,10 @@ class GameState {
 
   clearResumeVotes() {
     this.resumeVotes = [];
+  }
+
+  removeResumeVote(playerId) {
+    this.resumeVotes = this.resumeVotes.filter(id => id !== playerId);
   }
 
   setResumed(turnDurationMs = 30000) {

@@ -20,7 +20,7 @@ exports.obtenerEstilosTienda = async (req, res, next) => {
 
 exports.obtenerAvatarID = async (req, res, next) => {
   try {
-    const avatarID = req.body.id;
+    const avatarID = req.params.id;
     const avatar = await storeService.obtenerAvatarporId(avatarID);
     res.json(avatar);
   } catch (err) {
