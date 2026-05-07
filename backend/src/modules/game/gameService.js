@@ -461,7 +461,11 @@ async function obtenerEstadoPartida(gameId, username) {
     direction: state.direction,
     discardTop: state.discardPile?.at(-1) || null,
     drawCount: state.drawPile?.length || 0,
-    players
+    players,
+    // Votos de reanudación en curso: el frontend los usa para sincronizar
+    // a jugadores que llegan tarde (desde Partidas Pausadas)
+    resumeVoters: state.resumeVotes || [],
+    pauseVoters:  state.pauseVotes  || [],
   };
 }
 
@@ -695,6 +699,27 @@ async function votarPausa(gameId, username, isFirstVote) {
   });
 }
 
+async function rechazarPausa(gameId, username) {
+  return runGameCycle(gameId, async (logic, gameState) => {
+    if (gameState.phase !== 'playing') {
+      throw new Error('Solo se puede rechazar pausa en una partida en juego');
+    }
+    // Limpiar todos los votos de pausa acumulados
+    gameState.clearPauseVotes();
+    gameState.needsPersistence = true;
+    return { action: 'pausa_rechazada' };
+  });
+}
+
+async function abandonarVotoReanudar(gameId, username) {
+  return runGameCycle(gameId, async (logic, gameState) => {
+    if (gameState.phase !== 'paused') return { action: 'no_pausada' };
+    gameState.removeResumeVote(username);
+    gameState.needsPersistence = true;
+    return { action: 'voto_eliminado', voters: gameState.resumeVotes };
+  });
+}
+
 async function reanudarPartida(gameId, username) {
   return runGameCycle(gameId, async (logic, gameState) => {
     if (gameState.phase !== 'paused') {
@@ -778,7 +803,9 @@ module.exports = {
   activeGames,
   añadirBot,
   votarPausa,
+  rechazarPausa,
   reanudarPartida,
+  abandonarVotoReanudar,
   borrarPartida,
   obtenerPartidasPausadas
 };
