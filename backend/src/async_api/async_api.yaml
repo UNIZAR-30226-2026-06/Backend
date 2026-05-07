@@ -180,6 +180,20 @@ channels:
       jugador_voto_pausa:
         $ref: '#/components/messages/jugador_voto_pausa'
 
+  jugador_rechaza_pausa:
+    address: game.jugador_rechaza_pausa
+    parameters: {}
+    messages:
+      jugador_voto_pausa:
+        $ref: '#/components/messages/jugador_rechaza_pausa'
+
+  pausa_rechazada:
+    address: game.pausa_rechazada
+    parameters: {}
+    messages:
+      partida_pausada:
+        $ref: '#/components/messages/pausa_rechazada'
+
   partida_pausada:
     address: game.partida_pausada
     parameters: {}
@@ -228,7 +242,21 @@ channels:
     messages:
       jugador_voto_reanudar:
         $ref: '#/components/messages/jugador_voto_reanudar'
+  
+  abandonar_voto_reanudar:
+    address: game.abandonar_voto_reanudar
+    parameters: {}
+    messages:
+      jugador_voto_reanudar:
+        $ref: '#/components/messages/abandonar_voto_reanudar'
 
+  voto_reanudar_retirado:
+    address: game.voto_reanudar_retirado
+    parameters: {}
+    messages: 
+      voto_reanudar:
+        $ref: '#/components/messages/voto_reanudar_retirado'
+  
   unir_bot:
     address: game.unir_bot
     parameters: {}
@@ -397,6 +425,16 @@ operations:
     channel:
       $ref: '#/channels/partida_pausada'
 
+  jugador_rechaza_pausa:
+    action: receive
+    channel:
+      $ref: '#/channels/jugador_rechaza_pausa'
+
+  pausa_rechazada:
+    action: send
+    channel:
+      $ref: '#/channels/pausa_rechazada'
+
   jugador_solicita_pausa:
     action: receive
     channel:
@@ -426,7 +464,17 @@ operations:
     action: receive
     channel:
       $ref: '#/channels/jugador_voto_reanudar'
-
+  
+  abandonar_voto_reanudar:
+    action: receive
+    channel:
+      $ref: '#/channels/abandonar_voto_reanudar'
+  
+  voto_reanudar_retirado:
+    action: send
+    channel:
+      $ref: '#/channels/voto_reanudar_retirado'
+  
   unir_bot:
     action: receive
     channel:
@@ -706,6 +754,16 @@ components:
           partidaID:
             type: string
 
+    jugador_rechaza_pausa:
+      name: jugador_rechaza_pausa
+      title: Jugador Rechaza Pausa
+      summary: Un jugador rechaza pausar la partida, como tiene que haber mayoria la votacion se cancela
+      payload:
+        type: object
+        properties:
+          partidaID:
+            type: string
+
     partida_pausada:
       name: partida_pausada
       title: Partida Pausada
@@ -714,6 +772,18 @@ components:
         type: object
         properties:
           partidaID:
+            type: string
+
+    pausa_rechazada:
+      name: pausa_rechazada
+      title: Pausa rechazada
+      summary: Se le indica a todos los jugadores que la votacion de pausar la partida se cancela, se continua con la partida
+      payload:
+        type: object
+        properties:
+          partidaID:
+            type: string
+          jugador:
             type: string
 
     jugador_solicita_pausa:
@@ -737,6 +807,9 @@ components:
             type: string
           jugador:
             type: string
+          votosActuales:
+            type: integer
+
 
 
     jugador_solicita_reanudar:
@@ -760,6 +833,10 @@ components:
             type: string
           jugador:
             type: string
+          votos:
+            type: list
+          votosActuales:
+            type: integer
     
     partida_reanudada:
       name: partida_reanudada
@@ -780,6 +857,32 @@ components:
         properties:
           partidaID:
             type: string
+    
+    abandonar_voto_reanudar:
+      name: abandonar_voto_reanudar
+      title: Abandonar Voto Reanudar
+      summary: Un jugador cancela su voto para reanudar la partida
+      payload:
+        type: object
+        properties:
+          partidaID:
+            type: string
+
+    voto_reanudar_retirado:
+      name: voto_reanudar
+      title: Voto Reanudar
+      summary: Se solicita a los jugadores de la partida (excepto el que inició la votación) que voten para reanudar la partida debido a que un jugador ha iniciado la votación
+      payload:
+        type: object
+        properties:
+          partidaID:
+            type: string
+          jugador:
+            type: string
+          votos:
+            type: list
+          votosActuales:
+            type: integer
 
     unir_bot:
       name: unir_bot

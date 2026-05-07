@@ -286,7 +286,13 @@ class GameState {
     }
   }
 
-  // Comprobamos mayoría absoluta (> 50% de humanos)
+  removeResumeVote(playerId) {
+    if (!this.resumeVotes.includes(playerId)) {
+      this.resumeVotes.remove(playerId);
+    }
+  }
+
+  // Comprobamos mayoría absoluta. tienen que estar todos de acuerdo
   hasMajorityResumeVotes() {
     const humanPlayers = this.players.filter(p => !p.isBot);
     const requiredVotes = humanPlayers.length;

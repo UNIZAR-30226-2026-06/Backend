@@ -191,16 +191,24 @@ function registerSocketHandlers(io) {
       
       const estado = await gameService.votarPausa(data.partidaID, username, false);  //registra el voto del jugador para pausar la partida
       
-      if (estado.action === 'voto_pausa_registrado') {
-        socket.to(data.partidaID).emit('voto_pausa_registrado', {
+      if (estado?.action === 'voto_pausa_registrado') {
+        socket.to(data.partidaID).emit('voto_pausa', {
           partidaID: data.partidaID,
           jugador: username,
-          votosActuales: estado.votosActuales
+          votosActuales: estado?.votosActuales
         });
-      }
-
-      if (estado.action === 'pausada') {
+      }else if (estado?.action === 'pausada') {
         io.to(data.partidaID).emit('partida_pausada', { partidaID: data.partidaID })   //envia un mensaje al resto de usuarios de la partida para indicar que la partida se ha pausado
+      }
+    })
+
+    socket.on("jugador_rechaza_pausa", async(data) => {
+      //un jugador vota para no pausar la partida, se envia un mensaje a todos los jugadores de la partida (excepto el que ha votado) indicando que un jugador ha votado para no pausar la partida
+      //como tiene que haber mayoria, la votacion se cancela
+      const estado = await gameService.votarNoPausa(data.partidaID, username, false);  //registra el voto del jugador para no pausar la partida
+      
+      if (estado?.action === 'no_pausada') {
+        io.to(data.partidaID).emit('pausa_rechazada', { partidaID: data.partidaID, jugador: username })   //envia un mensaje al resto de usuarios de la partida para indicar que la partida se ha pausado
       }
     })
 
@@ -208,11 +216,12 @@ function registerSocketHandlers(io) {
       //un jugador solicita  pausar la partida, se envia un mensaje a todos los jugadores de la partida (excepto el, que ya cuenta que ha votado) indicando que un jugador ha votado para pausar la partida para preguntar si solicita pausarla
       
       const estado = await gameService.votarPausa(data.partidaID, username, true);  //registra el voto del jugador para pausar la partida
-      
-      socket.to(data.partidaID).emit('voto_pausa', {jugador: username, partidaID: data.partidaID})   //envia un mensaje al resto de usuarios de la partida para preguntar si quieren pausar la partida
-      
-      if (estado.action === 'pausada') {
+            
+      if (estado?.action === 'pausada') {
         io.to(data.partidaID).emit('partida_pausada', { partidaID: data.partidaID })   //envia un mensaje al resto de usuarios de la partida para indicar que la partida se ha pausado
+      } else if (estado?.action === 'voto_pausa_registrado') {
+        socket.to(data.partidaID).emit('voto_pausa', {jugador: username, partidaID: data.partidaID, votosActuales: estado?.votosActuales})   //envia un mensaje al resto de usuarios de la partida para preguntar si quieren pausar la partida
+
       }
 
     })
@@ -222,9 +231,11 @@ function registerSocketHandlers(io) {
       //un jugador inicializa votacion para solicitar reanudar la partida, se envia un mensaje a todos los jugadores de la partida (excepto el, que ya cuenta que ha votado) para que voten
       const estado = await gameService.reanudarPartida(data.partidaID, username);  //registra el voto del jugador para reanudar la partida
       
-      socket.to(data.partidaID).emit('voto_reanudar', {jugador: username})   //envia un mensaje al resto de usuarios de la partida para preguntar si quieren reanudar la partida
-      if (estado.action === 'reanudada') {
+      if (estado?.action === 'reanudada') {
         io.to(data.partidaID).emit('partida_reanudada', { partidaID: data.partidaID })   //envia un mensaje al resto de usuarios de la partida para indicar que la partida se ha reanudado
+      } else if (estado?.action === 'voto_reanudar_registrado') {
+        socket.to(data.partidaID).emit('voto_reanudar', {jugador: username, votos: estado?.votosVector, votosActuales:estado?.votosActuales})   //envia un mensaje al resto de usuarios de la partida para preguntar si quieren reanudar la partida
+
       }
 
     })
@@ -232,17 +243,33 @@ function registerSocketHandlers(io) {
     socket.on("jugador_voto_reanudar", async(data) => {
       //un jugador vota para reanudar la partida, en una votacion ya iniciada por otro jugador
       const estado = await gameService.reanudarPartida(data.partidaID, username);  //registra el voto del jugador para reanudar la partida
-      if (estado.action === 'voto_reanudar_registrado') {
-        socket.to(data.partidaID).emit('voto_reanudar_registrado', {
-          partidaID: data.partidaID,
-          jugador: username,
-          votosActuales: estado.votosActuales
-        });
-      }
-      if (estado.action === 'reanudada') {
+      if (estado?.action === 'reanudada') {
         io.to(data.partidaID).emit('partida_reanudada', { partidaID: data.partidaID })   //envia un mensaje al resto de usuarios de la partida para indicar que la partida se ha reanudado
+      } else if (estado?.action === 'voto_reanudar_registrado') {
+          socket.to(data.partidaID).emit('voto_reanudar', {
+            partidaID: data.partidaID,
+            jugador: username,
+            votos: estado?.votosVector,
+            votosActuales: estado?.votosActuales
+          });
+      }
+      
+    })
+
+    socket.on("abandonar_voto_reanudar", async(data) => {
+      // El jugador retira so voto, se resta
+      try {
+        const resultado = await gameService.retirarVoto_reanudar(data.partidaID, username);
+        if (resultado?.action === 'voto_reanudar_eliminado') {
+          const voters = resultado.votosActuales || [];
+          io.to(data.partidaID).emit('voto_reanudar_retirado', { partidaID: data.partidaID, jugador: username, votos: estado?.votosVector, votosActuales: estado?.votosActuales });
+        }
+      } catch(e) {
+        // Si la partida ya no existe o no está pausada, ignorar silenciosamente
       }
     })
+
+
 
     socket.on("unir_bot", async(data) => {
       //añadir un bot a la partida, solo el creador de la partida puede añadir bots, y solo se pueden añadir bots antes de iniciar la partida

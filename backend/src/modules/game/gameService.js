@@ -683,15 +683,38 @@ async function votarPausa(gameId, username, isFirstVote) {
 
     // Comprobamos si con este voto se alcanza la MAYORÍA
     if (gameState.hasMajorityPauseVotes()) {
-      gameState.setPaused();
-      gameState.needsPersistence = true;
-      return { action: 'pausada' };
+      if (gameState.playersDecisionPause()) {
+        gameState.setPaused();
+        gameState.needsPersistence = true;
+        return { action: 'pausada' };
+      } else {
+        gameState.needsPersistence = true;
+        return { action: 'no_pausada' };
+      }
+      
     } else {
       gameState.needsPersistence = true;
       return { action: 'voto_pausa_registrado', votosActuales: gameState.pauseVotes.length };
     }
 
     
+  });
+}
+
+async function votarNoPausa(gameId, username, isFirstVote) {
+  return runGameCycle(gameId, async (logic, gameState) => {
+    if (gameState.phase !== 'playing') {
+      throw new Error('Solo se puede pausar una partida en juego');
+    }
+
+    //como tiene que haber mayoria, la votacion se cancela
+
+    gameState.addNotPauseVote(username);
+    gameState.clearResumeVotes();
+    gameState.needsPersistence = true;
+    return { action: 'no_pausada' };
+    
+
   });
 }
 
@@ -711,9 +734,27 @@ async function reanudarPartida(gameId, username) {
       return { action: 'reanudada' };
     } else {
       gameState.needsPersistence = true;
-      return { action: 'voto_reanudar_registrado', votosActuales: gameState.resumeVotes.length };
+      return { action: 'voto_reanudar_registrado', votosVector: gameState.resumeVotes, votosActuales: gameState.resumeVotes.length };
     }
   });
+}
+
+async function retirarVoto_reanudar(gameId, username) {
+  //si un jugador retira su voto de reanudar
+  return runGameCycle(gameId, async (logic, gameState) => {
+    if (gameState.phase !== 'paused') {
+      throw new Error('La partida no está pausada');
+    }
+
+    // se elimina el voto de esta persona para reanudar
+    gameState.removeResumeVote(username);
+
+    gameState.needsPersistence = true;
+    return { action: 'voto_reanudar_eliminado', votosVector: gameState.resumeVotes, votosActuales: gameState.resumeVotes.length };
+    
+    
+  });
+
 }
 
 // =========================
@@ -780,5 +821,6 @@ module.exports = {
   votarPausa,
   reanudarPartida,
   borrarPartida,
-  obtenerPartidasPausadas
+  obtenerPartidasPausadas,
+  votarNoPausa
 };
