@@ -304,9 +304,7 @@ class GameState {
     this.resumeVotes = [];
   }
 
-  removeResumeVote(playerId) {
-    this.resumeVotes = this.resumeVotes.filter(id => id !== playerId);
-  }
+
 
   setResumed(turnDurationMs = 30000) {
     this.phase = 'playing';

@@ -824,5 +824,5 @@ module.exports = {
   abandonarVotoReanudar,
   borrarPartida,
   obtenerPartidasPausadas,
-  votarNoPausa
+  retirarVoto_reanudar
 };
