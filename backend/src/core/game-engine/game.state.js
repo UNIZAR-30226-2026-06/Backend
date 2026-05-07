@@ -264,9 +264,7 @@ class GameState {
   // Comprobamos mayoría absoluta (> 50% de humanos)
   hasMajorityPauseVotes() {
     const humanPlayers = this.players.filter(p => !p.isBot);
-    // Fórmula matemática para mayoría: Mitad hacia abajo + 1
-    // (Ej: 2 jug -> 2 votos | 3 jug -> 2 votos | 4 jug -> 3 votos)
-    const requiredVotes = Math.floor(humanPlayers.length / 2) + 1;
+    const requiredVotes = humanPlayers.length;
     return this.pauseVotes.length >= requiredVotes;
   }
 
@@ -291,9 +289,7 @@ class GameState {
   // Comprobamos mayoría absoluta (> 50% de humanos)
   hasMajorityResumeVotes() {
     const humanPlayers = this.players.filter(p => !p.isBot);
-    // Fórmula matemática para mayoría: Mitad hacia abajo + 1
-    // (Ej: 2 jug -> 2 votos | 3 jug -> 2 votos | 4 jug -> 3 votos)
-    const requiredVotes = Math.floor(humanPlayers.length / 2) + 1;
+    const requiredVotes = humanPlayers.length;
     return this.resumeVotes.length >= requiredVotes;
   }
 
