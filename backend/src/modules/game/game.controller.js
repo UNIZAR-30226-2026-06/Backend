@@ -153,9 +153,12 @@ async function jugarCarta(req, res, next) {
   try {
     const username = req.user.nombre_usuario;
     const { gameId } = req.params;
-    const { cardId } = req.body;
+    const { cardId, chosenColor, cancelColor } = req.body;
 
-    const result = await gameService.jugarCarta(gameId, username, cardId);
+    const result = await gameService.jugarCarta(gameId, username, cardId, {
+      chosenColor,
+      cancelColor
+    });
 
     res.status(200).json(result);
   } catch (err) {

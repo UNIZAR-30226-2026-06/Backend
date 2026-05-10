@@ -137,13 +137,43 @@ class GameLogic {
     const resolvedCard = { ...card };
 
     if (resolvedCard.color === 'black') {
-      const fallbackColor = this.botLogic.chooseColor(remainingHand.length > 0 ? remainingHand : playerHand) || 'red';
-      resolvedCard.chosenColor = resolvedCard.chosenColor || resolvedCard.selectedColor || resolvedCard.effectiveColor || fallbackColor;
+      // CASO ESPECIAL: cancelColor NO cambia el color de la mesa.
+      // El siguiente jugador hereda el color de la carta previa al
+      // cancelColor (la que estaba arriba antes de jugar esto), y solo
+      // se le bloquea el color indicado en cancelColor.
+      if (resolvedCard.value === 'cancelColor') {
+        const prevTop = this.state.getTopDiscard();
+        const inheritedColor = prevTop ? this.state.getCardColor(prevTop) : 'red';
+        resolvedCard.chosenColor = (inheritedColor && inheritedColor !== 'black')
+          ? inheritedColor
+          : 'red';
+        // Nos aseguramos de que cancelColor está sanitizado: si no llegó
+        // (ningún jugador eligió color a bloquear), no aplicamos nada.
+        // game.rules ignorará el efecto si card.cancelColor está vacío.
+      } else if (resolvedCard.value === 'restartGame') {
+        // restartGame reinicia toda la partida: reparte nuevas manos y
+        // pone una carta inicial nueva en la mesa. No tiene sentido
+        // pedir color al jugador ni asignar uno; el descarte se vacía.
+      } else if (resolvedCard.value === 'changeRole' || resolvedCard.value === 'addRoleUse') {
+        // Cartas exclusivas del modo roles: no van al descarte ni
+        // cambian la carta de la mesa. No tienen color elegido — el
+        // efecto es íntegro sobre el rol del propio jugador.
+      } else {
+        const fallbackColor = this.botLogic.chooseColor(remainingHand.length > 0 ? remainingHand : playerHand) || 'red';
+        resolvedCard.chosenColor = resolvedCard.chosenColor || resolvedCard.selectedColor || resolvedCard.effectiveColor || fallbackColor;
+      }
     }
 
+    // Quitamos la carta de la mano del jugador. Para las cartas de tipo
+    // role (changeRole, addRoleUse) eso es todo: no se añaden al discardPile
+    // ni se actualiza currentCard. Para el resto, sí.
     this.state.removeCardFromPlayer(playerId, card);
-    this.state.setCurrentCard(resolvedCard);
-    this.state.addToDiscardPile(resolvedCard);
+
+    const isRoleCard = resolvedCard.value === 'changeRole' || resolvedCard.value === 'addRoleUse';
+    if (!isRoleCard) {
+      this.state.setCurrentCard(resolvedCard);
+      this.state.addToDiscardPile(resolvedCard);
+    }
 
     const shouldAdvanceTurn = this.cardRules.applyEffect(resolvedCard, playerId);
 

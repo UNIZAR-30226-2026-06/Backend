@@ -80,6 +80,12 @@ async function cargarPartidaEnMemoria(gameId) {
   if (!savedState) throw new Error('Partida sin estado guardado');
 
   const parsedState = typeof savedState === 'string' ? JSON.parse(savedState) : savedState;
+
+  // El constructor de GameState solo conserva (id, players, numCardsIni,
+  // specialCardsMode, rolesMode) y resetea el resto a defaults — incluyendo
+  // hands, phase, currentTurn, drawPile, discardPile, turnos, votos, etc.
+  // Por eso construimos primero la instancia (para tener los métodos del
+  // prototipo) y después volcamos el snapshot completo encima.
   const gameState = new GameState({
     id: parsedState.id,
     players: parsedState.players || [],
@@ -88,6 +94,12 @@ async function cargarPartidaEnMemoria(gameId) {
     rolesMode: parsedState.rolesMode,
   });
   Object.assign(gameState, parsedState);
+
+  // Los filtros de turno (playOdd, playEven, specialOnly) contienen funciones que
+  // JSON no puede serializar/deserializar. Al rehidratar desde DB quedan como
+  // objetos planos sin la propiedad `fn`, lo que hace que canPlay() explote
+  // con "Carta no válida" cuando le toca al bot. Los limpiamos aquí: el filtro
+  // solo dura 1 turno de todas formas, así que perderlo al reconectar es inofensivo.
   gameState.filters = {};
 
   activeGames.set(gameId, gameState);
@@ -343,6 +355,12 @@ async function unirsePrimeraPartidaPublica(username, maxJugadores, mode) {
   const maxJugadoresFiltro = maxJugadores && maxJugadores >= 2 && maxJugadores <= 4
     ? parseInt(maxJugadores, 10)
     : null;
+
+  // Filtro de modo: 'roles' | 'cards' | null (sin filtro)
+  // Cada modo se mapea a una combinación concreta de flags en la partida,
+  // así que solo nos uniremos a partidas que coincidan EXACTAMENTE con esa
+  // combinación. Esto evita meter a alguien que pidió "cartas" en una
+  // partida de "roles" y viceversa.
   const modoNormalizado = mode === 'roles' || mode === 'cards' ? mode : null;
   const modoRolesFiltro = modoNormalizado === 'roles';
   const modoCartasFiltro = modoNormalizado === 'cards';
@@ -516,6 +534,7 @@ async function obtenerPartida(gameId) {
     [gameId]
   );
 
+  // Incluir bots del game_state (no están en usuario_en_partida)
   const humanPlayers = jugadores.rows.map(j => ({ nombre_usuario: j.id_usuario, isBot: false }));
   const gameState = activeGames.get(gameId);
   const botPlayers = gameState
@@ -556,7 +575,7 @@ async function finalizarPartida(gameId, username) {
 // JUGAR CARTA
 // =========================
 
-async function jugarCarta(gameId, username, cardId) {
+async function jugarCarta(gameId, username, cardId, options = {}) {
   return runGameCycle(gameId, async (logic, gameState) => {
     if (gameState.phase !== 'playing') throw new Error('La partida no está en juego');
 
@@ -571,8 +590,40 @@ async function jugarCarta(gameId, username, cardId) {
     const card = player.hand.find(c => c.id === cardId);
     if (!card) throw httpError(400, 'Carta no pertenece al jugador');
 
-    logic.playCard(username, card);
+    // Si el jugador eligió color (cartas wild) o color a cancelar
+    // (cancelColor), enriquecemos la carta antes de jugarla. La logic
+    // se encarga de validar / aplicar fallbacks.
+    const VALID_COLORS = ['red', 'green', 'blue', 'yellow'];
+    const enriched = { ...card };
+    if (options.chosenColor && VALID_COLORS.includes(options.chosenColor)) {
+      enriched.chosenColor = options.chosenColor;
+    }
+    if (options.cancelColor && VALID_COLORS.includes(options.cancelColor)) {
+      enriched.cancelColor = options.cancelColor;
+    }
+
+    logic.playCard(username, enriched);
     gameState.needsPersistence = true;
+
+    // Si la carta era de tipo role (changeRole / addRoleUse), persistimos
+    // los cambios sobre usuario_en_partida (id_rol y usos_rol_partida)
+    // para que sobrevivan recargas / reconexiones.
+    if (enriched.value === 'changeRole' || enriched.value === 'addRoleUse') {
+      const updatedPlayer = gameState.getPlayerById(username);
+      if (updatedPlayer) {
+        await db.query(
+          `UPDATE notuno.usuario_en_partida
+           SET id_rol = $2, usos_rol_partida = $3
+           WHERE id_partida = $1 AND id_usuario = $4`,
+          [
+            gameId,
+            updatedPlayer.rol?.id_rol ?? null,
+            updatedPlayer.rolUses ?? 0,
+            username
+          ]
+        );
+      }
+    }
 
     if (gameState.needsPersistence) {
       await db.query(
@@ -823,7 +874,10 @@ async function obtenerPartidasPausadas(username) {
   return result.rows;
 }
 
-
+/**
+ * Añade N bots en una sola transacción para evitar race conditions
+ * cuando se añaden varios bots seguidos.
+ */
 async function añadirBots(gameId, usernameCreador, numBots) {
   const client = await db.connect();
   try {

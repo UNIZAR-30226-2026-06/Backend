@@ -1,3 +1,4 @@
+//game.state:
 class GameState {
   constructor({ id, players, numCardsIni, specialCardsMode, rolesMode }) {
     this.id = id;
@@ -31,10 +32,16 @@ class GameState {
     this.specialCardsMode = specialCardsMode;
     this.rolesMode = rolesMode;
     this.roleBlock = null;
+    // Catálogo de roles disponibles (cargado de BD al iniciar partida con
+    // rolesMode). Lo guardamos en el state para que efectos como la carta
+    // changeRole puedan reasignar sin volver a tocar BD desde el motor.
+    this.rolesCatalog = [];
 
     this.createdAt = Date.now();
 
     this.filters = {};
+    // Bloqueos de color por cancelColor: { [playerId]: { color, expiresAtTurn } }
+    this.blockedColors = {};
 
     this.pauseVotes = []; // Guardará los IDs de los jugadores que han votado para pausar
     this.resumeVotes = []; // Guardará los IDs de los jugadores que han votado
@@ -164,6 +171,28 @@ class GameState {
 
   clearFilters() {
     this.filters = {};
+    this.blockedColors = {};
+  }
+
+  // ======================
+  // BLOQUEO DE COLOR (cancelColor)
+  // ======================
+
+  setBlockedColor(playerId, color, durationTurns = 1) {
+    this.blockedColors[playerId] = {
+      color,
+      expiresAtTurn: this.turnNumber + durationTurns
+    };
+  }
+
+  getBlockedColor(playerId) {
+    const entry = this.blockedColors?.[playerId];
+    if (!entry) return null;
+    if (this.turnNumber > entry.expiresAtTurn) {
+      delete this.blockedColors[playerId];
+      return null;
+    }
+    return entry.color;
   }
 
   // ======================
@@ -287,7 +316,7 @@ class GameState {
     }
   }
 
-  // Comprobamos mayoría absoluta. tienen que estar todos de acuerdo
+  // Comprobamos mayoría absoluta (> 50% de humanos)
   hasMajorityResumeVotes() {
     const humanPlayers = this.players.filter(p => !p.isBot);
     const requiredVotes = humanPlayers.length;
