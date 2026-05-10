@@ -70,6 +70,38 @@ function assignRandomRoles(gameState, rolesCatalog) {
   return assignments;
 }
 
+/**
+ * Reasigna un rol aleatorio a un único jugador. Usado por la carta
+ * `changeRole`: el jugador pierde su rol actual y recibe uno nuevo
+ * al azar del catálogo. Resetea usos y lastUsedTurn.
+ */
+function reassignRoleForPlayer(gameState, playerId, rolesCatalog) {
+  if (!Array.isArray(rolesCatalog) || rolesCatalog.length === 0) {
+    throw new Error('No hay roles configurados');
+  }
+  const player = gameState.getPlayerById(playerId);
+  if (!player) throw new Error('Jugador no encontrado');
+
+  const currentRoleId = player.rol?.id_rol ?? null;
+  let candidates = rolesCatalog;
+  if (currentRoleId != null && rolesCatalog.length > 1) {
+    candidates = rolesCatalog.filter(r => r.id_rol !== currentRoleId);
+  }
+
+  const roleRow = candidates[Math.floor(Math.random() * candidates.length)];
+
+  player.rol = {
+    id_rol: roleRow.id_rol,
+    nombre: roleRow.nombre,
+    imagen: roleRow.imagen,
+    num_usos_max: roleRow.num_usos_max
+  };
+  player.rolUses = 0;
+  player.rolLastUsedTurn = null;
+
+  return cloneCard(player.rol);
+}
+
 function getPlayerRole(gameState, playerId) {
   const player = gameState.getPlayerById(playerId);
   if (!player) {
@@ -213,6 +245,7 @@ function executeRoleAction(gameState, playerId, payload = {}) {
 
 module.exports = {
   assignRandomRoles,
+  reassignRoleForPlayer,
   executeRoleAction,
   getPlayerRole,
   getRoleDefinition,

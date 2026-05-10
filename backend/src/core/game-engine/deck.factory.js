@@ -8,6 +8,7 @@ class DeckFactory {
     { value: "reverse", colors: this.COLORS },
     { value: "+2R", colors: this.COLORS },
     { value: "+4", colors: [this.WILD_COLOR] },
+    { value: "+4R", colors: [this.WILD_COLOR] },
     { value: "+1", colors: [this.WILD_COLOR] },
     { value: "skip", colors: this.COLORS },
     { value: "extraTurn", colors: this.COLORS },
@@ -16,7 +17,9 @@ class DeckFactory {
     { value: "swapHands", colors: [this.WILD_COLOR] },
     { value: "discardHandRedraw", colors: [this.WILD_COLOR] },
     { value: "restartGame", colors: [this.WILD_COLOR] },
-    { value: "specialOnly", colors: [this.WILD_COLOR] }
+    { value: "specialOnly", colors: [this.WILD_COLOR] },
+    { value: "changeColor", colors: [this.WILD_COLOR] },
+    { value: "cancelColor", colors: [this.WILD_COLOR] }
   ];
   static NUM_CARTAS_CADA_TIPO = 4;
 
@@ -76,8 +79,25 @@ class DeckFactory {
   }
 
   static createRoleCards() {
-    // Por ahora vacío; implementar según roles de juego
-    return [];
+    const ROLE_SPECIALS = [
+      { value: "changeRole", colors: [this.WILD_COLOR] },
+      { value: "addRoleUse", colors: [this.WILD_COLOR] }
+    ];
+
+    const deck = [];
+    ROLE_SPECIALS.forEach(special => {
+      special.colors.forEach(color => {
+        for (let i = 0; i < this.NUM_CARTAS_CADA_TIPO; i++) {
+          deck.push({
+            id: `${color}-${special.value}-${i}`,
+            value: special.value,
+            color,
+            type: "role"
+          });
+        }
+      });
+    });
+    return deck;
   }
 
   static shuffle(deck) {

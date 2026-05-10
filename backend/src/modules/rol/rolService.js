@@ -51,6 +51,10 @@ async function asignarRolesIniciales(gameId, gameState, client) {
   }
 
   const rolesCatalog = await loadRolesCatalog(client);
+  // Guardamos el catálogo en el propio state para que efectos como la
+  // carta changeRole puedan reasignar sin volver a consultar BD desde
+  // el motor de reglas (que es síncrono).
+  gameState.rolesCatalog = rolesCatalog;
   const assignments = RoleLogic.assignRandomRoles(gameState, rolesCatalog);
 
   for (const assignment of assignments) {
