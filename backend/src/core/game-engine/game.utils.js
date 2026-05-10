@@ -29,7 +29,10 @@ function resolveTimeoutIfNeeded(gameLogic) {
     state.setNewTurnDeadline(30000);
 
   } else if (decision.type === 'play') {
-    gameLogic.playCard(currentPlayer.id, decision.card);
+    const enrichedCard = { ...decision.card };
+    if (decision.chosenColor) enrichedCard.chosenColor = decision.chosenColor;
+    if (decision.cancelColor) enrichedCard.cancelColor = decision.cancelColor;
+    gameLogic.playCard(currentPlayer.id, enrichedCard);
   }
 
   return true; // indica que se ejecutó una acción por timeout

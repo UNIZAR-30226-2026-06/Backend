@@ -5,7 +5,7 @@ const GameLogic = require('./game.logic');
 const { cargarPartidaEnMemoria } = require('./game.loader');
 const { activeGames } = require('./game.registry');
 
-const BOT_THINKING_DELAY_MS = 700;
+const BOT_THINKING_DELAY_MS = 2000;
 const BOT_CHAIN_SAFETY = 30;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -39,9 +39,9 @@ async function runBotsChain(gameId, logic, gameState) {
     let cardPlayed = null;
 
     if (decision.type === 'play') {
-      const cardToPlay = decision.chosenColor
-        ? { ...decision.card, chosenColor: decision.chosenColor }
-        : decision.card;
+      const cardToPlay = { ...decision.card };
+      if (decision.chosenColor) cardToPlay.chosenColor = decision.chosenColor;
+      if (decision.cancelColor) cardToPlay.cancelColor = decision.cancelColor;
       try {
         logic.playCard(botId, cardToPlay);
         actionType = 'play';
