@@ -59,23 +59,31 @@ router.get('/avatars', storeController.obtenerAvataresTienda);
  *             schema:
  *               type: object
  *               properties:
-*                   id_estilo:
-*                     type: integer
-*                     example: 1
-*                   nombre_estilo:
-*                     type: string
-*                     example: "Fuego oscuro"
-*                   fondo:
-*                     type: string
-*                     example: "fondo1.png"
-*                   reverso:
-*                     type: string
-*                     example: "reverso1.png"
-*                   precio_estilo:
-*                     type: integer
-*                     example: 300
+ *                 id_estilo:
+ *                   type: integer
+ *                   example: 1
+ *                 nombre_estilo:
+ *                   type: string
+ *                   example: "Fuego oscuro"
+ *                 fondo:
+ *                   type: string
+ *                   example: "fondo1.png"
+ *                 reverso:
+ *                   type: string
+ *                   example: "reverso1.png"
+ *                 precio_estilo:
+ *                   type: integer
+ *                   example: 300
  *       500:
  *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Error interno del servidor"
  */
 router.get('/estilos/:id', storeController.obtenerEstiloID);
 
@@ -92,22 +100,30 @@ router.get('/estilos/:id', storeController.obtenerEstiloID);
  *         content:
  *           application/json:
  *             schema:
- *                 type: object
- *                 properties:
- *                   id_avatar:
- *                     type: integer
- *                     example: 1
- *                   nombre_avatar:
- *                     type: string
- *                     example: "Guerrero"
- *                   image:
- *                     type: string
- *                     example: "avatar1.png"
- *                   precio_avatar:
- *                     type: integer
- *                     example: 500
+ *               type: object
+ *               properties:
+ *                 id_avatar:
+ *                   type: integer
+ *                   example: 1
+ *                 nombre_avatar:
+ *                   type: string
+ *                   example: "Guerrero"
+ *                 image:
+ *                   type: string
+ *                   example: "avatar1.png"
+ *                 precio_avatar:
+ *                   type: integer
+ *                   example: 500
  *       500:
  *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Error interno del servidor"
  */
 router.get('/avatars/:id', storeController.obtenerAvatarID);
 
@@ -145,6 +161,14 @@ router.get('/avatars/:id', storeController.obtenerAvatarID);
  *                     example: 300
  *       500:
  *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Error interno del servidor"
  */
 router.get('/estilos', storeController.obtenerEstilosTienda);
 

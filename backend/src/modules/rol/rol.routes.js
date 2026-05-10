@@ -53,10 +53,34 @@ router.use(authMiddleware);
  *                   type: boolean
  *       400:
  *         description: La partida no tiene roles activados o error de parámetro
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "La partida no tiene roles activados o error de parámetro"
  *       401:
  *         description: No autorizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "No autorizado"
  *       404:
  *         description: Jugador o partida no encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Jugador o partida no encontrada"
  */
 router.get('/:gameId/me', rolController.obtenerMiRol);
 
@@ -97,8 +121,24 @@ router.get('/:gameId/me', rolController.obtenerMiRol);
  *                   nullable: true
  *       401:
  *         description: No autorizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "No autorizado"
  *       404:
  *         description: Jugador o partida no encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Jugador o partida no encontrada"
  */
 router.get('/:gameId/me/uses', rolController.obtenerMisUsos);
 
@@ -150,12 +190,44 @@ router.get('/:gameId/me/uses', rolController.obtenerMisUsos);
  *                   type: object
  *       400:
  *         description: Error en el uso del rol o partida no válida
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Error en el uso del rol o partida no válida"
  *       401:
  *         description: No autorizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "No autorizado"
  *       403:
  *         description: No es el turno del jugador o acción prohibida
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "No es el turno del jugador o acción prohibida"
  *       404:
  *         description: Jugador o partida no encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Jugador o partida no encontrada"
  */
 router.post('/:gameId/use', rolController.usarRol);
 

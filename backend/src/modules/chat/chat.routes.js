@@ -91,10 +91,33 @@ router.use(authMiddleware);
  *     responses:
  *       200:
  *         description: Mensaje enviado correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
  *       400:
  *         description: Error al enviar el mensaje
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
  *       401:
  *         description: No autorizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
  */
 router.post('/match', chatController.sendMatchMessage);
 router.post('/send', chatController.sendMatchMessage); // alias compatible con tests y clientes antiguos

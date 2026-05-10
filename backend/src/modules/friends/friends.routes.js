@@ -29,8 +29,16 @@ router.use(authMiddleware);
  *         schema:
  *           type: integer
  *     responses:
- *       200:
+ *       201:
  *         description: Solicitud enviada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Solicitud enviada."
  *       400:
  *         description: Error al enviar solicitud
  */
@@ -54,6 +62,16 @@ router.post('/request/:id', friendsController.enviarSolicitud);
  *     responses:
  *       200:
  *         description: Solicitud cancelada
+ *       200:
+ *         description: Solicitud cancelada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Solicitud cancelada."
  */
 router.delete('/request/:id', friendsController.cancelarSolicitud);
 
@@ -75,6 +93,16 @@ router.delete('/request/:id', friendsController.cancelarSolicitud);
  *     responses:
  *       200:
  *         description: Solicitud aceptada
+ *       200:
+ *         description: Solicitud aceptada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Solicitud aceptada."
  */
 router.put('/request/:id/accept', friendsController.aceptarSolicitud);
 
@@ -96,6 +124,16 @@ router.put('/request/:id/accept', friendsController.aceptarSolicitud);
  *     responses:
  *       200:
  *         description: Solicitud rechazada
+ *       200:
+ *         description: Solicitud rechazada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Solicitud rechazada."
  */
 router.put('/request/:id/reject', friendsController.rechazarSolicitud);
 
@@ -110,6 +148,22 @@ router.put('/request/:id/reject', friendsController.rechazarSolicitud);
  *     responses:
  *       200:
  *         description: Lista de solicitudes pendientes
+ *       200:
+ *         description: Lista de solicitudes pendientes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id_usuario_origen:
+ *                     type: string
+ *                   id_usuario_destino:
+ *                     type: string
+ *                   estado:
+ *                     type: string
+ *                     example: "pendiente"
  */
 router.get('/request/pending', friendsController.obtenerSolicitudesPendientes);
 
@@ -124,6 +178,22 @@ router.get('/request/pending', friendsController.obtenerSolicitudesPendientes);
  *     responses:
  *       200:
  *         description: Lista de solicitudes enviadas
+ *       200:
+ *         description: Lista de solicitudes enviadas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id_usuario_origen:
+ *                     type: string
+ *                   id_usuario_destino:
+ *                     type: string
+ *                   estado:
+ *                     type: string
+ *                     example: "pendiente"
  */
 router.get('/request/sending', friendsController.obtenerSolicitudesEnviadas);
 
@@ -138,6 +208,21 @@ router.get('/request/sending', friendsController.obtenerSolicitudesEnviadas);
  *     responses:
  *       200:
  *         description: Lista de amigos
+ *       200:
+ *         description: Lista de amigos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   nombre_usuario:
+ *                     type: string
+ *                   monedas:
+ *                     type: integer
+ *                   avatar:
+ *                     type: integer
  */
 router.get('/', friendsController.obtenerAmigos);
 
@@ -152,6 +237,13 @@ router.get('/', friendsController.obtenerAmigos);
  *     responses:
  *       200:
  *         description: Numero de amigos
+ *       200:
+ *         description: Numero de amigos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: integer
+ *               example: 5
  */
 router.get('/count', friendsController.obtenerNumeroAmigos);
 
@@ -173,6 +265,16 @@ router.get('/count', friendsController.obtenerNumeroAmigos);
  *     responses:
  *       200:
  *         description: Amigo eliminado
+ *       200:
+ *         description: Amigo eliminado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Amigo eliminado."
  */
 router.delete('/:id', friendsController.eliminarAmigo);
 
@@ -228,6 +330,14 @@ router.get('/search/:query', friendsController.buscarUsuarios);
  *     responses:
  *       200:
  *         description: Resultados de búsqueda
+ *       200:
+ *         description: Resultados de búsqueda (lista de usuarios conectados)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: string
  */
 router.get('/connected/', friendsController.obtenerAmigosConectados);
 

@@ -71,6 +71,14 @@ router.use(authMiddleware);
  *     responses:
  *       200:
  *         description: Perfil actualizado exitosamente
+				content:
+					application/json:
+						schema:
+							type: object
+							properties:
+								message:
+									type: string
+									example: "Perfil actualizado exitosamente"
  */
 router.get('/me', userController.getProfile);
 router.put('/me', userController.updateProfile);
@@ -97,6 +105,14 @@ router.put('/me', userController.updateProfile);
  *     responses:
  *       200:
  *         description: Contraseña actualizada
+				content:
+					application/json:
+						schema:
+							type: object
+							properties:
+								message:
+									type: string
+									example: "Contraseña actualizada"
  *       400:
  *         description: Contraseña actual incorrecta
  */
@@ -122,6 +138,14 @@ router.put('/me/password', userController.changePassword);
  *     responses:
  *       200:
  *         description: Avatar actualizado
+				content:
+					application/json:
+						schema:
+							type: object
+							properties:
+								message:
+									type: string
+									example: "Avatar actualizado"
  */
 router.put('/me/avatar', userController.changeAvatar);
 
@@ -145,6 +169,14 @@ router.put('/me/avatar', userController.changeAvatar);
  *     responses:
  *       200:
  *         description: Estilo actualizado
+				content:
+					application/json:
+						schema:
+							type: object
+							properties:
+								message:
+									type: string
+									example: "Estilo actualizado"
  */
 router.put('/me/estilo', userController.changeStyle);
 

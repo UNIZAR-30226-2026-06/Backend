@@ -35,6 +35,14 @@ router.use(authMiddleware);
  *                   example: 1500
  *       401:
  *         description: No autorizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "No autorizado"
  */
 router.get('/balance', walletController.getBalance);
 
@@ -72,8 +80,24 @@ router.get('/balance', walletController.getBalance);
  *                   example: 2000
  *       400:
  *         description: Cantidad inválida
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Cantidad inválida"
  *       401:
  *         description: No autorizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "No autorizado"
  */
 router.post('/add', walletController.addCoins);
 
@@ -111,8 +135,24 @@ router.post('/add', walletController.addCoins);
  *                   example: 1200
  *       400:
  *         description: Fondos insuficientes o cantidad inválida
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Fondos insuficientes o cantidad inválida"
  *       401:
  *         description: No autorizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "No autorizado"
  */
 router.post('/deduct', walletController.deductCoins);
 
@@ -153,8 +193,24 @@ router.post('/deduct', walletController.deductCoins);
  *                   type: integer
  *       400:
  *         description: Datos inválidos o monedas insuficientes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Datos inválidos o monedas insuficientes"
  *       401:
  *         description: No autorizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "No autorizado"
  */
 router.post('/purchase/avatar', walletController.purchaseAvatar);
 
@@ -195,8 +251,24 @@ router.post('/purchase/avatar', walletController.purchaseAvatar);
  *                   type: integer
  *       400:
  *         description: Datos inválidos o monedas insuficientes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Datos inválidos o monedas insuficientes"
  *       401:
  *         description: No autorizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "No autorizado"
  */
 router.post('/purchase/estilo', walletController.purchaseEstilo);
 

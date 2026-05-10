@@ -61,8 +61,24 @@ const authMiddleware = require('../../middlewares/auth.middleware');
  *                   example: "A1B2C3"
  *       400:
  *         description: Error en los datos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Error en los datos"
  *       401:
  *         description: No autorizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "No autorizado"
  */
 router.post('/', authMiddleware, gameController.crearPartida);
 
@@ -91,10 +107,34 @@ router.post('/', authMiddleware, gameController.crearPartida);
  *                   description: ID de la partida pública a la que se unió
  *       400:
  *         description: Error (partida llena o no válida)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Partida llena o no válida"
  *       404:
  *         description: No hay partidas públicas disponibles
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "No hay partidas públicas disponibles"
  *       401:
  *         description: No autorizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "No autorizado"
  */
 router.post('/join', authMiddleware, gameController.unirsePartidaPublica);
 
@@ -133,8 +173,24 @@ router.post('/join', authMiddleware, gameController.unirsePartidaPublica);
  *                   description: ID de la partida privada a la que se unió
  *       400:
  *         description: Código inválido o partida no disponible
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Código inválido o partida no disponible"
  *       401:
  *         description: No autorizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "No autorizado"
  */
 router.post('/join-by-code', authMiddleware, gameController.unirsePorCodigo);
 
@@ -172,12 +228,44 @@ router.post('/join-by-code', authMiddleware, gameController.unirsePorCodigo);
  *                   example: "Partida en pausa"
  *       400:
  *         description: No se puede pausar en el estado actual
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "No se puede pausar en el estado actual"
  *       403:
  *         description: No autorizado para pausar
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "No autorizado para pausar"
  *       404:
  *         description: Partida no encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Partida no encontrada"
  *       401:
  *         description: No autorizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "No autorizado"
  */
 router.post('/:gameId/pause', authMiddleware, gameController.solicitarPausa);
 
@@ -214,12 +302,44 @@ router.post('/:gameId/pause', authMiddleware, gameController.solicitarPausa);
  *                   example: "Partida reanudada"
  *       400:
  *         description: La partida no está en pausa
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "La partida no está en pausa"
  *       403:
  *         description: No autorizado para reanudar
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "No autorizado para reanudar"
  *       404:
  *         description: Partida no encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Partida no encontrada"
  *       401:
  *         description: No autorizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "No autorizado"
  */
 router.post('/:gameId/resume', authMiddleware, gameController.reanudarPartida);
 
@@ -256,12 +376,44 @@ router.post('/:gameId/resume', authMiddleware, gameController.reanudarPartida);
  *                   example: "Partida eliminada"
  *       400:
  *         description: Error al intentar borrar la partida
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Error al intentar borrar la partida"
  *       401:
  *         description: No autorizado (Falta token o es inválido)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "No autorizado"
  *       404:
  *         description: La partida no existe o ya fue borrada de la base de datos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "La partida no existe o ya fue borrada"
  *       500:
  *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Error interno del servidor"
  */
 router.delete('/:gameId', authMiddleware, gameController.borrarPartida);
 
@@ -276,8 +428,31 @@ router.delete('/:gameId', authMiddleware, gameController.borrarPartida);
  *     responses:
  *       200:
  *         description: Lista de partidas en pausa
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   gameId:
+ *                     type: string
+ *                   estado:
+ *                     type: string
+ *                   jugadores:
+ *                     type: array
+ *                     items:
+ *                       type: string
  *       401:
  *         description: No autorizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "No autorizado"
  */
 router.get('/pausadas', authMiddleware, gameController.verPartidasPausadas);
 
@@ -320,8 +495,24 @@ router.get('/pausadas', authMiddleware, gameController.verPartidasPausadas);
  *                   example: ["user1", "user2"]
  *       404:
  *         description: Partida no encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Partida no encontrada"
  *       401:
  *         description: No autorizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "No autorizado"
  */
 router.get('/:gameId', authMiddleware, gameController.obtenerPartida);
 
@@ -381,8 +572,24 @@ router.get('/:gameId', authMiddleware, gameController.obtenerPartida);
  *                         type: boolean
  *       400:
  *         description: Error al obtener estado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Error al obtener estado"
  *       401:
  *         description: No autorizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "No autorizado"
  */
 router.get('/:gameId/state', authMiddleware, gameController.obtenerEstadoPartida);
 
@@ -405,14 +612,54 @@ router.get('/:gameId/state', authMiddleware, gameController.obtenerEstadoPartida
  *     responses:
  *       200:
  *         description: Partida iniciada correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
  *       400:
  *         description: Error al iniciar la partida
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Error al iniciar la partida"
  *       403:
  *         description: Solo el creador puede iniciar
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Solo el creador puede iniciar"
  *       404:
  *         description: Partida no encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Partida no encontrada"
  *       401:
  *         description: No autorizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "No autorizado"
  */
 router.post('/:gameId/start', authMiddleware, gameController.iniciarPartida);
 
@@ -435,10 +682,34 @@ router.post('/:gameId/start', authMiddleware, gameController.iniciarPartida);
  *     responses:
  *       200:
  *         description: Partida finalizada correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
  *       403:
  *         description: No autorizado para finalizar
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "No autorizado para finalizar"
  *       401:
  *         description: No autorizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "No autorizado"
  */
 router.post('/:gameId/end', authMiddleware, gameController.finalizarPartida);
 
@@ -483,14 +754,54 @@ router.post('/:gameId/end', authMiddleware, gameController.finalizarPartida);
  *                   example: true
  *       400:
  *         description: Error en los parámetros o turno inválido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Error en los parámetros o turno inválido"
  *       403:
  *         description: No autorizado para jugar en este turno
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "No autorizado para jugar en este turno"
  *       404:
  *         description: Partida no encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Partida no encontrada"
  *       401:
  *         description: No autorizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "No autorizado"
  *       500:
  *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Error interno del servidor"
  */
 router.post('/:gameId/play-card', authMiddleware, gameController.jugarCarta);
 
@@ -523,14 +834,54 @@ router.post('/:gameId/play-card', authMiddleware, gameController.jugarCarta);
  *                   description: Carta que fue robada por el jugador
  *       400:
  *         description: Error en los parámetros o turno inválido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Error en los parámetros o turno inválido"
  *       403:
  *         description: No autorizado para robar en este turno
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "No autorizado para robar en este turno"
  *       404:
  *         description: Partida no encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Partida no encontrada"
  *       401:
  *         description: No autorizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "No autorizado"
  *       500:
  *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Error interno del servidor"
  */
 router.post('/:gameId/draw-card', authMiddleware, gameController.robarCarta);
 
@@ -566,10 +917,34 @@ router.post('/:gameId/draw-card', authMiddleware, gameController.robarCarta);
  *                   example: Bot_8492
  *       400:
  *         description: Error (la partida ya ha comenzado)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "La partida ya ha comenzado"
  *       401:
  *         description: No autorizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "No autorizado"
  *       403:
  *         description: Error (solo el creador puede añadir bots)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Solo el creador puede añadir bots"
  */
 router.post('/:gameId/add-bot', authMiddleware, gameController.añadirBot);
 
