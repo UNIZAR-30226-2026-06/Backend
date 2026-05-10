@@ -287,12 +287,6 @@ class GameState {
     }
   }
 
-  removeResumeVote(playerId) {
-    if (!this.resumeVotes.includes(playerId)) {
-      this.resumeVotes.remove(playerId);
-    }
-  }
-
   // Comprobamos mayoría absoluta. tienen que estar todos de acuerdo
   hasMajorityResumeVotes() {
     const humanPlayers = this.players.filter(p => !p.isBot);
@@ -304,7 +298,9 @@ class GameState {
     this.resumeVotes = [];
   }
 
-
+  removeResumeVote(playerId) {
+    this.resumeVotes = this.resumeVotes.filter(id => id !== playerId);
+  }
 
   setResumed(turnDurationMs = 30000) {
     this.phase = 'playing';

@@ -119,11 +119,27 @@ function registerSocketHandlers(io) {
     socket.on('start_game', async (data) => {
       try {
         const { partidaID } = data;
-        await gameService.iniciarPartida(partidaID, username);
 
-        const gameState = activeGames.get(partidaID);
+        let gameState;
+        try {
+          await gameService.iniciarPartida(partidaID, username);
+          gameState = activeGames.get(partidaID);
+        } catch (initError) {
+          const alreadyStarted =
+            initError.message?.includes('en_curso') ||
+            initError.message?.includes('ya fue iniciada');
+          if (!alreadyStarted) throw initError;
+          gameState = activeGames.get(partidaID)
+            || await gameService.cargarPartidaEnMemoria(partidaID);
+          console.log(`♻️ start_game: partida ${partidaID} ya estaba iniciada, re-emitiendo evento.`);
+        }
+
         if (!gameState) throw new Error('No se ha podido recuperar el estado del juego');
 
+        io.to(partidaID).emit('partida_iniciada', {
+          gameId: partidaID,
+          mode: gameState.rolesMode ? 'roles' : (gameState.specialCardsMode ? 'cards' : 'normal')
+        });
         gameState.players.forEach((player) => {
           if (!player || !player.id) return;
           const targetSocketId = connectedUsers.get(player.id);
@@ -191,24 +207,10 @@ function registerSocketHandlers(io) {
       
       const estado = await gameService.votarPausa(data.partidaID, username, false);  //registra el voto del jugador para pausar la partida
       
-      if (estado?.action === 'voto_pausa_registrado') {
-        socket.to(data.partidaID).emit('voto_pausa', {
-          partidaID: data.partidaID,
-          jugador: username,
-          votosActuales: estado?.votosActuales
-        });
-      }else if (estado?.action === 'pausada') {
-        io.to(data.partidaID).emit('partida_pausada', { partidaID: data.partidaID })   //envia un mensaje al resto de usuarios de la partida para indicar que la partida se ha pausado
-      }
-    })
-
-    socket.on("jugador_rechaza_pausa", async(data) => {
-      //un jugador vota para no pausar la partida, se envia un mensaje a todos los jugadores de la partida (excepto el que ha votado) indicando que un jugador ha votado para no pausar la partida
-      //como tiene que haber mayoria, la votacion se cancela
-      const estado = await gameService.rechazarPausa(data.partidaID, username, false);  //registra el voto del jugador para no pausar la partida
-      
-      if (estado?.action === 'no_pausada') {
-        io.to(data.partidaID).emit('pausa_rechazada', { partidaID: data.partidaID, jugador: username })   //envia un mensaje al resto de usuarios de la partida para indicar que la partida se ha pausado
+      if(estado?.action==="pausada") {
+        io.to(data.partidaID).emit('partida_pausada', {partidaID: data.partidaID})   //envia un mensaje al resto de usuarios de la partida para indicar que la partida se ha pausado
+      }else {
+        io.to(data.partidaID).emit('voto_pausa_registrado', {jugador: username, votosActuales: estado?.votosActuales})
       }
     })
 
@@ -216,26 +218,49 @@ function registerSocketHandlers(io) {
       //un jugador solicita  pausar la partida, se envia un mensaje a todos los jugadores de la partida (excepto el, que ya cuenta que ha votado) indicando que un jugador ha votado para pausar la partida para preguntar si solicita pausarla
       
       const estado = await gameService.votarPausa(data.partidaID, username, true);  //registra el voto del jugador para pausar la partida
-            
-      if (estado?.action === 'pausada') {
+      
+      socket.to(data.partidaID).emit('voto_pausa', {jugador: username, partidaID: data.partidaID})   //envia un mensaje al resto de usuarios de la partida para preguntar si quieren pausar la partida
+      if (estado?.action === "pausada") {
         io.to(data.partidaID).emit('partida_pausada', { partidaID: data.partidaID })   //envia un mensaje al resto de usuarios de la partida para indicar que la partida se ha pausado
-      } else if (estado?.action === 'voto_pausa_registrado') {
-        socket.to(data.partidaID).emit('voto_pausa', {jugador: username, partidaID: data.partidaID, votosActuales: estado?.votosActuales})   //envia un mensaje al resto de usuarios de la partida para preguntar si quieren pausar la partida
-
       }
 
     })
 
 
+    socket.on("abandonar_voto_reanudar", async(data) => {
+      // El jugador vuelve al home habiendo votado reanudar: se resta su voto
+      try {
+        const resultado = await gameService.abandonarVotoReanudar(data.partidaID, username);
+        if (resultado?.action === 'voto_eliminado') {
+          const voters = resultado.voters || [];
+          io.to(data.partidaID).emit('voto_reanudar_retirado', { jugador: username, voters, votosActuales: voters.length });
+        }
+      } catch(e) {
+        // Si la partida ya no existe o no está pausada, ignorar silenciosamente
+      }
+    })
+
+    socket.on("jugador_rechaza_pausa", async(data) => {
+      // Un jugador rechaza la votación de pausa activa → se cancela para todos
+      try {
+        await gameService.rechazarPausa(data.partidaID, username);
+        io.to(data.partidaID).emit('pausa_rechazada', { jugador: username });
+      } catch(e) {
+        socket.emit('error_partida', { message: e.message });
+      }
+    })
+
     socket.on("jugador_solicita_reanudar", async(data) => {
       //un jugador inicializa votacion para solicitar reanudar la partida, se envia un mensaje a todos los jugadores de la partida (excepto el, que ya cuenta que ha votado) para que voten
       const estado = await gameService.reanudarPartida(data.partidaID, username);  //registra el voto del jugador para reanudar la partida
       
-      if (estado?.action === 'reanudada') {
-        io.to(data.partidaID).emit('partida_reanudada', { partidaID: data.partidaID })   //envia un mensaje al resto de usuarios de la partida para indicar que la partida se ha reanudado
-      } else if (estado?.action === 'voto_reanudar_registrado') {
-        socket.to(data.partidaID).emit('voto_reanudar', {jugador: username, votos: estado?.votosVector, votosActuales:estado?.votosActuales})   //envia un mensaje al resto de usuarios de la partida para preguntar si quieren reanudar la partida
-
+      if(estado?.action==="reanudada") {
+        io.to(data.partidaID).emit('partida_reanudada', {partidaID: data.partidaID})  //envia un mensaje al resto de usuarios de la partida para indicar que la partida se ha reanudado
+      } else {
+        // Emitir a todos con la lista completa de voters actual
+        const gameState = require('../core/game-engine/game.registry').activeGames.get(data.partidaID);
+        const voters = gameState ? gameState.resumeVotes : [username];
+        io.to(data.partidaID).emit('voto_reanudar', { jugador: username, voters, votosActuales: voters.length })
       }
 
     })
@@ -243,29 +268,12 @@ function registerSocketHandlers(io) {
     socket.on("jugador_voto_reanudar", async(data) => {
       //un jugador vota para reanudar la partida, en una votacion ya iniciada por otro jugador
       const estado = await gameService.reanudarPartida(data.partidaID, username);  //registra el voto del jugador para reanudar la partida
-      if (estado?.action === 'reanudada') {
-        io.to(data.partidaID).emit('partida_reanudada', { partidaID: data.partidaID })   //envia un mensaje al resto de usuarios de la partida para indicar que la partida se ha reanudado
-      } else if (estado?.action === 'voto_reanudar_registrado') {
-          socket.to(data.partidaID).emit('voto_reanudar', {
-            partidaID: data.partidaID,
-            jugador: username,
-            votos: estado?.votosVector,
-            votosActuales: estado?.votosActuales
-          });
-      }
-      
-    })
-
-    socket.on("abandonar_voto_reanudar", async(data) => {
-      // El jugador retira so voto, se resta
-      try {
-        const resultado = await gameService.retirarVoto_reanudar(data.partidaID, username);
-        if (resultado?.action === 'voto_reanudar_eliminado') {
-          const voters = resultado.votosActuales || [];
-          io.to(data.partidaID).emit('voto_reanudar_retirado', { partidaID: data.partidaID, jugador: username, votos: estado?.votosVector, votosActuales: estado?.votosActuales });
-        }
-      } catch(e) {
-        // Si la partida ya no existe o no está pausada, ignorar silenciosamente
+      if(estado?.action==="reanudada") {
+        io.to(data.partidaID).emit('partida_reanudada', {partidaID: data.partidaID})  //envia un mensaje al resto de usuarios de la partida para indicar que la partida se ha reanudado
+      } else {
+        const gameState = require('../core/game-engine/game.registry').activeGames.get(data.partidaID);
+        const voters = gameState ? gameState.resumeVotes : [];
+        io.to(data.partidaID).emit('voto_reanudar_registrado', { jugador: username, voters, votosActuales: voters.length })
       }
     })
 
@@ -289,6 +297,21 @@ function registerSocketHandlers(io) {
 
       
 
+
+    // Añade N bots en una sola transacción
+    socket.on("unir_bots", async(data) => {
+      try {
+        const { partidaID, numBots } = data;
+        const result = await gameService.añadirBots(partidaID, username, numBots);
+        io.to(partidaID).emit('bots_unidos', {
+          partidaID,
+          botIds: result.botIds,
+          mensaje: `Se han unido ${result.botIds.length} bots a la partida`
+        });
+      } catch (error) {
+        socket.emit('error_unir_bot', { partidaID: data.partidaID, message: error.message });
+      }
+    })
 
     socket.on('disconnect', () => {
       if(username) {

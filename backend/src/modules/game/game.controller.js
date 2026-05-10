@@ -52,7 +52,9 @@ async function unirsePartida(req, res, next) {
 async function unirsePartidaPublica(req, res, next) {
   try {
     const username = req.user.nombre_usuario;
-    const result = await gameService.unirsePrimeraPartidaPublica(username);
+    const mode = req.body?.mode || req.query?.mode;
+    const maxJugadores = req.body?.maxJugadores || req.query?.maxJugadores;
+    const result = await gameService.unirsePrimeraPartidaPublica(username, maxJugadores, mode);
 
     res.status(200).json({ message: 'Unido correctamente', gameId: result.gameId });
   } catch (err) {

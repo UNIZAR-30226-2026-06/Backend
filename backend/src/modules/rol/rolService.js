@@ -81,7 +81,7 @@ async function getMiRol(gameId, username) {
   const gameState = await loadGameState(gameId);
 
   if (!gameState.rolesMode) {
-    throw httpError(400, 'La partida no tiene roles activados');
+    return null;
   }
 
   const player = gameState.getPlayerById(username);

@@ -80,7 +80,15 @@ async function cargarPartidaEnMemoria(gameId) {
   if (!savedState) throw new Error('Partida sin estado guardado');
 
   const parsedState = typeof savedState === 'string' ? JSON.parse(savedState) : savedState;
-  const gameState = new GameState(parsedState);
+  const gameState = new GameState({
+    id: parsedState.id,
+    players: parsedState.players || [],
+    numCardsIni: parsedState.numCardsIni,
+    specialCardsMode: parsedState.specialCardsMode,
+    rolesMode: parsedState.rolesMode,
+  });
+  Object.assign(gameState, parsedState);
+  gameState.filters = {};
 
   activeGames.set(gameId, gameState);
   return gameState;
@@ -327,27 +335,49 @@ async function unirsePartida(gameId, username) {
   }
 }
 
-async function unirsePrimeraPartidaPublica(username) {
+async function unirsePrimeraPartidaPublica(username, maxJugadores, mode) {
   const client = await db.connect();
   let gameId;
   let shouldCreatePublicGame = false;
 
+  const maxJugadoresFiltro = maxJugadores && maxJugadores >= 2 && maxJugadores <= 4
+    ? parseInt(maxJugadores, 10)
+    : null;
+  const modoNormalizado = mode === 'roles' || mode === 'cards' ? mode : null;
+  const modoRolesFiltro = modoNormalizado === 'roles';
+  const modoCartasFiltro = modoNormalizado === 'cards';
+
   try {
     await client.query('BEGIN');
+
+    // Construimos la query dinámicamente con los filtros aplicables.
+    const whereClauses = [
+      `p.partida_publica = TRUE`,
+      `p.estado = 'esperando_jugadores'`,
+      `(SELECT COUNT(*) FROM notuno.usuario_en_partida up WHERE up.id_partida = p.id_partida) < p.max_jugadores`,
+    ];
+    const params = [];
+
+    if (maxJugadoresFiltro) {
+      params.push(maxJugadoresFiltro);
+      whereClauses.push(`p.max_jugadores = $${params.length}`);
+    }
+
+    if (modoNormalizado) {
+      params.push(modoRolesFiltro);
+      whereClauses.push(`p.modo_roles = $${params.length}`);
+      params.push(modoCartasFiltro);
+      whereClauses.push(`p.modo_cartas_especiales = $${params.length}`);
+    }
 
     const candidata = await client.query(
       `SELECT p.id_partida
        FROM notuno.partida p
-       WHERE p.partida_publica = TRUE
-         AND p.estado = 'esperando_jugadores'
-         AND (
-           SELECT COUNT(*)
-           FROM notuno.usuario_en_partida up
-           WHERE up.id_partida = p.id_partida
-         ) < p.max_jugadores
+       WHERE ${whereClauses.join(' AND ')}
        ORDER BY p.id_partida ASC
        FOR UPDATE SKIP LOCKED
-       LIMIT 1`
+       LIMIT 1`,
+      params
     );
 
     if (candidata.rowCount === 0) {
@@ -380,9 +410,9 @@ async function unirsePrimeraPartidaPublica(username) {
   if (shouldCreatePublicGame) {
     const nuevaPartida = await crearPartida(username, {
       numCartasInicio: 7,
-      maxJugadores: 4,
-      modoCartasEspeciales: false,
-      modoRoles: false,
+      maxJugadores: maxJugadoresFiltro || 4,
+      modoCartasEspeciales: modoCartasFiltro,
+      modoRoles: modoRolesFiltro,
       timeoutTurno: 30,
       sonido: true,
       musica: true,
@@ -486,11 +516,17 @@ async function obtenerPartida(gameId) {
     [gameId]
   );
 
+  const humanPlayers = jugadores.rows.map(j => ({ nombre_usuario: j.id_usuario, isBot: false }));
+  const gameState = activeGames.get(gameId);
+  const botPlayers = gameState
+    ? gameState.players.filter(p => p.isBot).map(p => ({ nombre_usuario: p.id, isBot: true }))
+    : [];
+
   return {
     gameId: result.rows[0].id_partida,
     estado: result.rows[0].estado,
     maxJugadores: result.rows[0].max_jugadores,
-    jugadores: jugadores.rows.map(j => j.id_usuario)
+    jugadores: [...humanPlayers, ...botPlayers]
   };
 }
 
@@ -687,15 +723,9 @@ async function votarPausa(gameId, username, isFirstVote) {
 
     // Comprobamos si con este voto se alcanza la MAYORÍA
     if (gameState.hasMajorityPauseVotes()) {
-      if (gameState.playersDecisionPause()) {
-        gameState.setPaused();
-        gameState.needsPersistence = true;
-        return { action: 'pausada' };
-      } else {
-        gameState.needsPersistence = true;
-        return { action: 'no_pausada' };
-      }
-      
+      gameState.setPaused();
+      gameState.needsPersistence = true;
+      return { action: 'pausada' };
     } else {
       gameState.needsPersistence = true;
       return { action: 'voto_pausa_registrado', votosActuales: gameState.pauseVotes.length };
@@ -717,6 +747,14 @@ async function rechazarPausa(gameId, username) {
   });
 }
 
+async function abandonarVotoReanudar(gameId, username) {
+  return runGameCycle(gameId, async (logic, gameState) => {
+    if (gameState.phase !== 'paused') return { action: 'no_pausada' };
+    gameState.removeResumeVote(username);
+    gameState.needsPersistence = true;
+    return { action: 'voto_eliminado', voters: gameState.resumeVotes };
+  });
+}
 
 async function reanudarPartida(gameId, username) {
   return runGameCycle(gameId, async (logic, gameState) => {
@@ -734,27 +772,9 @@ async function reanudarPartida(gameId, username) {
       return { action: 'reanudada' };
     } else {
       gameState.needsPersistence = true;
-      return { action: 'voto_reanudar_registrado', votosVector: gameState.resumeVotes, votosActuales: gameState.resumeVotes.length };
+      return { action: 'voto_reanudar_registrado', votosActuales: gameState.resumeVotes.length };
     }
   });
-}
-
-async function retirarVoto_reanudar(gameId, username) {
-  //si un jugador retira su voto de reanudar
-  return runGameCycle(gameId, async (logic, gameState) => {
-    if (gameState.phase !== 'paused') {
-      throw new Error('La partida no está pausada');
-    }
-
-    // se elimina el voto de esta persona para reanudar
-    gameState.removeResumeVote(username);
-
-    gameState.needsPersistence = true;
-    return { action: 'voto_reanudar_eliminado', votosVector: gameState.resumeVotes, votosActuales: gameState.resumeVotes.length };
-    
-    
-  });
-
 }
 
 // =========================
@@ -803,6 +823,60 @@ async function obtenerPartidasPausadas(username) {
   return result.rows;
 }
 
+
+async function añadirBots(gameId, usernameCreador, numBots) {
+  const client = await db.connect();
+  try {
+    await client.query('BEGIN');
+
+    // Bloquear la fila para evitar lecturas concurrentes del estado viejo
+    await client.query(
+      `SELECT 1 FROM notuno.partida WHERE id_partida = $1 FOR UPDATE`,
+      [gameId]
+    );
+
+    let gameState = activeGames.get(gameId) || await cargarPartidaEnMemoria(gameId);
+
+    if (gameState.players[0].id !== usernameCreador) {
+      throw new Error('Solo el creador puede añadir bots');
+    }
+    if (gameState.phase !== 'waiting') {
+      throw new Error('La partida ya ha comenzado');
+    }
+
+    const botIds = [];
+    for (let i = 0; i < numBots; i++) {
+      const botId = `Bot_${Math.floor(Math.random() * 90000) + 10000}`;
+      botIds.push(botId);
+      gameState.players.push({
+        id: botId,
+        hand: [],
+        rol: null,
+        rolUses: 0,
+        rolLastUsedTurn: null,
+        connected: true,
+        isBot: true,
+        saidUno: false
+      });
+    }
+
+    gameState.needsPersistence = true;
+
+    await client.query(
+      `UPDATE notuno.partida SET game_state = $2 WHERE id_partida = $1`,
+      [gameId, JSON.stringify(gameState)]
+    );
+
+    await client.query('COMMIT');
+    return { success: true, botIds };
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
 module.exports = {
   crearPartida,
   iniciarPartida,
@@ -818,10 +892,11 @@ module.exports = {
   getCarta,
   activeGames,
   añadirBot,
+  añadirBots,
   votarPausa,
   rechazarPausa,
   reanudarPartida,
+  abandonarVotoReanudar,
   borrarPartida,
-  obtenerPartidasPausadas,
-  retirarVoto_reanudar
+  obtenerPartidasPausadas
 };

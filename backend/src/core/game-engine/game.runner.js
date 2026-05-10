@@ -5,6 +5,78 @@ const GameLogic = require('./game.logic');
 const { cargarPartidaEnMemoria } = require('./game.loader');
 const { activeGames } = require('./game.registry');
 
+const BOT_THINKING_DELAY_MS = 700;
+const BOT_CHAIN_SAFETY = 30;
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+function safeEmit(gameId, event, payload) {
+  try {
+    const { getIO } = require('../../realtime/socket.server');
+    getIO().to(gameId).emit(event, payload);
+  } catch (err) {
+    console.error(`[Sockets] Error emitiendo ${event} en partida ${gameId}:`, err.message);
+  }
+}
+
+async function runBotsChain(gameId, logic, gameState) {
+  let iterations = 0;
+  while (
+    gameState.phase === 'playing' &&
+    gameState.getCurrentPlayer()?.isBot &&
+    iterations++ < BOT_CHAIN_SAFETY
+  ) {
+    const botId = gameState.getCurrentPlayer().id;
+
+    safeEmit(gameId, 'bot_thinking', { botId });
+    await sleep(BOT_THINKING_DELAY_MS);
+
+    // La partida puede haberse pausado durante el sleep
+    if (gameState.phase !== 'playing') break;
+
+    const decision = logic.botLogic.decideMove(botId);
+    let actionType;
+    let cardPlayed = null;
+
+    if (decision.type === 'play') {
+      const cardToPlay = decision.chosenColor
+        ? { ...decision.card, chosenColor: decision.chosenColor }
+        : decision.card;
+      try {
+        logic.playCard(botId, cardToPlay);
+        actionType = 'play';
+        cardPlayed = cardToPlay;
+      } catch (playErr) {
+        const card = logic.drawCard();
+        gameState.addCardToPlayer(botId, card);
+        gameState.advanceTurn();
+        gameState.setNewTurnDeadline(30000);
+        actionType = 'draw';
+      }
+    } else {
+      const card = logic.drawCard();
+      gameState.addCardToPlayer(botId, card);
+      gameState.advanceTurn();
+      gameState.setNewTurnDeadline(30000);
+      actionType = 'draw';
+    }
+
+    gameState.needsPersistence = true;
+
+    safeEmit(gameId, 'bot_action', {
+      botId,
+      action: actionType,
+      cardPlayed,
+    });
+    safeEmit(gameId, 'game_state_updated', {
+      lastAction: actionType,
+      player: botId,
+      cardId: cardPlayed?.id || null,
+    });
+
+    if (gameState.players.some((p) => p.hand.length === 0)) break;
+  }
+}
 
 /**
  * Ejecuta un ciclo de juego seguro con lock por partida.
@@ -13,7 +85,9 @@ const { activeGames } = require('./game.registry');
  * @returns {GameState}
  */
 async function runGameCycle(gameId, actionFn = null) {
-  return withGameLock(gameId, async () => {
+  let triggerBotsAfterRelease = false;
+
+  const result = await withGameLock(gameId, async () => {
     let gameState = activeGames.get(gameId);
 
     // Cargar desde DB si no está en memoria
@@ -38,47 +112,12 @@ async function runGameCycle(gameId, actionFn = null) {
     let actionResult;
     if (actionFn) {
       actionResult = await actionFn(logic, gameState);
-    }
 
-    else if (gameState.phase === 'playing') {
-      const currentPlayer = gameState.getCurrentPlayer();
-      
-      // Si el turno actual es de un Bot, le hacemos jugar
-      if (currentPlayer.isBot) {
-        const decision = logic.botLogic.decideMove(currentPlayer.id);
-        let actionType = '';
-
-        if (decision.type === 'play') {
-          logic.playCard(currentPlayer.id, decision.card);
-          actionType = 'play';
-        } else {
-          // El bot no tiene cartas válidas, roba y pasa turno
-          const card = logic.drawCard();
-          gameState.addCardToPlayer(currentPlayer.id, card);
-          gameState.advanceTurn();
-          gameState.setNewTurnDeadline(30000); // 30 segundos para el siguiente turno
-          actionType = 'draw';
-        }
-
-        gameState.needsPersistence = true;
-
-        // Avisamos a todos los jugadores de la partida mediante Sockets
-        try {
-          const { getIO } = require('../../realtime/socket.server');
-          const io = getIO();
-          // Asume que todos los jugadores de esta partida hicieron socket.join(gameId)
-          io.to(gameId).emit('bot_action', {
-            botId: currentPlayer.id,
-            action: actionType,
-            cardPlayed: decision.type === 'play' ? decision.card : null
-          });
-          
-          // Opcionalmente, puedes enviar el estado completo actualizado para que el frontend lo pinte de nuevo:
-          io.to(gameId).emit('game_state_updated', gameState);
-        } catch (err) {
-          console.error(`[Sockets] Error emitiendo acción de bot en partida ${gameId}:`, err.message);
-        }
+      if (gameState.phase === 'playing' && gameState.getCurrentPlayer()?.isBot) {
+        triggerBotsAfterRelease = true;
       }
+    } else if (gameState.phase === 'playing') {
+      await runBotsChain(gameId, logic, gameState);
     }
 
     //comprobamos si hay un gandor, y si lo hay le sumamos 50 monedas
@@ -126,19 +165,36 @@ async function runGameCycle(gameId, actionFn = null) {
 
     // Persistencia opcional
     if (gameState.needsPersistence) {
-      // Actualizamos también la columna 'estado' para que la base de datos sepa si está pausada, en curso o finalizada.
-      let estadoDB = 'en_curso';
-      if (gameState.phase === 'paused') estadoDB = 'pausada';
-      if (gameState.phase === 'finished') estadoDB = 'finalizada';
-      await db.query(
-        `UPDATE notuno.partida SET game_state=$2, estado=$3, updated_at=NOW() WHERE id_partida=$1`,
-        [gameId, JSON.stringify(gameState), estadoDB]
-      );
-      gameState.needsPersistence = false; // resetear flag
+      if (
+        (gameState.phase === 'playing' || gameState.phase === 'paused') &&
+        (!Array.isArray(gameState.drawPile) || gameState.drawPile.length === 0) &&
+        (!Array.isArray(gameState.discardPile) || gameState.discardPile.length === 0)
+      ) {
+        gameState.needsPersistence = false;
+      } else {
+        // Actualizamos también la columna 'estado' para que la base de datos sepa si está pausada, en curso o finalizada.
+        let estadoDB = 'en_curso';
+        if (gameState.phase === 'paused') estadoDB = 'pausada';
+        if (gameState.phase === 'finished') estadoDB = 'finalizada';
+        await db.query(
+          `UPDATE notuno.partida SET game_state=$2, estado=$3, updated_at=NOW() WHERE id_partida=$1`,
+          [gameId, JSON.stringify(gameState), estadoDB]
+        );
+        gameState.needsPersistence = false;
+      }
     }
 
     return actionFn ? actionResult : gameState;
   });
+  if (triggerBotsAfterRelease) {
+    setImmediate(() => {
+      runGameCycle(gameId).catch((err) => {
+        console.error(`[BotsChain] Error en cadena de bots ${gameId}:`, err.message);
+      });
+    });
+  }
+
+  return result;
 }
 
 module.exports = { runGameCycle };
