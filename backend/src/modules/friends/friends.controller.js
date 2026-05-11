@@ -128,13 +128,18 @@ exports.buscarUsuarios = async (req, res, next) => {
     }
 };
 
-exports.obtenerAmigosConectados = (req,res) => {
-      const res_amigosOnline=[]
-      const amigos=friendsService.obtenerAmigos(req.user.nombre_usuario)
-      for (const i in amigos) {
-        if (connectedUsers.has(i)) {
-          res_amigosOnline.push(i)
-        }
+exports.obtenerAmigosConectados = async (req, res, next) => {
+  try {
+    const res_amigosOnline = [];
+    const amigos = await friendsService.obtenerAmigos(req.user.nombre_usuario);
+    for (const amigo of amigos) {
+      const nombre = typeof amigo === 'object' ? (amigo.nombre_usuario || amigo.name) : amigo;
+      if (connectedUsers.has(nombre)) {
+        res_amigosOnline.push(nombre);
       }
-      res.json(res_amigosOnline)
     }
+    res.json(res_amigosOnline);
+  } catch (err) {
+    next(err);
+  }
+}

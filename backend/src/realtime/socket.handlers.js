@@ -27,9 +27,30 @@ function registerSocketHandlers(io) {
       return;
     }
 
-    console.log("Usuario ", socket.user?.nombre_usuario, " envia peticion de conexion")
-    //me guardo el id del socket para enviarle mensajes solo a el
-    connectedUsers.set(username, socket.id)
+    connectedUsers.set(username, socket.id);
+
+    (async () => {
+      try {
+        const amigos = await friendsService.obtenerAmigos(username);
+        if (!Array.isArray(amigos)) {
+          socket.emit('listaAmigosInicial', []);
+          return;
+        }
+
+        const todosNombres = amigos.map(a => typeof a === 'object' ? (a.nombre_usuario || a.name) : a);
+        const amigosOnline = todosNombres.filter(nombre => connectedUsers.has(nombre));
+
+        socket.emit('listaAmigosInicial', amigosOnline);
+
+        for (const nombreAmigo of todosNombres) {
+          if (connectedUsers.has(nombreAmigo)) {
+            io.to(connectedUsers.get(nombreAmigo)).emit('amigoConectado', username);
+          }
+        }
+      } catch (err) {
+        socket.emit('listaAmigosInicial', []);
+      }
+    })();
 
     socket.on('unirse_room_partida', (partidaID) => {
       socket.join(partidaID);
@@ -90,17 +111,7 @@ function registerSocketHandlers(io) {
       }
     })
 
-    socket.on('avisarAmigosConectados_UserOnline',async () => {
-      const amigos = await friendsService.obtenerAmigos(username);
-      if (!Array.isArray(amigos)) return;
-
-      for (const amigo of amigos) {
-        const nombreAmigo = typeof amigo === 'object' ? (amigo.nombre_usuario || amigo.name) : amigo;
-        if (connectedUsers.has(nombreAmigo)) {
-          io.to(connectedUsers.get(nombreAmigo)).emit('amigoConectado', username);
-        }
-      }
-    });
+    socket.on('avisarAmigosConectados_UserOnline', () => {});
 
     socket.on('avisarAmigosConectados_UserDisconnect', async () => {
       const amigos = await friendsService.obtenerAmigos(username);
@@ -313,9 +324,22 @@ function registerSocketHandlers(io) {
       }
     })
 
-    socket.on('disconnect', () => {
-      if(username) {
-        connectedUsers.delete(username)
+    socket.on('disconnect', async () => {
+      if (username) {
+        connectedUsers.delete(username);
+        try {
+          const amigos = await friendsService.obtenerAmigos(username);
+          if (Array.isArray(amigos)) {
+            for (const amigo of amigos) {
+              const nombreAmigo = typeof amigo === 'object' ? (amigo.nombre_usuario || amigo.name) : amigo;
+              if (connectedUsers.has(nombreAmigo)) {
+                io.to(connectedUsers.get(nombreAmigo)).emit('amigoDesconectado', username);
+              }
+            }
+          }
+        } catch (err) {
+          console.error('Error al notificar desconexión:', err);
+        }
       }
     })
     
