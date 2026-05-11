@@ -505,6 +505,8 @@ async function obtenerEstadoPartida(gameId, username) {
   return {
     gameId,
     phase: state.phase,
+    rolesMode: state.rolesMode || false,
+    specialCardsMode: state.specialCardsMode || false,
     currentTurn: state.players?.[state.currentTurn]?.id || null,
     direction: state.direction,
     discardTop: state.discardPile?.at(-1) || null,
@@ -523,7 +525,9 @@ async function obtenerEstadoPartida(gameId, username) {
 
 async function obtenerPartida(gameId) {
   const result = await db.query(
-    `SELECT id_partida, estado, max_jugadores FROM notuno.partida WHERE id_partida = $1`,
+    `SELECT id_partida, estado, max_jugadores, modo_roles, modo_cartas_especiales
+     FROM notuno.partida
+     WHERE id_partida = $1`,
     [gameId]
   );
 
@@ -545,6 +549,8 @@ async function obtenerPartida(gameId) {
     gameId: result.rows[0].id_partida,
     estado: result.rows[0].estado,
     maxJugadores: result.rows[0].max_jugadores,
+    rolesMode: result.rows[0].modo_roles,
+    specialCardsMode: result.rows[0].modo_cartas_especiales,
     jugadores: [...humanPlayers, ...botPlayers]
   };
 }
