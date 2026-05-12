@@ -3,6 +3,7 @@ const db = require('../../config/db');
 const GameState = require('../../core/game-engine/game.state');
 const { activeGames } = require('../../core/game-engine/game.registry');
 const { runGameCycle } = require('../../core/game-engine/game.runner');
+const userService = require('../user/userService');
 const rolService = require('../rol/rolService');
 
 function httpError(status, message) {
@@ -491,14 +492,36 @@ async function obtenerEstadoPartida(gameId, username) {
   let gameState = activeGames.get(gameId) || await cargarPartidaEnMemoria(gameId);
   const state = JSON.parse(JSON.stringify(gameState));
 
+  const humanIds = state.players.filter(p => !p.isBot).map(p => p.id);
+  let avatarMap = {};
+  if (humanIds.length > 0) {
+    try {
+      const placeholders = humanIds.map((_, i) => `$${i + 1}`).join(', ');
+      const result = await db.query(
+        `SELECT u.nombre_usuario, a.image AS avatar_image
+         FROM notuno.USUARIO u
+         LEFT JOIN notuno.AVATAR a ON a.id_avatar = u.id_avatar_seleccionado
+         WHERE u.nombre_usuario IN (${placeholders})`,
+        humanIds
+      );
+      result.rows.forEach(row => {
+        avatarMap[row.nombre_usuario] = row.avatar_image || null;
+      });
+    } catch (err) {
+      console.error('[AVATAR DEBUG] Error al obtener avatares de jugadores:', err.message);
+    }
+  }
+
   const players = state.players.map(p => {
-    if (p.id === username) return p;
+    const avatarImage = p.isBot ? null : (avatarMap[p.id] || null);
+    if (p.id === username) return { ...p, avatarImage };
     return {
       id: p.id,
       hand: p.hand.length,
       connected: p.connected,
       isBot: p.isBot,
-      saidUno: p.saidUno
+      saidUno: p.saidUno,
+      avatarImage,
     };
   });
 
@@ -512,6 +535,7 @@ async function obtenerEstadoPartida(gameId, username) {
     discardTop: state.discardPile?.at(-1) || null,
     drawCount: state.drawPile?.length || 0,
     players,
+    turnDeadline: state.turnDeadline || null,
     // Votos de reanudación en curso: el frontend los usa para sincronizar
     // a jugadores que llegan tarde (desde Partidas Pausadas)
     resumeVoters: state.resumeVotes || [],

@@ -105,7 +105,19 @@ async function runGameCycle(gameId, actionFn = null) {
 
     // Solo resolvemos timeouts si la partida NO está pausada
     if (gameState.phase !== 'paused') {
-      logic.resolveTimeoutIfNeeded();
+      const timedOutPlayer = logic.resolveTimeoutIfNeeded();
+      if (timedOutPlayer) {
+        gameState.needsPersistence = true;
+        safeEmit(gameId, 'turno_expirado', {
+          jugador: timedOutPlayer,
+          siguienteJugador: gameState.getCurrentPlayer()?.id || null,
+          turnDeadline: gameState.turnDeadline,
+        });
+        safeEmit(gameId, 'game_state_updated', {
+          lastAction: 'timeout',
+          player: timedOutPlayer,
+        });
+      }
     }
 
     // Ejecutar acción externa si se pasó

@@ -191,11 +191,16 @@ class GameLogic {
   resolveTimeoutIfNeeded() {
     if (this.state.turnDeadline && Date.now() > this.state.turnDeadline) {
       const currentPlayer = this.state.getCurrentPlayer();
+      if (!currentPlayer) return null;
+      const timedOutId = currentPlayer.id;
       const card = this.drawCard();
-      this.state.addCardToPlayer(currentPlayer.id, card);
+      this.state.addCardToPlayer(timedOutId, card);
+      currentPlayer.rolLastUsedTurn = this.state.turnNumber;
       this.state.advanceTurn();
       this.state.setNewTurnDeadline(TURN_DURATION_MS);
+      return timedOutId;
     }
+    return null;
   }
 }
 
