@@ -1,6 +1,12 @@
 // ================= FRIENDS CONTROLLER =================
 const friendsService = require('./friendsService');
-const { notifyFriendRequest, notifyPendingRequests } = require('../../realtime/socket.server');
+const {
+  notifyFriendRequest,
+  notifyPendingRequests,
+  notifyFriendAdded,
+  notifyFriendRemoved,
+  notifyFriendOnline
+} = require('../../realtime/socket.server');
 const {connectedUsers} = require('../../realtime/socket.handlers')
 exports.enviarSolicitud = async (req, res, next) => {
     try {
@@ -47,8 +53,35 @@ exports.aceptarSolicitud = async (req, res, next) => {
         const usuarioAcepta = req.user.nombre_usuario;
         const nuevoAmigo = req.params.id;
         await friendsService.aceptarSolicitud(usuarioAcepta, nuevoAmigo);
-        
-        
+
+        try {
+            const [datosAcepta, datosNuevo] = await Promise.all([
+                friendsService.obtenerUsuarioBasico(usuarioAcepta),
+                friendsService.obtenerUsuarioBasico(nuevoAmigo),
+            ]);
+            if (datosAcepta) {
+                notifyFriendAdded(nuevoAmigo, {
+                    nombre_usuario: datosAcepta.nombre_usuario,
+                    monedas: datosAcepta.monedas ?? 0,
+                    avatar: datosAcepta.avatar ?? null
+                });
+            }
+            if (datosNuevo) {
+                notifyFriendAdded(usuarioAcepta, {
+                    nombre_usuario: datosNuevo.nombre_usuario,
+                    monedas: datosNuevo.monedas ?? 0,
+                    avatar: datosNuevo.avatar ?? null
+                });
+            }
+            if (connectedUsers.has(nuevoAmigo)) {
+                notifyFriendOnline(usuarioAcepta, nuevoAmigo);
+            }
+            if (connectedUsers.has(usuarioAcepta)) {
+                notifyFriendOnline(nuevoAmigo, usuarioAcepta);
+            }
+        } catch (_) {
+        }
+
         res.json({ message: "Solicitud aceptada." });
     } catch (err) {
         next(err);
@@ -111,6 +144,13 @@ exports.eliminarAmigo = async (req, res, next) => {
         const usuario = req.user.nombre_usuario;
         const amigo = req.params.id;
         await friendsService.eliminarAmigo(usuario, amigo);
+
+        try {
+            notifyFriendRemoved(amigo, { nombre_usuario: usuario });
+            notifyFriendRemoved(usuario, { nombre_usuario: amigo });
+        } catch (_) {
+        }
+
         res.json({ message: "Amigo eliminado." });
     } catch (err) {
         next(err);

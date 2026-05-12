@@ -3,15 +3,23 @@ const { processMessage } = require('../modules/chat/chatService');
 const friendsService = require('../modules/friends/friendsService');
 const gameService = require('../modules/game/gameService');
 const { activeGames } = require('../core/game-engine/game.registry');
+const { joinUserRoom } = require('./rooms.manager');
 
 
 
 async function getPendingFriendRequests(username) {
   const result = await db.query(
-    `SELECT id_usuario_origen, id_usuario_destino, estado
-     FROM notuno.SOLICITUD_AMISTAD
-     WHERE id_usuario_destino = $1 AND estado = 'pendiente'
-     ORDER BY id_usuario_origen ASC`,
+    `SELECT
+       sa.id_usuario_origen,
+       sa.id_usuario_destino,
+       sa.estado,
+       u.nombre_usuario,
+       u.monedas,
+       u.id_avatar_seleccionado AS avatar
+     FROM notuno.SOLICITUD_AMISTAD sa
+     JOIN notuno.USUARIO u ON u.nombre_usuario = sa.id_usuario_origen
+     WHERE sa.id_usuario_destino = $1 AND sa.estado = 'pendiente'
+     ORDER BY sa.id_usuario_origen ASC`,
     [username]
   );
   return result.rows;
@@ -28,6 +36,7 @@ function registerSocketHandlers(io) {
     }
 
     connectedUsers.set(username, socket.id);
+    joinUserRoom(socket, username);
 
     (async () => {
       try {
