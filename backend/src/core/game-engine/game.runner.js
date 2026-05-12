@@ -161,12 +161,32 @@ async function runGameCycle(gameId, actionFn = null) {
             }
           }
 
+          const perdedoresHumanos = gameState.players.filter(
+            p => !p.isBot && p.id !== ganador.id
+          );
+          let monedasPerdedores = {};
+          if (perdedoresHumanos.length > 0) {
+            const ids = perdedoresHumanos.map(p => p.id);
+            const resPerdedores = await db.query(
+              `UPDATE notuno.usuario 
+               SET monedas = monedas + 10 
+               WHERE nombre_usuario = ANY($1::text[]) 
+               RETURNING nombre_usuario, monedas`,
+              [ids]
+            );
+            resPerdedores.rows.forEach(r => {
+              monedasPerdedores[r.nombre_usuario] = r.monedas;
+            });
+          }
+
           // Emitimos a toda la sala que la partida ha terminado
           io.to(gameId).emit('game_finished', { 
             winner: ganador.id,
             isBot: ganador.isBot,
             recompensa: nuevasMonedas ? 50 : 0,
-            monedasTotales: nuevasMonedas 
+            monedasTotales: nuevasMonedas,
+            recompensaPerdedor: 10,
+            monedasPerdedores
           });
 
         } catch (err) {
