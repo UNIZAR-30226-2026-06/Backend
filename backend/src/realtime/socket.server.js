@@ -31,13 +31,15 @@ function initSocket(httpServer) {
   io = new Server(httpServer, {
     cors: {
       origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
+        // ✅ AÑADIMOS: || origin.endsWith('.vercel.app')
+        if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
           return callback(null, true);
         }
         return callback(new Error('Origen no permitido por CORS (Socket.IO)'));
       },
-      methods: ['GET', 'POST'],
-      allowedHeaders: ['Authorization']
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Añade también los extra por si acaso
+      allowedHeaders: ['Authorization', 'Content-Type'], // Asegúrate de permitir el Content-Type
+      credentials: true // MUY IMPORTANTE para WebSockets
     }
   });
 
