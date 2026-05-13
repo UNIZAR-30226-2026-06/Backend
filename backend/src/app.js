@@ -15,9 +15,18 @@ const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:5173,http:
 
 app.use(cors({
   origin: (origin, callback) => {
+    // 1. Permitir sin origen (Postman, tu app móvil nativa en Flutter)
+    // 2. Permitir si está en tu lista de allowedOrigins (localhost, producción)
     if (!origin || allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
+    
+    // 3. NUEVA REGLA: Permitir cualquier despliegue de Vercel (Previews)
+    if (origin.endsWith('.vercel.app')) {
+      return callback(null, true);
+    }
+
+    // Si no cumple nada de lo anterior, bloquear
     return callback(new Error('Origen no permitido por CORS'));
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
