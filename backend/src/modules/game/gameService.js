@@ -3,7 +3,6 @@ const db = require('../../config/db');
 const GameState = require('../../core/game-engine/game.state');
 const { activeGames } = require('../../core/game-engine/game.registry');
 const { runGameCycle } = require('../../core/game-engine/game.runner');
-const userService = require('../user/userService');
 const rolService = require('../rol/rolService');
 
 function httpError(status, message) {
@@ -193,7 +192,6 @@ async function crearPartida(id_creador, config) {
 // =========================
 // INICIAR PARTIDA
 // =========================
-
 async function iniciarPartida(gameId, username) {
   const client = await db.connect();
   try {
@@ -215,12 +213,15 @@ async function iniciarPartida(gameId, username) {
     if (owner !== username) throw httpError(403, 'Solo el creador puede iniciar la partida');
     if (gameState.phase !== 'waiting') throw httpError(400, 'La partida ya fue iniciada');
 
+    // 1. PRIMERO: Asignar roles (UNO SOLO Y CON "rolService")
+    await rolService.asignarRolesIniciales(gameId, gameState, client);
+
+    // 2. SEGUNDO: Iniciar lógica del juego (barajar y repartir cartas)
     const GameLogic = require('../../core/game-engine/game.logic');
     const logic = new GameLogic(gameState);
     logic.startGame();
 
-    await rolService.asignarRolesIniciales(gameId, gameState, client);
-
+    // 3. Guardar el estado FINAL en la base de datos
     await client.query(
       `UPDATE notuno.partida
        SET estado = 'en_curso', game_state = $2, updated_at = NOW()
@@ -492,54 +493,31 @@ async function obtenerEstadoPartida(gameId, username) {
   let gameState = activeGames.get(gameId) || await cargarPartidaEnMemoria(gameId);
   const state = JSON.parse(JSON.stringify(gameState));
 
-  const humanIds = state.players.filter(p => !p.isBot).map(p => p.id);
-  let avatarMap = {};
-  if (humanIds.length > 0) {
-    try {
-      const placeholders = humanIds.map((_, i) => `$${i + 1}`).join(', ');
-      const result = await db.query(
-        `SELECT u.nombre_usuario, a.image AS avatar_image
-         FROM notuno.USUARIO u
-         LEFT JOIN notuno.AVATAR a ON a.id_avatar = u.id_avatar_seleccionado
-         WHERE u.nombre_usuario IN (${placeholders})`,
-        humanIds
-      );
-      result.rows.forEach(row => {
-        avatarMap[row.nombre_usuario] = row.avatar_image || null;
-      });
-    } catch (err) {
-      console.error('[AVATAR DEBUG] Error al obtener avatares de jugadores:', err.message);
-    }
-  }
-
   const players = state.players.map(p => {
-    const avatarImage = p.isBot ? null : (avatarMap[p.id] || null);
-    if (p.id === username) return { ...p, avatarImage };
+    if (p.id === username) return p;
     return {
       id: p.id,
       hand: p.hand.length,
       connected: p.connected,
       isBot: p.isBot,
-      saidUno: p.saidUno,
-      avatarImage,
+      saidUno: p.saidUno
     };
   });
 
   return {
     gameId,
     phase: state.phase,
-    rolesMode: state.rolesMode || false,
-    specialCardsMode: state.specialCardsMode || false,
     currentTurn: state.players?.[state.currentTurn]?.id || null,
     direction: state.direction,
     discardTop: state.discardPile?.at(-1) || null,
     drawCount: state.drawPile?.length || 0,
     players,
-    turnDeadline: state.turnDeadline || null,
     // Votos de reanudación en curso: el frontend los usa para sincronizar
     // a jugadores que llegan tarde (desde Partidas Pausadas)
     resumeVoters: state.resumeVotes || [],
     pauseVoters:  state.pauseVotes  || [],
+    rolesMode: state.rolesMode || false,
+    specialCardsMode: state.specialCardsMode || false,
   };
 }
 
@@ -549,9 +527,7 @@ async function obtenerEstadoPartida(gameId, username) {
 
 async function obtenerPartida(gameId) {
   const result = await db.query(
-    `SELECT id_partida, estado, max_jugadores, modo_roles, modo_cartas_especiales
-     FROM notuno.partida
-     WHERE id_partida = $1`,
+    `SELECT id_partida, estado, max_jugadores, modo_roles, modo_cartas_especiales FROM notuno.partida WHERE id_partida = $1`,
     [gameId]
   );
 
@@ -573,8 +549,8 @@ async function obtenerPartida(gameId) {
     gameId: result.rows[0].id_partida,
     estado: result.rows[0].estado,
     maxJugadores: result.rows[0].max_jugadores,
-    rolesMode: result.rows[0].modo_roles,
-    specialCardsMode: result.rows[0].modo_cartas_especiales,
+    rolesMode: result.rows[0].modo_roles || false, 
+    modoCartasEspeciales: result.rows[0].modo_cartas_especiales || false,
     jugadores: [...humanPlayers, ...botPlayers]
   };
 }
@@ -592,7 +568,7 @@ async function finalizarPartida(gameId, username) {
 
     await db.query(
       `UPDATE notuno.partida SET estado=$2, game_state=$3 WHERE id_partida=$1`,
-      [gameId, 'finished', JSON.stringify(gameState)]
+      [gameId, 'finalizada', JSON.stringify(gameState)]
     );
 
     activeGames.delete(gameId);
@@ -788,31 +764,31 @@ async function getCarta(idcarta) {
 // =========================
 
 
-
 async function votarPausa(gameId, username, isFirstVote) {
   return runGameCycle(gameId, async (logic, gameState) => {
     if (gameState.phase !== 'playing') {
       throw new Error('Solo se puede pausar una partida en juego');
     }
 
-    if (isFirstVote) {
-      // Si es la primera persona que vota, se reinicia el contador de votos
+    if (isFirstVote && gameState.pauseVotes.length === 0) {
       gameState.clearPauseVotes();
     }
 
-    gameState.addPauseVote(username);
+    // Aseguramos que el usuario no vote dos veces por error de red
+    if (!gameState.pauseVotes.includes(username)) {
+      gameState.addPauseVote(username);
+    }
 
     // Comprobamos si con este voto se alcanza la MAYORÍA
     if (gameState.hasMajorityPauseVotes()) {
       gameState.setPaused();
       gameState.needsPersistence = true;
-      return { action: 'pausada' };
+      // Retornamos también los votos actuales para que el front no se pierda
+      return { action: 'pausada', votosActuales: gameState.pauseVotes.length };
     } else {
       gameState.needsPersistence = true;
       return { action: 'voto_pausa_registrado', votosActuales: gameState.pauseVotes.length };
     }
-
-    
   });
 }
 

@@ -80,31 +80,11 @@ function notifyPendingRequests(receiverUsername, pendingRequests) {
   emitToUser(io, receiverUsername, 'friends:request:pending', pendingRequests);
 }
 
-function notifyFriendAdded(username, payload) {
-  if (!io) return;
-  console.log(`[socket] friends:added -> ${username}`);
-  emitToUser(io, username, 'friends:added', payload);
-}
-
-function notifyFriendRemoved(username, payload) {
-  if (!io) return;
-  console.log(`[socket] friends:removed -> ${username}`);
-  emitToUser(io, username, 'friends:removed', payload);
-}
-
-function notifyFriendOnline(username, friendUsername) {
-  if (!io) return;
-  emitToUser(io, username, 'amigoConectado', friendUsername);
-}
-
 
 
 module.exports = {
   initSocket,
   getIO,
   notifyFriendRequest,
-  notifyPendingRequests,
-  notifyFriendAdded,
-  notifyFriendRemoved,
-  notifyFriendOnline
+  notifyPendingRequests
 };

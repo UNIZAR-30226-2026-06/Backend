@@ -43,32 +43,14 @@ class FriendsService {
 
   async obtenerSolicitudesPendientes(userId) {
     const result = await db.query(
-      `SELECT
-         sa.id_usuario_origen,
-         sa.id_usuario_destino,
-         sa.estado,
-         u.nombre_usuario,
-         u.monedas,
-         u.id_avatar_seleccionado AS avatar
-       FROM notuno.SOLICITUD_AMISTAD sa
-       JOIN notuno.USUARIO u ON u.nombre_usuario = sa.id_usuario_origen
-       WHERE sa.id_usuario_destino = $1 AND sa.estado = $2`,
+      'SELECT * FROM notuno.SOLICITUD_AMISTAD WHERE id_usuario_destino=$1 AND estado=$2',
       [userId, 'pendiente']
     );
     return result.rows;
   }
   async obtenerSolicitudesEnviadas(userId) {
     const result = await db.query(
-      `SELECT
-         sa.id_usuario_origen,
-         sa.id_usuario_destino,
-         sa.estado,
-         u.nombre_usuario,
-         u.monedas,
-         u.id_avatar_seleccionado AS avatar
-       FROM notuno.SOLICITUD_AMISTAD sa
-       JOIN notuno.USUARIO u ON u.nombre_usuario = sa.id_usuario_destino
-       WHERE sa.id_usuario_origen = $1 AND sa.estado = $2`,
+      'SELECT * FROM notuno.SOLICITUD_AMISTAD WHERE id_usuario_origen=$1 AND estado=$2',
       [userId, 'pendiente']
     );
     return result.rows;
@@ -175,16 +157,6 @@ class FriendsService {
       [`%${searchString}%`, usuarioActual]
     );
     return result.rows;
-  }
-
-  async obtenerUsuarioBasico(username) {
-    const result = await db.query(
-      `SELECT nombre_usuario, monedas, id_avatar_seleccionado AS avatar
-       FROM notuno.USUARIO
-       WHERE nombre_usuario = $1`,
-      [username]
-    );
-    return result.rows[0] || null;
   }
 
 }

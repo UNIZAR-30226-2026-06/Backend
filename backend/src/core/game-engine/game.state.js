@@ -337,7 +337,7 @@ class GameState {
     this.clearResumeVotes();
     this.setNewTurnDeadline(turnDurationMs);
   }
-  
+
 }
 
 module.exports = GameState;

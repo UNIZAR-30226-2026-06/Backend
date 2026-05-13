@@ -45,38 +45,52 @@ function buildRoleResponse(gameState, player, roleRow) {
   };
 }
 
+// rolService.js (Backend)
+
 async function asignarRolesIniciales(gameId, gameState, client) {
   if (!gameState.rolesMode) {
     return { assigned: 0 };
   }
 
   const rolesCatalog = await loadRolesCatalog(client);
-  // Guardamos el catálogo en el propio state para que efectos como la
-  // carta changeRole puedan reasignar sin volver a consultar BD desde
-  // el motor de reglas (que es síncrono).
   gameState.rolesCatalog = rolesCatalog;
+  
+  // 1. Asignamos los roles (RoleLogic debe devolver los IDs)
   const assignments = RoleLogic.assignRandomRoles(gameState, rolesCatalog);
 
   for (const assignment of assignments) {
+    const player = gameState.players.find(p => p.id === assignment.playerId);
+    if (player) {
+      player.rol = assignment.role;
+      player.rolUses = 0;
+      player.rolLastUsedTurn = null;
+    }
+
+    if (player && player.isBot) continue;
+
     await client.query(
       `UPDATE notuno.usuario_en_partida
-       SET id_rol = $2,
-           usos_rol_partida = 0
+       SET id_rol = $2, usos_rol_partida = 0
        WHERE id_partida = $1 AND id_usuario = $3`,
-      [
-        gameId,
-        assignment.role.id_rol,
-        assignment.playerId
-      ]
+      [gameId, assignment.role.id_rol, assignment.playerId]
     );
   }
 
+  // 2. Guardamos el estado completo con los roles ya en el JSON
   await client.query(
-    `UPDATE notuno.partida
-     SET game_state = $2
-     WHERE id_partida = $1`,
+    `UPDATE notuno.partida SET game_state = $2 WHERE id_partida = $1`,
     [gameId, JSON.stringify(gameState)]
   );
+
+  //Arquitectura orientada a eventos 
+    try {
+    const { getIO } = require('../../realtime/socket.server'); 
+    const io = getIO();
+    io.to(gameId).emit('roles_asignados');
+    console.log(`[Roles] Evento 'roles_asignados' emitido para la partida ${gameId}`);
+  } catch (error) {
+    console.error(`[Sockets] Error emitiendo roles_asignados en partida ${gameId}:`, error.message);
+  }
 
   return { assigned: assignments.length };
 }
